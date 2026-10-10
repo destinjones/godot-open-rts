@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOTHING™ — Subscribe to nothing</title>
+<meta name="description" content="A premium subscription that delivers nothing. No content, no updates, no features. From $7/mo.">
+<meta name="theme-color" content="#08021a">
+<meta property="og:type" content="website">
+<meta property="og:title" content="NOTHING™ — Subscribe to nothing">
+<meta property="og:description" content="The world's first premium subscription that delivers absolutely nothing.">
+<meta property="og:image" content="https://subscribe-to-nothing.pages.dev/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="NOTHING™ — Subscribe to nothing">
+<meta name="twitter:description" content="The world's first premium subscription that delivers absolutely nothing.">
+<meta name="twitter:image" content="https://subscribe-to-nothing.pages.dev/og.jpg">
+<link rel="icon" href="favicon.png" type="image/png">
+<noscript><style>.vp .rv{opacity:1;transform:none}</style></noscript>
+<style>
+html, body { margin: 0; padding: 0; background: #08021a; }
+body { overflow-x: hidden; padding-bottom: 86px; }
+.vp, .vp * { box-sizing: border-box; }
+.vp { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 760px; margin: 0 auto; color: #e7dcff; line-height: 1.55; font-size: 15px; background: #08021a; }
+.vp h1, .vp h2, .vp h3 { line-height: 1.04; letter-spacing: -0.02em; font-weight: 800; margin: 0; }
+.vp p { margin: 0; }
+.sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.vp-scan { position: fixed; inset: 0; z-index: 60; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.06) 0 1px, transparent 1px 3px); }
+
+.vp .neon { color: #ff2e97; text-shadow: 0 0 8px #ff2e97, 0 0 26px rgba(255,46,151,.6); }
+.vp .cyan { color: #00e5ff; text-shadow: 0 0 8px #00e5ff, 0 0 26px rgba(0,229,255,.5); }
+
+.vp-tick { background: #ff2e97; color: #08021a; font-size: 13px; font-weight: 800; letter-spacing: .14em; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+.vp-tick .t { display: inline-block; animation: vp-m 22s linear infinite; }
+.vp-tick span { padding: 0 16px; }
+@keyframes vp-m { to { transform: translateX(-50%); } }
+
+.vp-nav { display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; border-bottom: 1px solid rgba(255,46,151,.25); background: rgba(8,2,26,.85); }
+.vp-logo { font-weight: 900; font-size: 16px; letter-spacing: .18em; }
+
+.vp-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #ff2e97; border-radius: 8px; padding: 12px 22px; font-size: 13px; font-weight: 800; letter-spacing: .03em; cursor: pointer; font-family: inherit; background: transparent; color: #ff2e97; transition: all .12s ease; text-transform: uppercase; }
+.vp-btn:hover { background: #ff2e97; color: #08021a; box-shadow: 0 0 22px rgba(255,46,151,.7); }
+.vp-btn:focus-visible, .vp-video:focus-visible, .vp-addon:focus-visible, .vp input:focus-visible, .vp summary:focus-visible { outline: 2px solid #00e5ff; outline-offset: 3px; }
+.vp-btn.fill { background: #ff2e97; color: #08021a; box-shadow: 0 0 18px rgba(255,46,151,.55); animation: vp-beat 1.2s ease-in-out infinite; }
+.vp-btn.big { padding: 17px 34px; font-size: 15px; }
+@keyframes vp-beat { 0%,100% { transform: scale(1); } 12% { transform: scale(1.05); } 24% { transform: scale(1); } 40% { transform: scale(1.05); } 60% { transform: scale(1); } }
+
+.vp-hero { position: relative; text-align: center; padding: 44px 24px 64px; overflow: hidden; background: radial-gradient(circle at 50% 120%, rgba(127,92,255,.35), transparent 60%); }
+.vp-grid { position: absolute; left: 0; right: 0; bottom: 0; height: 240px; perspective: 160px; opacity: .55; overflow: hidden; }
+.vp-grid::before { content: ""; position: absolute; inset: -60% 0 -40%; background-image: linear-gradient(#ff2e97 1px, transparent 1px), linear-gradient(90deg,#00e5ff 1px, transparent 1px); background-size: 44px 44px; transform: rotateX(62deg); }
+.vp-hero > * { position: relative; z-index: 2; }
+.vp-live { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; letter-spacing: .12em; border: 1px solid #00e5ff; color: #00e5ff; border-radius: 999px; padding: 6px 15px; margin-bottom: 18px; }
+.vp-live i { width: 7px; height: 7px; border-radius: 50%; background: #00e5ff; animation: vp-blink 1s steps(1) infinite; }
+@keyframes vp-blink { 50% { opacity: .2; } }
+.vp-hero h1 { font-size: 54px; font-weight: 900; max-width: 560px; margin: 0 auto 16px; }
+@media (max-width: 480px) { .vp-hero h1 { font-size: 42px; } }
+.vp-hero .sub { font-size: 15.5px; color: #b7a8e0; max-width: 460px; margin: 0 auto 24px; }
+.vp-cd { margin-top: 20px; font-size: 13px; letter-spacing: .1em; color: #b7a8e0; }
+.vp-cd b { font-family: ui-monospace, monospace; font-size: 20px; color: #00e5ff; text-shadow: 0 0 14px rgba(0,229,255,.7); }
+.vp-cd small { display: block; font-size: 13px; letter-spacing: .04em; color: #9a8cc4; margin-top: 4px; }
+.vp-trust { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 18px; font-size: 13px; color: #9a8cc4; letter-spacing: .04em; }
+.vp-trust span { display: inline-flex; align-items: center; gap: 5px; }
+.vp-trust svg { color: #00e5ff; }
+.vp-seen { text-align: center; padding: 18px 20px 0; font-size: 13px; letter-spacing: .16em; color: #9a8cc4; }
+.vp-seen b { color: #b7a8e0; font-weight: 800; }
+
+.vp-sec { padding: 54px 24px; }
+.vp-sec h2 { font-size: 33px; margin-bottom: 14px; }
+.vp-sec .lead { color: #b7a8e0; font-size: 15px; max-width: 500px; }
+.vp-sec.alt { background: #0d0327; border-top: 1px solid rgba(0,229,255,.18); border-bottom: 1px solid rgba(0,229,255,.18); }
+.vp-center { text-align: center; } .vp-center .lead { margin: 0 auto; }
+
+.vp-list { list-style: none; max-width: 470px; margin: 24px auto 0; padding: 0; }
+.vp-list li { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px dashed rgba(183,168,224,.3); font-size: 15px; text-align: left; }
+.vp-list .t { flex: 0 0 20px; color: #ff2e97; font-weight: 900; }
+
+.vp-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 26px; }
+@media (max-width: 540px) { .vp-grid2 { grid-template-columns: 1fr; } }
+.vp-card { border: 1px solid rgba(0,229,255,.3); border-radius: 12px; padding: 20px; background: rgba(127,92,255,.08); }
+.vp-card h3 { font-size: 15px; margin-bottom: 6px; color: #00e5ff; }
+.vp-card p { font-size: 13.5px; color: #b7a8e0; }
+
+.vp-steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 24px; }
+@media (max-width: 560px) { .vp-steps { grid-template-columns: 1fr; } }
+.vp-step .n { font-family: ui-monospace, monospace; font-size: 30px; font-weight: 800; color: #ff2e97; text-shadow: 0 0 14px rgba(255,46,151,.6); }
+.vp-step h3 { font-size: 15px; margin: 6px 0; }
+.vp-step p { font-size: 13.5px; color: #b7a8e0; }
+
+.vp-video { position: relative; margin-top: 24px; aspect-ratio: 16/9; border-radius: 12px; border: 1px solid rgba(0,229,255,.35); background: #0a0320; overflow: hidden; cursor: pointer; }
+.vp-video video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.vp-video .play { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 64px; height: 64px; border-radius: 50%; background: #ff2e97; color: #08021a; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(255,46,151,.6); transition: transform .15s, opacity .2s; }
+.vp-video:hover .play { transform: translate(-50%,-50%) scale(1.08); }
+.vp-video .label { position: absolute; bottom: 14px; left: 16px; font-size: 13px; letter-spacing: .12em; color: #e7dcff; font-family: ui-monospace, monospace; text-shadow: 0 1px 4px #000; }
+.vp-video.playing { cursor: default; }
+.vp-video.playing .play, .vp-video.playing .label { opacity: 0; pointer-events: none; }
+
+.vp-box { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: center; margin-top: 26px; }
+@media (max-width: 560px) { .vp-box { grid-template-columns: 1fr; } }
+.vp-box img { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid rgba(0,229,255,.3); box-shadow: 0 0 40px rgba(127,92,255,.25); }
+.vp-box h3 { font-size: 22px; margin-bottom: 8px; }
+.vp-box p { font-size: 14.5px; color: #b7a8e0; margin-bottom: 10px; }
+.vp-box .spec { font-family: ui-monospace, monospace; font-size: 13px; color: #00e5ff; }
+
+.vp-quote { border-left: 3px solid #00e5ff; padding: 14px 18px; margin-bottom: 14px; background: rgba(0,229,255,.06); }
+.vp-quote p { font-size: 14.5px; font-style: italic; }
+.vp-quote .who { font-size: 13px; color: #00e5ff; margin-top: 8px; font-family: ui-monospace, monospace; }
+
+.vp-price { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 28px; text-align: left; }
+@media (max-width: 600px) { .vp-price { grid-template-columns: 1fr; } }
+.vp-tier { border: 1px solid rgba(183,168,224,.35); border-radius: 12px; padding: 22px 18px; position: relative; background: rgba(127,92,255,.07); }
+.vp-tier.pop { border: 2px solid #ff2e97; box-shadow: 0 0 28px rgba(255,46,151,.4); transform: translateY(-6px); background: rgba(255,46,151,.08); }
+.vp-tier .tag { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #ff2e97; color: #08021a; font-size: 11px; font-weight: 900; letter-spacing: .1em; padding: 4px 12px; border-radius: 999px; }
+.vp-tier h3 { font-size: 16px; letter-spacing: .04em; }
+.vp-tier .d { font-size: 13px; color: #b7a8e0; min-height: 46px; }
+.vp-tier .a { font-size: 36px; font-weight: 900; margin: 12px 0; }
+.vp-tier .a s { font-size: 15px; color: #9a8cc4; }
+.vp-tier .a span { font-size: 13px; color: #b7a8e0; font-weight: 600; }
+.vp-tier ul { list-style: none; margin: 0 0 18px; padding: 0; }
+.vp-tier li { font-size: 13px; padding: 4px 0 4px 18px; position: relative; color: #cfc2ee; }
+.vp-tier li::before { content: "›"; position: absolute; left: 0; color: #ff2e97; }
+.vp-tier .vp-btn { width: 100%; justify-content: center; }
+.vp-addon { margin: 18px auto 0; max-width: 460px; border: 1px dashed rgba(0,229,255,.4); border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 13.5px; color: #cfc2ee; background: rgba(0,229,255,.05); text-align: left; }
+.vp-addon .box { width: 20px; height: 20px; border: 2px solid #00e5ff; border-radius: 5px; flex: 0 0 20px; display: flex; align-items: center; justify-content: center; color: #08021a; font-weight: 900; }
+.vp-addon.on .box { background: #00e5ff; }
+.vp-addon b { color: #00e5ff; }
+
+.vp-guar { border: 2px solid #00e5ff; border-radius: 14px; padding: 26px; text-align: center; background: rgba(0,229,255,.07); box-shadow: 0 0 30px rgba(0,229,255,.2); }
+.vp-guar h3 { font-size: 20px; color: #00e5ff; margin-bottom: 8px; }
+.vp-guar p { font-size: 14px; color: #cfc2ee; max-width: 440px; margin: 0 auto; }
+
+.vp-email { text-align: center; border: 1px solid rgba(255,46,151,.4); border-radius: 14px; padding: 32px 24px; background: rgba(255,46,151,.06); }
+.vp-email h3 { font-size: 22px; margin-bottom: 8px; }
+.vp-email p { font-size: 13.5px; color: #b7a8e0; margin-bottom: 18px; }
+.vp-email .form { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; }
+@media (max-width: 420px) { .vp-email .form { flex-direction: column; } }
+.vp-email input { flex: 1; min-width: 0; background: #0a0320; border: 1px solid rgba(183,168,224,.4); border-radius: 8px; padding: 12px 14px; color: #e7dcff; font-size: 14px; font-family: inherit; }
+.vp-email input:focus { outline: none; border-color: #ff2e97; }
+.vp-email .ok { margin-top: 14px; font-size: 13px; color: #00e5ff; display: none; }
+
+.vp-faq details { border-bottom: 1px solid rgba(183,168,224,.28); }
+.vp-faq summary { cursor: pointer; list-style: none; padding: 17px 2px; font-weight: 700; font-size: 14.5px; display: flex; justify-content: space-between; }
+.vp-faq summary::-webkit-details-marker { display: none; }
+.vp-faq summary::after { content: "+"; color: #ff2e97; font-size: 20px; font-weight: 900; }
+.vp-faq details[open] summary::after { content: "\2212"; }
+.vp-faq p { padding: 0 2px 16px; font-size: 13.5px; color: #b7a8e0; }
+
+.vp-final { text-align: center; padding: 58px 24px; background: radial-gradient(circle at 50% 0%, rgba(255,46,151,.28), transparent 65%); }
+.vp-final h2 { font-size: 38px; }
+.vp-final p { color: #b7a8e0; max-width: 400px; margin: 14px auto 24px; }
+.vp-foot { text-align: center; padding: 24px; font-size: 13px; color: #b7a8e0; border-top: 1px solid rgba(255,46,151,.25); line-height: 1.9; }
+.vp-foot a { color: #00e5ff; text-decoration: none; }
+.vp-foot a:hover { text-decoration: underline; }
+
+.vp-sticky { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: rgba(8,2,26,.94); border-top: 1px solid #ff2e97; box-shadow: 0 -10px 30px rgba(255,46,151,.3); }
+.vp-sticky-in { max-width: 760px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; }
+.vp-sticky .info { font-size: 13px; letter-spacing: .06em; }
+.vp-sticky .info b { color: #ff2e97; font-size: 15px; }
+.vp-sticky .info span { color: #b7a8e0; }
+.vp-sticky .vp-btn.fill { animation-delay: .3s; }
+
+.vp-toasts { position: fixed; bottom: 74px; left: 16px; z-index: 55; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.vp-toast { pointer-events: auto; background: rgba(8,2,26,.96); border: 1px solid #00e5ff; border-radius: 9px; padding: 9px 13px; font-size: 13px; color: #cfc2ee; box-shadow: 0 0 20px rgba(0,229,255,.25); display: flex; gap: 9px; align-items: center; transform: translateY(14px); opacity: 0; transition: all .4s ease; max-width: 300px; }
+.vp-toast.in { transform: none; opacity: 1; }
+.vp-toast b { color: #00e5ff; }
+
+.vp .rv { opacity: 0; transform: translateY(26px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.8,.2,1); }
+.vp .rv.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vp *, .vp *::before, .vp *::after, .vp-scan, .vp-sticky *, .vp-toast { animation: none !important; transition: none !important; }
+  .vp .rv { opacity: 1; transform: none; }
+  .vp-grid { transform: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="vp-scan" aria-hidden="true"></div>
+<div class="vp">
+  <div class="vp-tick" aria-hidden="true"><div class="t">
+    <span>NOW SHIPPING · CONTAINS NOTHING</span><span><span class="count">8,204</span> PEOPLE PAY FOR THIS</span><span>CANCEL ANYTIME (YOU WON'T)</span><span>100% NOTHING GUARANTEED</span>
+    <span>NOW SHIPPING · CONTAINS NOTHING</span><span><span class="count">8,204</span> PEOPLE PAY FOR THIS</span><span>CANCEL ANYTIME (YOU WON'T)</span><span>100% NOTHING GUARANTEED</span>
+  </div></div>
+
+  <nav class="vp-nav">
+    <div class="vp-logo">NOTHING<span class="neon">™</span></div>
+    <button class="vp-btn sub" data-scroll>Subscribe</button>
+  </nav>
+
+  <header class="vp-hero">
+    <div class="vp-grid" id="vp-grid" aria-hidden="true"></div>
+    <div class="vp-live"><i aria-hidden="true"></i> LIVE · <span class="count">8,204</span> SUBSCRIBERS</div>
+    <h1>Subscribe to <span class="neon">nothing.</span></h1>
+    <p class="sub">The world's first premium subscription that delivers absolutely nothing. No content. No updates. No features. Just a quiet monthly reminder that you exist.</p>
+    <button class="vp-btn fill big sub" data-scroll>Yes — take my $7 →</button>
+    <div class="vp-cd">OFFER ENDS IN <b class="cd">--:--:--</b><small>(it does not end)</small></div>
+    <div class="vp-trust">
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> Secure checkout</span>
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m5 13 4 4L19 7"/></svg> Cancel anytime</span>
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 3v18M5 8h14"/></svg> No hidden fees</span>
+    </div>
+  </header>
+
+  <div class="vp-seen">AS SEEN IN · <b>THE VERGE</b> · <b>WIRED</b> · <b>PRODUCT HUNT</b> · <b>THE ONION</b></div>
+
+  <section class="vp-sec vp-center rv">
+    <h2>Everyone's selling you <span class="cyan">content.</span></h2>
+    <p class="lead" style="margin-top:20px">Shows to catch up on. Apps to open. Updates to install. Feeds to scroll. It's exhausting.</p>
+    <p class="lead" style="margin-top:14px;color:#ff2e97;font-weight:800">You don't need more. You need less. You need nothing.</p>
+  </section>
+
+  <section class="vp-sec alt vp-center rv">
+    <h2>What you get</h2>
+    <ul class="vp-list">
+      <li><span class="t">›</span> No content to keep up with</li>
+      <li><span class="t">›</span> No app to download</li>
+      <li><span class="t">›</span> No password to forget</li>
+      <li><span class="t">›</span> No notifications, ever</li>
+      <li><span class="t">›</span> No guilt for not using it</li>
+      <li><span class="t">›</span> Nothing to cancel (but you can)</li>
+    </ul>
+  </section>
+
+  <section class="vp-sec rv">
+    <div class="vp-grid2">
+      <div class="vp-card"><h3>ZERO CONTENT</h3><p>Nothing to watch, read, or finish. Perfect if you already have too much to watch, read, and finish.</p></div>
+      <div class="vp-card"><h3>NO LOGIN</h3><p>There's no account. Nothing to log into. You're already in. You were always in.</p></div>
+      <div class="vp-card"><h3>NO FULFILLMENT</h3><p>Nothing to ship means nothing to break. We can't run out of stock. We can't be late. It's the perfect supply chain.</p></div>
+      <div class="vp-card"><h3>IT NEVER CHANGES</h3><p>No roadmap. No feature drops. No version 2.0. It will be exactly as empty in ten years. That's a promise.</p></div>
+    </div>
+  </section>
+
+  <section class="vp-sec alt vp-center rv">
+    <h2>How it works</h2>
+    <div class="vp-steps">
+      <div class="vp-step"><div class="n">01</div><h3>Subscribe</h3><p>Enter your card. That's the hard part. Everything after this is nothing.</p></div>
+      <div class="vp-step"><div class="n">02</div><h3>Receive nothing</h3><p>Nothing arrives. On time, every time. Because there's nothing to delay.</p></div>
+      <div class="vp-step"><div class="n">03</div><h3>Feel peace</h3><p>One less thing. No backlog, no guilt, no catching up. Just quiet relief.</p></div>
+    </div>
+  </section>
+
+  <section class="vp-sec vp-center rv">
+    <h2>Watch the trailer</h2>
+    <p class="lead" style="margin:10px auto 0">(It contains nothing. Obviously.)</p>
+    <div class="vp-video" id="vp-video" role="button" tabindex="0" aria-label="Play the nothing trailer">
+      <video id="vp-vid" preload="none" playsinline poster="box.jpg" src="trailer.mp4"></video>
+      <div class="play" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+      <div class="label" aria-hidden="true">NOTHING™ — OFFICIAL TRAILER · 0:06</div>
+    </div>
+  </section>
+
+  <section class="vp-sec alt rv">
+    <h2 class="vp-center">Tangible Nothing</h2>
+    <p class="lead vp-center" style="margin:10px auto 0">For people who need to hold it.</p>
+    <div class="vp-box">
+      <img src="box.jpg" width="1344" height="752" alt="A plain cardboard box, open, with nothing inside, on a black background." loading="lazy">
+      <div>
+        <h3>The box.</h3>
+        <p>An actual cardboard box, hand-inspected to confirm it contains nothing, then sealed and posted to you every month.</p>
+        <p>Open it. Look inside. Feel something. Or don't.</p>
+        <div class="spec">CONTENTS: 0 · WEIGHT: BOX · SHIPS: MONTHLY</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="vp-sec rv">
+    <h2 class="vp-center" style="margin-bottom:24px">People who pay for nothing</h2>
+    <div class="vp-quote"><p>"<span class="months">14</span> months a member. Received nothing every single time. Flawless consistency."</p><div class="who">— DANA, 38</div></div>
+    <div class="vp-quote"><p>"Cancelled four streaming services. Kept Nothing. Best decision of my life."</p><div class="who">— MARCUS, 31</div></div>
+    <div class="vp-quote"><p>"The empty box changed me. I opened it and cried. At nothing."</p><div class="who">— PRIYA, 27</div></div>
+  </section>
+
+  <section class="vp-sec alt vp-center" id="vp-buy">
+    <h2>Choose your nothing</h2>
+    <p class="lead">Every plan delivers the exact same nothing. Pick how much you'd like to pay for it.</p>
+    <div class="vp-price">
+      <div class="vp-tier">
+        <h3>CASUAL</h3>
+        <div class="d">Nothing, monthly. No commitment to nothing.</div>
+        <div class="a">$7<span>/mo</span></div>
+        <ul><li>Nothing, monthly</li><li>Digital delivery</li><li>Cancel anytime</li></ul>
+        <button class="vp-btn sub">Subscribe</button>
+      </div>
+      <div class="vp-tier pop">
+        <div class="tag">MOST POPULAR</div>
+        <h3>DEVOTED</h3>
+        <div class="d">Nothing, yearly. Cheaper per unit of nothing.</div>
+        <div class="a"><s>$84</s>$59<span>/yr</span></div>
+        <ul><li>Nothing, yearly</li><li>Save $25 of nothing</li><li>Priority nothing</li><li>Cancel anytime</li></ul>
+        <button class="vp-btn fill sub">Subscribe</button>
+      </div>
+      <div class="vp-tier">
+        <h3>ETERNAL</h3>
+        <div class="d">Nothing, forever. Until you die. Then nothing.</div>
+        <div class="a">$149<span> once</span></div>
+        <ul><li>Nothing, permanently</li><li>Never pay again (plus postage)</li><li>Founding member status</li></ul>
+        <button class="vp-btn sub">Subscribe</button>
+      </div>
+    </div>
+    <div class="vp-addon" id="vp-addon" role="checkbox" aria-checked="false" tabindex="0">
+      <div class="box" aria-hidden="true"></div>
+      <div>Add <b>Tangible Nothing</b> — receive an actual empty box in the post, monthly. <b>+$3/mo</b> (covers postage, on every plan, forever).</div>
+    </div>
+  </section>
+
+  <section class="vp-sec rv">
+    <div class="vp-guar">
+      <h3>The nothing-back guarantee</h3>
+      <p>If you're not completely satisfied with your nothing, return it within 30 days. We'll send you more nothing. No questions asked — mostly because there's nothing to ask about.</p>
+    </div>
+  </section>
+
+  <section class="vp-sec rv">
+    <div class="vp-email">
+      <h3>Not ready to pay for nothing?</h3>
+      <p>Get nothing in your inbox instead. Free forever.</p>
+      <form class="form" id="vp-mailform" novalidate>
+        <label class="sr" for="vp-mail">Email</label>
+        <input id="vp-mail" type="email" required autocomplete="email" placeholder="you@email.com">
+        <button class="vp-btn fill" type="submit">Send me nothing</button>
+      </form>
+      <div class="ok" id="vp-ok" role="status" aria-live="polite">✓ Subscribed. Nothing is on its way to your inbox.</div>
+    </div>
+  </section>
+
+  <section class="vp-sec vp-faq rv">
+    <h2 style="margin-bottom:16px">Questions</h2>
+    <details open><summary>What do I actually receive?</summary><p>Nothing. If you add Tangible Nothing, an empty box arrives monthly. Otherwise: purely nothing, digitally, with zero environmental cost.</p></details>
+    <details><summary>How do you make money on nothing?</summary><p>That's the beauty — there's nothing to fulfill. No inventory, no stockouts, no shipping (unless you opt into the box). It's the highest-margin product ever conceived.</p></details>
+    <details><summary>When does the offer end?</summary><p>It doesn't. The countdown resets at midnight. We're being honest about that because honesty is the only thing we have in stock.</p></details>
+    <details><summary>How do I cancel?</summary><p>You won't. But there's a button, and it works, and you'll feel a little sad when you use it.</p></details>
+    <details><summary>Is this a scam?</summary><p>Yes. And no. You pay money and receive nothing. It's the most honest product ever made.</p></details>
+  </section>
+
+  <section class="vp-final rv">
+    <h2>Pay for nothing.<br><span class="neon">Feel everything.</span></h2>
+    <p><span class="count">8,204</span> people already have less than you. Join them.</p>
+    <button class="vp-btn fill big sub" data-scroll>Subscribe to nothing →</button>
+    <div class="vp-cd" style="margin-top:18px">OFFER ENDS IN <b class="cd">--:--:--</b><small>(it does not end)</small></div>
+  </section>
+
+  <footer class="vp-foot">
+    NOTHING™ · EST. 2026 · CONTAINS NO CONTENT<br>
+    <a href="mailto:hello@nothing.xyz">hello@nothing.xyz</a> · <a href="#vp-buy">Terms (there are none)</a> · <a href="#vp-buy">Privacy (we collect nothing)</a>
+  </footer>
+</div>
+
+<div class="vp-sticky">
+  <div class="vp-sticky-in">
+    <div class="info"><b>NOTHING™</b> <span>from $7/mo · nothing included</span></div>
+    <button class="vp-btn fill sub" data-scroll>Subscribe →</button>
+  </div>
+</div>
+<div class="vp-toasts" id="vp-toasts" aria-live="polite"></div>
+
+<script>
+(function(){
+  // One source of truth for the fake numbers.
+  var SUBSCRIBERS = 8204;
+  var DANA_MONTHS = 14;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function fmt(n){ return n.toLocaleString('en-US'); }
+  function paintCounts(){
+    document.querySelectorAll('.count').forEach(function(el){ el.textContent = fmt(SUBSCRIBERS); });
+    document.querySelectorAll('.months').forEach(function(el){ el.textContent = DANA_MONTHS; });
+  }
+  paintCounts();
+
+  // Countdown. It resets at midnight. The page says so.
+  function tick(){
+    var now = new Date(), end = new Date(now); end.setHours(24,0,0,0);
+    var d = Math.max(0, Math.floor((end-now)/1000));
+    var s = String(Math.floor(d/3600)).padStart(2,'0')+':'+String(Math.floor(d%3600/60)).padStart(2,'0')+':'+String(d%60).padStart(2,'0');
+    document.querySelectorAll('.vp .cd').forEach(function(el){ el.textContent = s; });
+  }
+  tick(); setInterval(tick, 1000);
+
+  // Reveal on scroll.
+  var els = document.querySelectorAll('.vp .rv');
+  if (!reduce && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); }, { threshold: 0.12 });
+    els.forEach(function(el){ io.observe(el); });
+  } else { els.forEach(function(el){ el.classList.add('in'); }); }
+
+  document.querySelectorAll('[data-scroll]').forEach(function(b){
+    b.addEventListener('click', function(){ document.getElementById('vp-buy').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'start'}); });
+  });
+
+  // Parallax, rAF-throttled, skipped for reduced motion.
+  var grid = document.getElementById('vp-grid'), queued = false;
+  if (grid && !reduce){
+    window.addEventListener('scroll', function(){
+      if (queued) return; queued = true;
+      requestAnimationFrame(function(){ grid.style.transform = 'translateY(' + (window.scrollY * 0.35) + 'px)'; queued = false; });
+    }, { passive: true });
+  }
+
+  var actx;
+  function blip(f){ try {
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    var o = actx.createOscillator(), g = actx.createGain(); o.connect(g); g.connect(actx.destination);
+    o.type = 'triangle'; o.frequency.setValueAtTime(f, actx.currentTime); o.frequency.exponentialRampToValueAtTime(f*2, actx.currentTime+0.09);
+    g.gain.setValueAtTime(0.14, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime+0.2);
+    o.start(); o.stop(actx.currentTime+0.22);
+  } catch(e){} }
+
+  // Toasts: pause on hover, die 3.8s after the last hover.
+  var toastBox = document.getElementById('vp-toasts');
+  function toast(html){
+    var t = document.createElement('div'); t.className = 'vp-toast'; t.innerHTML = html; toastBox.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add('in'); });
+    var timer, hovered = false;
+    function arm(){ clearTimeout(timer); timer = setTimeout(function(){ if (hovered) return; t.classList.remove('in'); setTimeout(function(){ t.remove(); }, 450); }, 3800); }
+    t.addEventListener('mouseenter', function(){ hovered = true; clearTimeout(timer); });
+    t.addEventListener('mouseleave', function(){ hovered = false; arm(); });
+    arm();
+    while (toastBox.children.length > 4) toastBox.firstChild.remove();
+  }
+
+  document.querySelectorAll('.vp .sub').forEach(function(b){
+    b.addEventListener('click', function(){ blip(660); toast('<b>✓</b> You are now subscribed to nothing.'); });
+  });
+
+  // Trailer: a real <video> under a fake play button. Click, Enter, or Space.
+  var wrap = document.getElementById('vp-video'), vid = document.getElementById('vp-vid');
+  function playTrailer(){
+    if (wrap.classList.contains('playing')) return;
+    wrap.classList.add('playing'); wrap.removeAttribute('role'); wrap.removeAttribute('tabindex'); wrap.removeAttribute('aria-label');
+    vid.controls = true; vid.focus();
+    var p = vid.play(); if (p && p.catch) p.catch(function(){});
+    toast('<b>▶</b> Now playing: nothing.');
+  }
+  wrap.addEventListener('click', playTrailer);
+  wrap.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); playTrailer(); } });
+  vid.addEventListener('ended', function(){ toast('<b>■</b> That was it. That was the whole trailer.'); });
+
+  // Tangible Nothing: a real checkbox in spirit.
+  var addon = document.getElementById('vp-addon');
+  function toggleAddon(){
+    var on = addon.classList.toggle('on');
+    addon.setAttribute('aria-checked', on ? 'true' : 'false');
+    addon.querySelector('.box').textContent = on ? '✓' : '';
+    blip(880);
+    toast(on ? '<b>📦</b> Tangible Nothing added. An empty box is coming.' : 'Tangible Nothing removed.');
+  }
+  addon.addEventListener('click', toggleAddon);
+  addon.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleAddon(); } });
+
+  // Email: a real form, so Enter works and nothing is sent anywhere.
+  document.getElementById('vp-mailform').addEventListener('submit', function(e){
+    e.preventDefault();
+    var input = document.getElementById('vp-mail'), v = input.value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(v)){ toast('<b>!</b> That email looks like nothing.'); input.focus(); return; }
+    document.getElementById('vp-ok').style.display = 'block';
+    blip(990);
+  });
+
+  // Social proof feed. The live count goes up when someone "subscribes".
+  var feed = [
+    { t: '<b>●</b> Marcus in Ohio just subscribed', bump: true },
+    { t: '<b>●</b> Someone in the UK just paid for nothing', bump: true },
+    { t: '<b>●</b> Priya added Tangible Nothing' },
+    { t: '<b>●</b> 3 people subscribed in the last hour' },
+    { t: '<b>●</b> Dana has received nothing for ' + DANA_MONTHS + ' months' },
+    { t: '<b>●</b> A person in Tokyo just bought nothing', bump: true }
+  ];
+  var i = 0;
+  function nextFeed(){
+    var f = feed[i % feed.length]; i++;
+    if (f.bump){ SUBSCRIBERS++; paintCounts(); }
+    toast(f.t);
+  }
+  setTimeout(function(){ nextFeed(); setInterval(nextFeed, 5200); }, 2600);
+})();
+</script>
+</body>
+</html>
