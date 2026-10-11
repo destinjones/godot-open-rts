@@ -320,6 +320,32 @@ func _build_interface_tab(rows):
 	var ui_scale = _slider_row(rows, "ui_scale", "Interface scale", 75, 150, 5, "%")
 	ui_scale.tooltip_text = "Applied when you let go of the slider"
 	_check_row(rows, "show_fps", "Show frame rate (FPS) counter")
+	_build_tips_rows(rows)
+
+
+func _build_tips_rows(rows):
+	"""first-time hints: on or off, and how to see the ones already shown again"""
+	_section(rows, tr("OPTIONS_TIPS"))
+	_check_row(rows, "show_tips", tr("OPTIONS_SHOW_TIPS"))
+	var row = _row(rows, "")
+	var seen = row.get_child(0)
+	seen.name = "TipsSeenLabel"
+	seen.add_theme_color_override("font_color", MUTED)
+	var reset = Button.new()
+	reset.name = "ResetTipsButton"
+	reset.text = tr("OPTIONS_RESET_TIPS")
+	reset.focus_mode = Control.FOCUS_NONE
+	row.add_child(reset)
+	var refresh = func():
+		seen.text = tr("OPTIONS_TIPS_SEEN").format([Globals.options.seen_hints.size()])
+		reset.disabled = Globals.options.seen_hints.is_empty()
+	reset.pressed.connect(
+		func():
+			Globals.options.seen_hints = PackedStringArray()
+			_changed()
+			refresh.call()
+	)
+	refresh.call()
 
 
 func _build_camera_tab(rows):
@@ -524,6 +550,7 @@ func _load_values():
 		"mute_when_unfocused",
 		"vsync",
 		"show_fps",
+		"show_tips",
 		"edge_scrolling",
 		"invert_zoom",
 		"mouse_restricted"
