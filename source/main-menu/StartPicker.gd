@@ -245,6 +245,15 @@ func _build_ui():
 	rules.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rules.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
 	column.add_child(rules)
+	if str(match_settings.get("tutorial_script")) != "":  # the guided first match's step 1
+		var tutorial = Label.new()
+		tutorial.name = "TutorialLabel"
+		tutorial.text = tr("TUTORIAL_PICK_CITY")
+		tutorial.custom_minimum_size = Vector2(PANEL_WIDTH - 40, 0)
+		tutorial.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		tutorial.add_theme_font_size_override("font_size", 18)
+		tutorial.add_theme_color_override("font_color", Color("f2a93b"))
+		column.add_child(tutorial)
 	_ui.message = Label.new()
 	_ui.message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_ui.message.add_theme_color_override("font_color", Color(1.0, 0.8, 0.45))
@@ -332,7 +341,8 @@ func _set_message(text):
 
 
 func _on_back():
-	get_tree().change_scene_to_file("res://source/main-menu/Play.tscn")
+	var back = "Main" if str(match_settings.get("tutorial_script")) != "" else "Play"
+	get_tree().change_scene_to_file("res://source/main-menu/%s.tscn" % back)
 
 
 # picking
