@@ -57,6 +57,21 @@ const CONDITIONS = [
 	"army_ordered",
 	"spawned_destroyed",
 ]
+# the manual topic (HelpWindow.TOPICS) a hint's "Read more" button opens
+const HINT_TOPICS = {
+	"HINT_AIRCRAFT_CRASHED": "AIRCRAFT",
+	"HINT_ARMY_ORDERS": "COMMANDS",
+	"HINT_BLACKOUT": "POWER",
+	"HINT_CARGO_DESTROYED": "COMBAT",
+	"HINT_DEPOSIT_DRY": "RESOURCES",
+	"HINT_EXTRACTORS_FULL": "DELIVERY_JOBS",
+	"HINT_NOT_ENOUGH_FOR_CONSTRUCTION": "RESOURCES",
+	"HINT_NOT_ENOUGH_FOR_PRODUCTION": "RESOURCES",
+	"HINT_SITE_NEEDS_CONSTRUCTOR": "CONSTRUCTORS",
+	"HINT_SITE_OUTSIDE_YARD": "STORAGE",
+	"HINT_TIER_REACHED": "CITY_TIERS",
+	"HINT_TRUCK_IDLE": "SUPPLY_LINES",
+}
 
 var player = null
 var help_window = null
@@ -98,6 +113,8 @@ var _more_button = Button.new()
 var _fold_button = Button.new()
 var _hint_panel = PanelContainer.new()
 var _hint_label = Label.new()
+var _hint_more = Button.new()  # "Read more": the manual topic of the hint on screen
+var _hint_topic = ""
 var _surplus_shown = 0
 var _full_extractors_hinted = false
 var _opened_for_step = -1
@@ -233,16 +250,25 @@ func _build_hint():
 	margin.add_child(row)
 	_hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hint_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_hint_label.custom_minimum_size = Vector2(PANEL_WIDTH - 90, 0)
+	_hint_label.custom_minimum_size = Vector2(PANEL_WIDTH - 125, 0)  # room for the buttons
 	_hint_label.add_theme_font_size_override("font_size", 14)
 	row.add_child(_hint_label)
+	var buttons = VBoxContainer.new()
+	buttons.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(buttons)
+	_hint_more.name = "HintMore"
+	_hint_more.text = tr("HINT_MORE")
+	_hint_more.tooltip_text = tr("HINT_MORE_TOOLTIP")
+	_hint_more.focus_mode = Control.FOCUS_NONE
+	_hint_more.pressed.connect(func(): toggle_help(_hint_topic, true))
+	buttons.add_child(_hint_more)
 	var close = Button.new()
 	close.text = tr("HINT_OK")
 	close.tooltip_text = tr("HINT_OK_TOOLTIP")
 	close.focus_mode = Control.FOCUS_NONE
 	close.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	close.pressed.connect(func(): _hint_time_left_s = 0.0)
-	row.add_child(close)
+	buttons.add_child(close)
 	_hint_panel.hide()
 
 
@@ -360,8 +386,11 @@ func _update_hint(delta):
 	_hint_label.text = _hint_queue.pop_front()
 	_hint_time_left_s = HINT_DURATION_S
 	_hint_panel.show()
-	if _hint_label.text in _hint_keys:  # a hook for a hint sound, nothing plays it yet
-		MatchSignals.hint_shown.emit(_hint_keys[_hint_label.text])
+	var key = _hint_keys.get(_hint_label.text, "")
+	_hint_topic = HINT_TOPICS.get(key, "")
+	_hint_more.visible = _hint_topic != ""
+	if key != "":  # a hook for a hint sound, nothing plays it yet
+		MatchSignals.hint_shown.emit(key)
 
 
 func _refresh_tutorial():

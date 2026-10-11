@@ -44,3 +44,11 @@ Options.intro_seen, so it shows once. The Play menu starts a new player on Plain
 (FeatureFlags.remember_first_run, renamed from remember_seen_hints). Why: the old default
 was whichever two-player map sorted first, often a large or asymmetric one, against a
 Normal AI; AoE4 and Northgard both point a new player at a guided match first.
+
+## 2026-10-11: the manual is searchable and hints link into it
+The F1 manual has a search box (Ctrl+F): it keeps the topics whose title or text holds
+every word typed, title matches first, and marks the words. Each hint names its manual
+topic (Guide.HINT_TOPICS) and shows a "Read more" button that opens it; alerts have none.
+The "(F1: ...)" pointers in two hint texts went, the button replaces them. Known gap:
+the camera polls W A S D, so typing in the search box also pans the map; the fix belongs
+to the camera (control layer), passed to the controls thread.
