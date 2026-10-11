@@ -46,6 +46,7 @@ signal road_upgraded(player, extractor, level)
 signal unit_recycled(unit, refund)  # a truck or train taken apart at a depot
 signal route_raided(player, position)  # a truck or train of the player was destroyed
 signal aircraft_crashed(unit)
+signal hint_shown(key)  # a first-time hint (HINT_*) appeared on screen, see Guide.gd
 signal diplomacy_changed(a, b, state)
 signal treaty_signed(proposer, partner, kind, offered, requested)
 # city centres, see source/match/city/CityCentres.gd
