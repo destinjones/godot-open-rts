@@ -18,6 +18,8 @@ extends RefCounted
 #      "done_when": "factory_built",            see Guide.CONDITIONS
 #      "topic": "COMBAT",                       the manual topic "Explain more" opens
 #      "panel": "CityHud",                      (optional) a HUD panel to unfold
+#      "point_at": "own:worker",                (optional) an arrow over a unit: a harness
+#                                               selector, "deposit:<resource>" or "spawned"
 #      "on_start": [{"do": "give", "resources": {"iron": 60}}]}  harness orders
 #   ]
 # }

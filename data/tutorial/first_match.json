@@ -26,12 +26,14 @@
     {
       "id": "SELECT_CONSTRUCTOR",
       "done_when": "constructor_selected",
-      "topic": "CONSTRUCTORS"
+      "topic": "CONSTRUCTORS",
+      "point_at": "own:worker"
     },
     {
       "id": "BUILD_EXTRACTOR",
       "done_when": "extractor_placed",
-      "topic": "CONSTRUCTORS"
+      "topic": "CONSTRUCTORS",
+      "point_at": "deposit:iron"
     },
     {
       "id": "FINISH_EXTRACTOR",
@@ -41,7 +43,8 @@
     {
       "id": "TUTORIAL_HAULER",
       "done_when": "goods_delivered",
-      "topic": "SUPPLY_LINES"
+      "topic": "SUPPLY_LINES",
+      "point_at": "own:hauler"
     },
     {
       "id": "TUTORIAL_FACTORY",
@@ -63,12 +66,14 @@
     {
       "id": "TUTORIAL_UNIT",
       "done_when": "combat_unit_made",
-      "topic": "COMBAT"
+      "topic": "COMBAT",
+      "point_at": "own:vehicle_factory"
     },
     {
       "id": "TUTORIAL_FIGHT",
       "done_when": "spawned_destroyed",
       "topic": "COMMANDS",
+      "point_at": "spawned",
       "on_start": [
         {
           "do": "declare_war",
@@ -81,14 +86,20 @@
           "unit": "scout_buggy",
           "spot": "base",
           "offset": [
-            20,
-            -20
+            16,
+            12
           ],
           "count": 2
         },
         {
           "do": "camera",
-          "follow": "own:command_center"
+          "spot": {
+            "of": "base",
+            "offset": [
+              8,
+              6
+            ]
+          }
         }
       ]
     }

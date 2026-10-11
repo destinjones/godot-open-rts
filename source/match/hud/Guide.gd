@@ -68,13 +68,14 @@ var script_name = ""  # the match's tutorial script, "" for the standard one
 var steps = []  # the script's steps: {id, done_when, topic, panel, on_start}
 
 var _script = {}
-var _harness = null  # runs a step's on_start orders, made when one needs it
+var _harness = null  # runs a step's on_start orders and finds what it points at
 var _step = 0
 var _delivered = false
 var _traded = false
 var _army = false
 var _commanded = false  # the player used a line, patrol or another army order
 var _spawned = []  # what the current step's on_start orders put on the map
+var _pointer = Label.new()  # bobs over what the current step's "point_at" names
 var _hints_shown = {}
 var _hint_queue = []
 var _hint_time_left_s = 0.0
@@ -113,6 +114,7 @@ func _ready():
 	_build_tutorial()
 	_tutorial.visible = tutorial_on
 	_build_hint()
+	_build_pointer()
 	if ai_assist_on:  # no panel, no H key
 		helper_panel = HelperPanel.new()
 		add_child(helper_panel)
@@ -252,6 +254,7 @@ func _process(delta):
 		_check_city_cap()  # a limit alert, shown under Raw rules too
 		_check_logistics()
 	_update_hint(delta)
+	_update_pointer()
 	_layout()
 
 
@@ -344,6 +347,7 @@ func _refresh_tutorial():
 		return
 	while _step < steps.size() and _opened_for_step == _step and _step_done(steps[_step]):
 		_step += 1
+		_flash_done()
 	if _step < steps.size() and _opened_for_step != _step:
 		_opened_for_step = _step
 		_start_step(steps[_step])
@@ -364,7 +368,7 @@ func _refresh_tutorial():
 		var skip_all = _tutorial_details.get_node_or_null("SkipTutorialButton")
 		if skip_all != null:
 			skip_all.hide()
-		if not _folded_when_done:
+		if not _folded_when_done and script_name == "":  # a scripted one ends on its text
 			# fold it once so it stops covering the middle of the screen; Show brings it back
 			_folded_when_done = true
 			_tutorial_details.visible = false
@@ -378,13 +382,67 @@ func _refresh_tutorial():
 	_tutorial_body.text = tr("GUIDE_STEP_{0}".format([key]))
 
 
+func _build_pointer():
+	_pointer.name = "TutorialPointer"
+	_pointer.text = "▼"
+	_pointer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pointer.add_theme_font_size_override("font_size", 34)
+	_pointer.add_theme_color_override("font_color", HudStyle.ACCENT)
+	_pointer.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	_pointer.add_theme_constant_override("outline_size", 8)
+	_pointer.hide()
+	add_child(_pointer)
+
+
+func _update_pointer():
+	"""a bobbing arrow over the thing the step is about, while the tutorial is open"""
+	var target = _pointer_target()
+	var camera = get_viewport().get_camera_3d()
+	if target == null or camera == null or not _tutorial.visible or not _tutorial_details.visible:
+		_pointer.hide()
+		return
+	var point = target.global_position + Vector3.UP * 1.2
+	var screen_point = camera.unproject_position(point)
+	if camera.is_position_behind(point) or _tutorial.get_global_rect().has_point(screen_point):
+		_pointer.hide()
+		return
+	var bob = sin(Time.get_ticks_msec() / 180.0) * 6.0
+	_pointer.reset_size()
+	_pointer.position = screen_point - Vector2(_pointer.size.x / 2.0, _pointer.size.y - bob)
+	_pointer.show()
+
+
+func _pointer_target():
+	""""point_at": a harness selector ("own:worker"), "deposit:<resource>" or "spawned" """
+	if _step >= steps.size() or player == null or _harness == null:
+		return null
+	var selector = str(steps[_step].get("point_at", ""))
+	if selector == "":
+		return null
+	if selector == "spawned":
+		var alive = _spawned.filter(func(unit): return is_instance_valid(unit))
+		return alive[0] if not alive.is_empty() else null
+	if selector.begins_with("deposit:"):
+		var base = _harness.ground("base")
+		return _harness.free_deposit(selector.trim_prefix("deposit:"), base)
+	var units = _harness.find_units(selector)
+	return units[0] if not units.is_empty() else null
+
+
+func _flash_done():
+	"""the panel glows green for a moment when a step is ticked off"""
+	var tween = create_tween()
+	_tutorial.self_modulate = Color(0.75, 1.35, 0.75)
+	tween.tween_property(_tutorial, "self_modulate", Color.WHITE, 0.9)
+
+
 func _start_step(step):
 	"""once, when a step starts: unfolds the panel it talks about, runs its orders"""
 	step_started.emit(steps.find(step), step.get("id", ""))
 	_open_panel_for(step)
 	_spawned = []
 	var orders = step.get("on_start", [])
-	if orders.is_empty():
+	if orders.is_empty() and not step.has("point_at"):
 		return
 	if _harness == null:
 		_harness = HarnessApi.new()
