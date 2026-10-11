@@ -9,13 +9,13 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="NOTHING™ — Subscribe to nothing">
 <meta property="og:description" content="The world's first premium subscription that delivers absolutely nothing.">
-<meta property="og:image" content="https://subscribe-to-nothing.pages.dev/og.jpg">
+<meta property="og:image" content="https://subscribe-to-nothing-zr7.pages.dev/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="NOTHING™ — Subscribe to nothing">
 <meta name="twitter:description" content="The world's first premium subscription that delivers absolutely nothing.">
-<meta name="twitter:image" content="https://subscribe-to-nothing.pages.dev/og.jpg">
+<meta name="twitter:image" content="https://subscribe-to-nothing-zr7.pages.dev/og.jpg">
 <link rel="icon" href="favicon.png" type="image/png">
 <noscript><style>.vp .rv{opacity:1;transform:none}</style></noscript>
 <style>
@@ -167,6 +167,62 @@ body { overflow-x: hidden; padding-bottom: 86px; }
 .vp .rv { opacity: 0; transform: translateY(26px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.8,.2,1); }
 .vp .rv.in { opacity: 1; transform: none; }
 
+/* Screen-by-screen layout: every section fills one viewport (minus the sticky bar) on desktop and phone. */
+:root { --bar: 70px; --wide: 1040px; --gut: max(20px, calc((100% - var(--wide)) / 2)); }
+html { scroll-snap-type: y proximity; scroll-padding-bottom: var(--bar); }
+.vp { max-width: none; }
+.vp-screen, .vp-sec, .vp-final { min-height: calc(100vh - var(--bar)); min-height: calc(100svh - var(--bar)); scroll-snap-align: start; }
+.vp-screen { display: flex; flex-direction: column; }
+.vp-screen .vp-hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.vp-nav { padding-left: var(--gut); padding-right: var(--gut); }
+.vp-seen { padding-bottom: 18px; }
+.vp-sec { display: flex; flex-direction: column; justify-content: center; padding: 56px var(--gut); }
+.vp-sec > * { width: 100%; }
+.vp-final { display: flex; flex-direction: column; padding: 0; }
+.vp-final-in { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 56px 24px; }
+.vp-hero > .vp-grid { position: absolute; z-index: 0; }
+.vp-hero h1 { font-size: clamp(40px, min(7.2vw, 9.5vh), 96px); max-width: 900px; }
+.vp-hero .sub { font-size: clamp(15.5px, 1.5vw, 19px); max-width: 600px; }
+.vp-sec h2, .vp-final h2 { font-size: clamp(31px, 4.6vw, 56px); }
+.vp-sec .lead, .vp-final p { font-size: clamp(15px, 1.4vw, 18px); max-width: 620px; }
+.vp-list { max-width: 560px; }
+.vp-list li { font-size: clamp(15px, 1.4vw, 18px); }
+.vp-card { padding: clamp(20px, 2.4vw, 30px); }
+.vp-card h3, .vp-step h3 { font-size: clamp(15px, 1.4vw, 18px); }
+.vp-card p, .vp-step p { font-size: clamp(13.5px, 1.2vw, 15.5px); }
+.vp-step .n { font-size: clamp(30px, 3.4vw, 44px); }
+.vp-video { width: 100%; max-width: min(100%, calc((100svh - var(--bar) - 220px) * 16 / 9)); margin-left: auto; margin-right: auto; }
+.vp-box img { max-height: calc(100svh - var(--bar) - 220px); object-fit: cover; }
+.vp-quotes { display: grid; gap: 14px; }
+@media (min-width: 900px) { .vp-quotes { grid-template-columns: repeat(3, 1fr); } .vp-quote { margin: 0; } .vp-quote p { font-size: 16px; } }
+.vp-pair { display: grid; gap: 18px; }
+@media (min-width: 860px) { .vp-pair { grid-template-columns: 1fr 1fr; align-items: stretch; } .vp-pair > * { display: flex; flex-direction: column; justify-content: center; } }
+.vp-faq > * { max-width: 760px; margin-left: auto; margin-right: auto; }
+.vp-faq summary { font-size: clamp(14.5px, 1.4vw, 17px); }
+.vp-faq p { font-size: clamp(13.5px, 1.2vw, 15.5px); }
+.vp-sticky-in { max-width: calc(var(--wide) + 40px); }
+@media (max-width: 600px) { .vp-sec { padding-top: 44px; padding-bottom: 44px; } .vp-tier.pop { transform: none; } }
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color: #e7dcff; }
+.vp-sticky .vp-btn { white-space: nowrap; }
+@media (max-width: 600px) {
+  :root { --bar: 64px; }
+  .vp-sticky-in { padding: 10px 16px; }
+  .vp-sticky .info span { display: none; }
+  .vp-hero { padding: 28px 20px 36px; }
+  .vp-hero .sub { margin-bottom: 20px; }
+  .vp-cd { margin-top: 14px; }
+  .vp-trust { margin-top: 12px; gap: 6px 14px; }
+  /* Pricing becomes a swipeable row so it still fits one screen. */
+  .vp-price { width: auto; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; margin: 22px calc(-1 * var(--gut)) 0; padding: 16px var(--gut) 6px; scrollbar-width: none; }
+  .vp-price::-webkit-scrollbar { display: none; }
+  .vp-tier { flex: 0 0 80%; scroll-snap-align: center; }
+  .vp-tier .d { min-height: 0; }
+  .vp-swipe { display: block !important; }
+}
+.vp-tier .tag { white-space: nowrap; }
+.vp-swipe { display: none; text-align: center; font-size: 12px; letter-spacing: .12em; color: #9a8cc4; margin-top: 8px; }
+/* A section taller than the screen (pricing on a phone) just scrolls; proximity snapping never traps it. */
+
 @media (prefers-reduced-motion: reduce) {
   .vp *, .vp *::before, .vp *::after, .vp-scan, .vp-sticky *, .vp-toast { animation: none !important; transition: none !important; }
   .vp .rv { opacity: 1; transform: none; }
@@ -177,6 +233,7 @@ body { overflow-x: hidden; padding-bottom: 86px; }
 <body>
 <div class="vp-scan" aria-hidden="true"></div>
 <div class="vp">
+  <div class="vp-screen">
   <div class="vp-tick" aria-hidden="true"><div class="t">
     <span>NOW SHIPPING · CONTAINS NOTHING</span><span><span class="count">8,204</span> PEOPLE PAY FOR THIS</span><span>CANCEL ANYTIME (YOU WON'T)</span><span>100% NOTHING GUARANTEED</span>
     <span>NOW SHIPPING · CONTAINS NOTHING</span><span><span class="count">8,204</span> PEOPLE PAY FOR THIS</span><span>CANCEL ANYTIME (YOU WON'T)</span><span>100% NOTHING GUARANTEED</span>
@@ -202,6 +259,7 @@ body { overflow-x: hidden; padding-bottom: 86px; }
   </header>
 
   <div class="vp-seen">AS SEEN IN · <b>THE VERGE</b> · <b>WIRED</b> · <b>PRODUCT HUNT</b> · <b>THE ONION</b></div>
+  </div>
 
   <section class="vp-sec vp-center rv">
     <h2>Everyone's selling you <span class="cyan">content.</span></h2>
@@ -265,9 +323,11 @@ body { overflow-x: hidden; padding-bottom: 86px; }
 
   <section class="vp-sec rv">
     <h2 class="vp-center" style="margin-bottom:24px">People who pay for nothing</h2>
+    <div class="vp-quotes">
     <div class="vp-quote"><p>"<span class="months">14</span> months a member. Received nothing every single time. Flawless consistency."</p><div class="who">— DANA, 38</div></div>
     <div class="vp-quote"><p>"Cancelled four streaming services. Kept Nothing. Best decision of my life."</p><div class="who">— MARCUS, 31</div></div>
     <div class="vp-quote"><p>"The empty box changed me. I opened it and cried. At nothing."</p><div class="who">— PRIYA, 27</div></div>
+    </div>
   </section>
 
   <section class="vp-sec alt vp-center" id="vp-buy">
@@ -297,6 +357,7 @@ body { overflow-x: hidden; padding-bottom: 86px; }
         <button class="vp-btn sub">Subscribe</button>
       </div>
     </div>
+    <div class="vp-swipe" aria-hidden="true">← SWIPE FOR MORE NOTHING →</div>
     <div class="vp-addon" id="vp-addon" role="checkbox" aria-checked="false" tabindex="0">
       <div class="box" aria-hidden="true"></div>
       <div>Add <b>Tangible Nothing</b> — receive an actual empty box in the post, monthly. <b>+$3/mo</b> (covers postage, on every plan, forever).</div>
@@ -304,13 +365,11 @@ body { overflow-x: hidden; padding-bottom: 86px; }
   </section>
 
   <section class="vp-sec rv">
+    <div class="vp-pair">
     <div class="vp-guar">
       <h3>The nothing-back guarantee</h3>
       <p>If you're not completely satisfied with your nothing, return it within 30 days. We'll send you more nothing. No questions asked — mostly because there's nothing to ask about.</p>
     </div>
-  </section>
-
-  <section class="vp-sec rv">
     <div class="vp-email">
       <h3>Not ready to pay for nothing?</h3>
       <p>Get nothing in your inbox instead. Free forever.</p>
@@ -320,6 +379,7 @@ body { overflow-x: hidden; padding-bottom: 86px; }
         <button class="vp-btn fill" type="submit">Send me nothing</button>
       </form>
       <div class="ok" id="vp-ok" role="status" aria-live="polite">✓ Subscribed. Nothing is on its way to your inbox.</div>
+    </div>
     </div>
   </section>
 
@@ -333,16 +393,17 @@ body { overflow-x: hidden; padding-bottom: 86px; }
   </section>
 
   <section class="vp-final rv">
+    <div class="vp-final-in">
     <h2>Pay for nothing.<br><span class="neon">Feel everything.</span></h2>
     <p><span class="count">8,204</span> people already have less than you. Join them.</p>
     <button class="vp-btn fill big sub" data-scroll>Subscribe to nothing →</button>
     <div class="vp-cd" style="margin-top:18px">OFFER ENDS IN <b class="cd">--:--:--</b><small>(it does not end)</small></div>
-  </section>
-
+    </div>
   <footer class="vp-foot">
     NOTHING™ · EST. 2026 · CONTAINS NO CONTENT<br>
     <a href="mailto:hello@nothing.xyz">hello@nothing.xyz</a> · <a href="#vp-buy">Terms (there are none)</a> · <a href="#vp-buy">Privacy (we collect nothing)</a>
   </footer>
+  </section>
 </div>
 
 <div class="vp-sticky">
@@ -434,6 +495,10 @@ body { overflow-x: hidden; padding-bottom: 86px; }
   wrap.addEventListener('click', playTrailer);
   wrap.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); playTrailer(); } });
   vid.addEventListener('ended', function(){ toast('<b>■</b> That was it. That was the whole trailer.'); });
+
+  // On a phone the plans swipe sideways; start on the popular one.
+  var price = document.querySelector('.vp-price'), pop = document.querySelector('.vp-tier.pop');
+  if (price && pop && price.scrollWidth > price.clientWidth){ price.scrollLeft = pop.offsetLeft - (price.clientWidth - pop.offsetWidth) / 2; }
 
   // Tangible Nothing: a real checkbox in spirit.
   var addon = document.getElementById('vp-addon');
