@@ -1,0 +1,15 @@
+{
+  "description": "The tutorial every Guided match shows: the first goals, one at a time, at the top left. Text: GUIDE_STEP_<id>_TITLE and GUIDE_STEP_<id> in assets/translations/guide.csv.",
+  "steps": [
+    {"id": "SELECT_CONSTRUCTOR", "done_when": "constructor_selected", "topic": "CONSTRUCTORS"},
+    {"id": "BUILD_EXTRACTOR", "done_when": "extractor_placed", "topic": "CONSTRUCTORS"},
+    {"id": "FINISH_EXTRACTOR", "done_when": "extractor_built", "topic": "CONSTRUCTORS"},
+    {"id": "DELIVERY", "done_when": "goods_delivered", "topic": "SUPPLY_LINES"},
+    {"id": "POWER", "done_when": "power_plant_built", "topic": "POWER"},
+    {"id": "AUTO_EXPAND", "done_when": "auto_expand_on", "topic": "AUTO_EXPAND", "panel": "AutoExpandPanel"},
+    {"id": "TIER", "done_when": "tier_2", "topic": "CITY_TIERS"},
+    {"id": "TRADE", "done_when": "traded", "topic": "TRADE", "panel": "CityHud"},
+    {"id": "ARMY", "done_when": "combat_unit_made", "topic": "COMBAT"},
+    {"id": "COMMANDS", "done_when": "army_ordered", "topic": "COMMANDS"}
+  ]
+}
