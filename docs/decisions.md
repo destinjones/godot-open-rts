@@ -52,3 +52,14 @@ topic (Guide.HINT_TOPICS) and shows a "Read more" button that opens it; alerts h
 The "(F1: ...)" pointers in two hint texts went, the button replaces them. Known gap:
 the camera polls W A S D, so typing in the search box also pans the map; the fix belongs
 to the camera (control layer), passed to the controls thread.
+
+## 2026-10-11: the tank is the first unit on the textured pipeline
+The Foundry tank was remade from a GPT Image 2.5 concept through Tripo H3.1 and
+tools/blender/clean_generated.py (Destin picked "modern light MBT", concept B). It keeps
+one 1024 px base colour plus one normal map, team colour on upward faces only, and a
+separate Turret node for TurretAim. It is decimated to 3,600 triangles, the old tank's
+count, because 4,762 cost about 15% more frame time in UnitModelBench (llvmpipe) for no
+visible gain at play zoom. Why: the art direction makes the tank the reference every other
+unit is matched against, so it goes first. Known cost: still slower than the old
+vertex-coloured tank on a software renderer (64 vs 50 ms for 30 copies); a real-GPU bench
+is owed.
