@@ -13,3 +13,7 @@ extends Node
 @export_group("Match/Debug")
 @export var frame_incrementer = false
 @export var god_mode = false
+
+# first-time hints are remembered in the options only in a real game, one started from its
+# main scene (source/Main.gd sets this), so tests and the play harness never use them up
+var remember_seen_hints = false

@@ -31,11 +31,13 @@ const HudStyle = preload("res://source/match/hud/HudStyle.gd")
 const GameData = preload("res://source/data-model/GameData.gd")
 const TutorialScript = preload("res://source/data-model/TutorialScript.gd")
 const HarnessApi = preload("res://tools/harness/HarnessApi.gd")
+const Fleet = preload("res://source/match/economy/Fleet.gd")
 
 const SETTINGS_PATH = "user://guide.cfg"
 const REFRESH_INTERVAL_S = 0.5
 const HINT_DURATION_S = 12.0
 const CAP_ALERT_INTERVAL_S = 20.0
+const TRUCK_IDLE_HINT_S = 60.0  # a truck with nothing to carry this long gets a hint
 const PANEL_WIDTH = 300  # the width of the left column (HelperPanel, AutoExpandPanel)
 const DONE_COLOR = Color("#8fbf5a")
 const GAP = 6.0
@@ -78,6 +80,9 @@ var _spawned = []  # what the current step's on_start orders put on the map
 var _pointer = Label.new()  # bobs over what the current step's "point_at" names
 var _hints_shown = {}
 var _hint_queue = []
+var _hint_keys = {}  # hint text -> its HINT_* key, for MatchSignals.hint_shown
+var _idle_since_s = {}  # truck instance id -> game time when it last had nothing to carry
+var _game_time_s = 0.0  # game seconds this HUD has run (slowed, sped up and paused with it)
 var _hint_time_left_s = 0.0
 var _since_refresh_s = REFRESH_INTERVAL_S
 var _last_cap_alert_ms = -100000
@@ -246,6 +251,7 @@ func _unhandled_key_input(event):
 
 
 func _process(delta):
+	_game_time_s += delta
 	_since_refresh_s += delta
 	if _since_refresh_s >= REFRESH_INTERVAL_S:
 		_since_refresh_s = 0.0
@@ -315,11 +321,23 @@ func toggle_help(topic = null, force_show = false):
 
 
 func show_hint(key, args = []):
-	"""shows a hint once per match, unless the match's rules have tips off"""
-	if key in _hints_shown or not tutorial_on:
+	"""shows a hint the first time it comes up: once per match, and in a real game never
+	again once seen (Globals.options.seen_hints; Options > Interface brings them back).
+	Nothing shows when the match's rules or the options have tips off."""
+	if key in _hints_shown or not tutorial_on or not Globals.options.show_tips:
+		return
+	var remember = FeatureFlags.remember_seen_hints
+	if remember and key in Globals.options.seen_hints:
 		return
 	_hints_shown[key] = true
-	_hint_queue.append(tr(key).format(args))
+	if remember:
+		var seen = Globals.options.seen_hints
+		seen.append(key)
+		Globals.options.seen_hints = seen
+		Globals.options.save()
+	var text = tr(key).format(args)
+	_hint_keys[text] = key
+	_hint_queue.append(text)
 
 
 func show_alert(text):
@@ -340,6 +358,8 @@ func _update_hint(delta):
 	_hint_label.text = _hint_queue.pop_front()
 	_hint_time_left_s = HINT_DURATION_S
 	_hint_panel.show()
+	if _hint_label.text in _hint_keys:  # a hook for a hint sound, nothing plays it yet
+		MatchSignals.hint_shown.emit(_hint_keys[_hint_label.text])
 
 
 func _refresh_tutorial():
@@ -687,7 +707,8 @@ func _on_aircraft_crashed(unit):
 
 
 func _check_logistics():
-	"""alerts for a fleet that is too big, and a hint the first time extractors stall"""
+	"""alerts for a fleet that is too big; hints the first time extractors stall, a
+	deposit runs dry or a truck has nothing to carry"""
 	if player == null or not is_instance_valid(player) or player.logistics == null:
 		return
 	var surplus = player.logistics.fleet.surplus_trucks
@@ -701,6 +722,31 @@ func _check_logistics():
 		if full.size() >= 2:
 			_full_extractors_hinted = true
 			show_hint("HINT_EXTRACTORS_FULL")
+	if not "HINT_DEPOSIT_DRY" in _hints_shown:
+		for extractor in player.logistics.get_extractors():
+			if extractor.is_constructed() and extractor.is_depleted():
+				show_hint("HINT_DEPOSIT_DRY")
+				break
+	if not "HINT_TRUCK_IDLE" in _hints_shown:
+		_check_idle_trucks()
+
+
+func _check_idle_trucks():
+	var now = _game_time_s
+	var seen = {}
+	for hauler in player.logistics.get_haulers():
+		var id = hauler.get_instance_id()
+		if not Fleet.is_free(hauler):
+			continue
+		seen[id] = true
+		var since = _idle_since_s.get(id, now)
+		_idle_since_s[id] = since
+		if now - since >= TRUCK_IDLE_HINT_S:
+			show_hint("HINT_TRUCK_IDLE")
+			return
+	for id in _idle_since_s.keys():
+		if not id in seen:
+			_idle_since_s.erase(id)
 
 
 func _on_route_raided(a_player, _position):

@@ -101,3 +101,7 @@ LOAD_FAILED,This save cannot be loaded (its map is missing or it is from a newer
 TUTORIAL_BUTTON,Tutorial,Samouczek
 TUTORIAL_BUTTON_TOOLTIP,A guided first match: one loop of the game in a few minutes,Pierwszy mecz z przewodnikiem: jedna pętla gry w kilka minut
 TUTORIAL_PICK_CITY,"Tutorial, step 1: click inside a start zone to place your city, then press Start.","Samouczek, krok 1: kliknij w strefie startowej, aby postawić miasto, potem naciśnij Start."
+OPTIONS_TIPS,Tips,Porady
+OPTIONS_SHOW_TIPS,Show first-time tips in matches,Pokazuj porady przy pierwszej okazji
+OPTIONS_RESET_TIPS,Show all tips again,Pokaż wszystkie porady ponownie
+OPTIONS_TIPS_SEEN,"Each tip shows once, the first time it is useful. Seen so far: {0}.","Każda porada pojawia się raz, gdy jest przydatna. Widziane: {0}."

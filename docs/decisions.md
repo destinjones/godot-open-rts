@@ -18,3 +18,11 @@ tools/harness/scenarios/tutorial-first-match.json. Why: Destin asked for data, n
 hard-coded cutscenes, and reusing the harness keeps one order format. Known gap: a save
 made mid-tutorial resumes with the standard steps, because carrying the script name would
 change the save format, which needs asking first.
+
+## 2026-10-11: first-time hints are remembered in the options
+A hint (HINT_*) now shows once ever, not once per match. The keys it has shown are kept
+in Options (`seen_hints`, saved in options.tres), with a "Show first-time tips" switch and
+a "Show all tips again" button on Options > Interface. Only a real game, one started from
+source/Main.gd, writes them (FeatureFlags.remember_seen_hints), so tests and the play
+harness never use up a player's hints. Alerts (unit cap, city full, raids) are not hints
+and still repeat. Why: hints that come back every match read as nagging.
