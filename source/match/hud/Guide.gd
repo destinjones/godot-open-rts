@@ -81,7 +81,8 @@ var _pointer = Label.new()  # bobs over what the current step's "point_at" names
 var _hints_shown = {}
 var _hint_queue = []
 var _hint_keys = {}  # hint text -> its HINT_* key, for MatchSignals.hint_shown
-var _idle_since_ms = {}  # truck instance id -> when it last had nothing to carry
+var _idle_since_s = {}  # truck instance id -> game time when it last had nothing to carry
+var _game_time_s = 0.0  # game seconds this HUD has run (slowed, sped up and paused with it)
 var _hint_time_left_s = 0.0
 var _since_refresh_s = REFRESH_INTERVAL_S
 var _last_cap_alert_ms = -100000
@@ -250,6 +251,7 @@ func _unhandled_key_input(event):
 
 
 func _process(delta):
+	_game_time_s += delta
 	_since_refresh_s += delta
 	if _since_refresh_s >= REFRESH_INTERVAL_S:
 		_since_refresh_s = 0.0
@@ -730,21 +732,21 @@ func _check_logistics():
 
 
 func _check_idle_trucks():
-	var now = Time.get_ticks_msec()
+	var now = _game_time_s
 	var seen = {}
 	for hauler in player.logistics.get_haulers():
 		var id = hauler.get_instance_id()
 		if not Fleet.is_free(hauler):
 			continue
 		seen[id] = true
-		var since = _idle_since_ms.get(id, now)
-		_idle_since_ms[id] = since
-		if now - since >= TRUCK_IDLE_HINT_S * 1000.0:
+		var since = _idle_since_s.get(id, now)
+		_idle_since_s[id] = since
+		if now - since >= TRUCK_IDLE_HINT_S:
 			show_hint("HINT_TRUCK_IDLE")
 			return
-	for id in _idle_since_ms.keys():
+	for id in _idle_since_s.keys():
 		if not id in seen:
-			_idle_since_ms.erase(id)
+			_idle_since_s.erase(id)
 
 
 func _on_route_raided(a_player, _position):

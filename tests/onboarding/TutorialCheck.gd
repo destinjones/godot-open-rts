@@ -53,8 +53,7 @@ func _check_scripts():
 				_expect(tr(key) != key, "%s: %s is translated" % [script_name, key])
 		if script.has("map"):
 			_expect(
-				TutorialScript.map_path_of(script) != null,
-				"%s plays on a known map" % script_name
+				TutorialScript.map_path_of(script) != null, "%s plays on a known map" % script_name
 			)
 		for key in [script.get("done_title", ""), script.get("done_text", "")]:
 			if key != "":
@@ -108,8 +107,10 @@ func _check_match(picker):
 	var guide = a_match.find_child("Guide", true, false)
 	_expect(guide.script_name == TutorialScript.FIRST_MATCH, "the Guide plays first_match")
 	_expect(
-		guide.steps.map(func(step): return step["id"])
-		== TutorialScript.steps_of("first_match").map(func(step): return step["id"]),
+		(
+			guide.steps.map(func(step): return step["id"])
+			== TutorialScript.steps_of("first_match").map(func(step): return step["id"])
+		),
 		"the Guide has the script's steps"
 	)
 	_expect(guide._step >= 1, "placing the city counts as done")

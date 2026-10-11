@@ -75,9 +75,9 @@ func _check_idle_truck(guide):
 	var player = guide.player
 	var haulers = player.logistics.get_haulers()
 	_expect(not haulers.is_empty(), "the player has trucks")
-	var long_ago = Time.get_ticks_msec() - int(guide.TRUCK_IDLE_HINT_S * 1000.0) - 1
+	var long_ago = guide.get("_game_time_s") - guide.TRUCK_IDLE_HINT_S - 1.0
 	for hauler in haulers:
-		guide.get("_idle_since_ms")[hauler.get_instance_id()] = long_ago
+		guide.get("_idle_since_s")[hauler.get_instance_id()] = long_ago
 	guide.call("_check_logistics")
 	_expect(
 		"HINT_TRUCK_IDLE" in guide.get("_hints_shown"),
