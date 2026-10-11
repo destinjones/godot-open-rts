@@ -150,6 +150,13 @@ func state(with_units = true):
 		func(unit): return unit.get_instance_id()
 	)
 	data["threats"] = threats()
+	var guide = match_node.find_child("Guide", true, false) if match_node != null else null
+	if guide != null and "steps" in guide:  # where the tutorial is: step index and its id
+		data["tutorial"] = {
+			"step": guide._step,
+			"steps": guide.steps.size(),
+			"id": guide.steps[guide._step].get("id", "") if guide._step < guide.steps.size() else "",
+		}
 	if recorder != null:
 		data["recent_events"] = recorder.timeline.slice(-10)
 	return data

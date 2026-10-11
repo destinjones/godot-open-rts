@@ -1,0 +1,109 @@
+{
+  "description": "The guided first match on the main menu: one loop of the game in a few minutes on a small map against a rival that keeps to itself. Place the city, dig, haul, build a factory, make a unit, win a fight. The orders in setup and on_start use the play harness's format (docs/testing/play-harness.md).",
+  "map": "plain_and_simple",
+  "players": [
+    {
+      "type": "human"
+    },
+    {
+      "type": "ai",
+      "personality": "balanced",
+      "difficulty": "very_easy"
+    }
+  ],
+  "rules": {
+    "tutorial": true,
+    "ai_assist": false,
+    "auto_build": false
+  },
+  "start_pick_seconds": 600,
+  "steps": [
+    {
+      "id": "TUTORIAL_PLACE_CITY",
+      "done_when": "always",
+      "topic": "BASICS"
+    },
+    {
+      "id": "SELECT_CONSTRUCTOR",
+      "done_when": "constructor_selected",
+      "topic": "CONSTRUCTORS",
+      "point_at": "own:worker"
+    },
+    {
+      "id": "BUILD_EXTRACTOR",
+      "done_when": "extractor_placed",
+      "topic": "CONSTRUCTORS",
+      "point_at": "deposit:iron"
+    },
+    {
+      "id": "FINISH_EXTRACTOR",
+      "done_when": "extractor_built",
+      "topic": "CONSTRUCTORS"
+    },
+    {
+      "id": "TUTORIAL_HAULER",
+      "done_when": "goods_delivered",
+      "topic": "SUPPLY_LINES",
+      "point_at": "own:hauler"
+    },
+    {
+      "id": "TUTORIAL_FACTORY",
+      "done_when": "factory_built",
+      "topic": "COMBAT",
+      "on_start": [
+        {
+          "do": "give",
+          "player": "own",
+          "resources": {
+            "timber": 20,
+            "iron": 30,
+            "copper": 6,
+            "oil": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "TUTORIAL_UNIT",
+      "done_when": "combat_unit_made",
+      "topic": "COMBAT",
+      "point_at": "own:vehicle_factory"
+    },
+    {
+      "id": "TUTORIAL_FIGHT",
+      "done_when": "spawned_destroyed",
+      "topic": "COMMANDS",
+      "point_at": "spawned",
+      "on_start": [
+        {
+          "do": "declare_war",
+          "player": "p1",
+          "on": "own"
+        },
+        {
+          "do": "spawn",
+          "player": "p1",
+          "unit": "scout_buggy",
+          "spot": "base",
+          "offset": [
+            16,
+            12
+          ],
+          "count": 2
+        },
+        {
+          "do": "camera",
+          "spot": {
+            "of": "base",
+            "offset": [
+              8,
+              6
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "done_title": "TUTORIAL_DONE_TITLE",
+  "done_text": "TUTORIAL_DONE"
+}
