@@ -98,3 +98,21 @@ DELETE,Delete,Usuń
 NO_SAVES,"No saves yet: press Esc in a match and pick Save game, or press F5","Brak zapisów: naciśnij Esc w meczu i wybierz Zapisz grę albo naciśnij F5"
 SAVE_FAILED,Could not write the save,Nie udało się zapisać gry
 LOAD_FAILED,This save cannot be loaded (its map is missing or it is from a newer version),"Nie można wczytać tego zapisu (brak mapy lub zapis z nowszej wersji)"
+TUTORIAL_BUTTON,Tutorial,Samouczek
+TUTORIAL_BUTTON_TOOLTIP,A guided first match: one loop of the game in a few minutes,Pierwszy mecz z przewodnikiem: jedna pętla gry w kilka minut
+TUTORIAL_PICK_CITY,"Tutorial, step 1: click inside a start zone to place your city, then press Start.","Samouczek, krok 1: kliknij w strefie startowej, aby postawić miasto, potem naciśnij Start."
+OPTIONS_TIPS,Tips,Porady
+OPTIONS_SHOW_TIPS,Show first-time tips in matches,Pokazuj porady przy pierwszej okazji
+OPTIONS_RESET_TIPS,Show all tips again,Pokaż wszystkie porady ponownie
+OPTIONS_TIPS_SEEN,"Each tip shows once, the first time it is useful. Seen so far: {0}.","Każda porada pojawia się raz, gdy jest przydatna. Widziane: {0}."
+INTRO_TITLE,What is Ironbound?,Czym jest Ironbound?
+INTRO_BODY,A real-time strategy game about supply lines. You place a city and it builds itself; you keep it fed and keep it safe.,"Strategia czasu rzeczywistego o liniach zaopatrzenia. Stawiasz miasto, a ono buduje się samo; ty je karmisz i bronisz."
+INTRO_LINE_CITY,"Constructors build extractors on deposits of timber, iron, copper and oil.","Konstruktorzy stawiają wydobywalnie na złożach drewna, żelaza, miedzi i ropy."
+INTRO_LINE_SUPPLY,"Haulers drive the goods home along supply lines. Guard yours, cut your rival's.","Ciężarówki wiozą towary do domu liniami zaopatrzenia. Pilnuj swoich, przecinaj linie rywala."
+INTRO_LINE_ARMY,Goods that reach the city grow it; factories turn them into an army.,"Towary, które dotrą do miasta, rozbudowują je; fabryki zamieniają je w armię."
+INTRO_LINE_WIN,"Destroy every rival, or have the best score when the clock runs out.","Zniszcz wszystkich rywali albo miej najlepszy wynik, gdy skończy się czas."
+INTRO_FOOTER,"In a match, hover anything to see what it does and press F1 for the manual.","W meczu najedź na cokolwiek, aby zobaczyć, co robi, a F1 otwiera podręcznik."
+INTRO_TUTORIAL,Play the tutorial,Zagraj samouczek
+INTRO_TUTORIAL_TOOLTIP,A guided first match: one loop of the game in about five minutes,Pierwszy mecz z przewodnikiem: jedna pętla gry w około pięć minut
+INTRO_SKIP,Go to the menu,Przejdź do menu
+INTRO_SKIP_TOOLTIP,The tutorial stays on the main menu for later,Samouczek zostaje w menu głównym na później

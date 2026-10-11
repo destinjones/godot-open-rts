@@ -1,0 +1,91 @@
+{
+  "name": "tutorial-first-match",
+  "description": "Plays the guided first match (data/tutorial/first_match.json) the way a new player follows it: select a constructor, place a mine, wait for the hauler, build the factory with the stock the tutorial hands out, make a tank, attack the scout it sends. Every step must tick off and the tutorial must end.",
+  "map": "plain_and_simple",
+  "seed": 1,
+  "minutes": 5,
+  "speed": 2,
+  "tutorial": "first_match",
+  "players": [
+    {
+      "type": "human"
+    },
+    {
+      "type": "ai",
+      "personality": "balanced",
+      "difficulty": "very_easy"
+    }
+  ],
+  "shots_every": 4,
+  "setup": [
+    {
+      "do": "select",
+      "units": "own:worker",
+      "limit": 1
+    },
+    {
+      "do": "wait",
+      "seconds": 2
+    },
+    {
+      "do": "extract",
+      "resource": "iron",
+      "expect_ok": true
+    }
+  ],
+  "events": [
+    {
+      "at": 45,
+      "do": "build",
+      "structure": "vehicle_factory",
+      "spot": "base",
+      "offset": [
+        -10,
+        6
+      ],
+      "search": true,
+      "expect_ok": true
+    },
+    {
+      "at": 110,
+      "do": "produce",
+      "unit": "tank",
+      "count": 2,
+      "expect_ok": true
+    },
+    {
+      "at": 125,
+      "do": "attack",
+      "units": "own:combat",
+      "target": "p1:scout_buggy"
+    },
+    {
+      "at": 150,
+      "do": "attack",
+      "units": "own:combat",
+      "target": "p1:scout_buggy"
+    }
+  ],
+  "end_when": {
+    "expect": "expr",
+    "code": "state.tutorial.step >= state.tutorial.steps"
+  },
+  "checks": [
+    {
+      "at": 40,
+      "name": "past the mine steps",
+      "expect": "expr",
+      "code": "state.tutorial.step >= 4"
+    },
+    {
+      "end": true,
+      "name": "the tutorial ran to its end",
+      "expect": "expr",
+      "code": "state.tutorial.step >= state.tutorial.steps"
+    },
+    {
+      "end": true,
+      "expect": "no_errors"
+    }
+  ]
+}
