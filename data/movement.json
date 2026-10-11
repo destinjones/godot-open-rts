@@ -64,6 +64,104 @@
       "battle_tank": "tracked",
       "heavy_tank": "tracked",
       "artillery": "tracked"
+    },
+    "turrets": {
+      "parts": [
+        "Turret",
+        "Launcher",
+        "Gun"
+      ],
+      "return_delay_s": 1.5,
+      "default": "medium_gun",
+      "classes": {
+        "light_gun": {
+          "slew_deg_s": 240.0,
+          "slew_accel_deg_s2": 1400.0,
+          "max_elevation_deg": 20.0,
+          "recoil_m": 0.03,
+          "recoil_pitch_deg": 4.0,
+          "recoil_return_s": 0.12,
+          "hull_rock": 0.15
+        },
+        "autocannon": {
+          "slew_deg_s": 120.0,
+          "slew_accel_deg_s2": 600.0,
+          "recoil_m": 0.05,
+          "recoil_pitch_deg": 1.5,
+          "recoil_return_s": 0.16,
+          "hull_rock": 0.25
+        },
+        "medium_gun": {
+          "slew_deg_s": 100.0,
+          "slew_accel_deg_s2": 400.0,
+          "recoil_m": 0.14,
+          "recoil_pitch_deg": 1.5,
+          "recoil_return_s": 0.4,
+          "hull_rock": 0.6
+        },
+        "heavy_gun": {
+          "slew_deg_s": 70.0,
+          "slew_accel_deg_s2": 260.0,
+          "recoil_m": 0.22,
+          "recoil_pitch_deg": 1.5,
+          "recoil_return_s": 0.55,
+          "hull_rock": 0.9
+        },
+        "rocket_launcher": {
+          "slew_deg_s": 90.0,
+          "slew_accel_deg_s2": 300.0,
+          "lead": 0.15,
+          "loft_deg_per_m": 2.0,
+          "max_elevation_deg": 55.0,
+          "elevation_deg_s": 40.0,
+          "recoil_m": 0.04,
+          "recoil_pitch_deg": 4.0,
+          "recoil_return_s": 0.3,
+          "hull_rock": 0.4
+        },
+        "artillery": {
+          "slew_deg_s": 20.0,
+          "slew_accel_deg_s2": 60.0,
+          "traverse_limit_deg": 12.0,
+          "lead": 0.6,
+          "loft_deg_per_m": 1.5,
+          "min_elevation_deg": 10.0,
+          "max_elevation_deg": 45.0,
+          "elevation_deg_s": 15.0,
+          "recoil_m": 0.06,
+          "recoil_pitch_deg": 5.0,
+          "recoil_return_s": 0.6,
+          "hull_rock": 1.0
+        },
+        "static_gun": {
+          "slew_deg_s": 120.0,
+          "slew_accel_deg_s2": 500.0,
+          "recoil_m": 0.12,
+          "recoil_pitch_deg": 1.0,
+          "recoil_return_s": 0.4
+        },
+        "static_launcher": {
+          "slew_deg_s": 120.0,
+          "slew_accel_deg_s2": 500.0,
+          "lead": 0.15,
+          "max_elevation_deg": 60.0,
+          "elevation_deg_s": 60.0,
+          "recoil_m": 0.05,
+          "recoil_pitch_deg": 4.0,
+          "recoil_return_s": 0.3
+        }
+      },
+      "by_unit": {
+        "tank": "medium_gun",
+        "heavy_tank": "heavy_gun",
+        "amphibious_apc": "autocannon",
+        "raider": "light_gun",
+        "scout_buggy": "light_gun",
+        "missile_truck": "rocket_launcher",
+        "artillery": "artillery",
+        "ag_turret": "static_gun",
+        "aa_turret": "static_launcher"
+      }
     }
   }
 }

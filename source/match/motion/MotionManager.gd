@@ -7,16 +7,19 @@ extends Node
 # unit. A unit hidden by the fog of war or outside the camera view is not animated; the
 # camera frustum check runs every few frames per unit. With many units on screen, each one is
 # posed every second or third frame (with the summed time), which still reads as smooth.
-# Pausing the game pauses all of it.
+# Pausing the game pauses all of it. Defensive structures with a separate turret in their
+# model get only a TurretAim (no body motion), driven the same way.
 # Purely visual: nothing here changes where a unit is or where it faces.
 
 const UnitMotion = preload("res://source/match/motion/UnitMotion.gd")
+const TurretAim = preload("res://source/match/motion/TurretAim.gd")
 const ATTACH_PER_FRAME = 24  # spreads the set-up of a big wave of spawns over frames
 const CULL_EVERY_N_FRAMES = 3
 const FULL_RATE_UP_TO = 60  # animated units posed every frame; more share the frames
 const SKIPPED_TYPES = ["Train"]  # Train.gd animates its own carriages
 
 var _components = []
+var _turrets = []  # [TurretAim, seen] of structures
 var _pending = []
 var _frame = 0
 var _animated = 0  # units animated in the last frame
@@ -54,15 +57,35 @@ func _process(delta):
 				component.pending_delta = 0.0
 		elif component.active:
 			component.deactivate()
+	_animate_turrets(delta, planes)
+
+
+func _animate_turrets(delta, planes):
+	var index = 0
+	while index < _turrets.size():
+		var entry = _turrets[index]
+		var aim = entry[0]
+		if not is_instance_valid(aim.unit) or not is_instance_valid(aim.part):
+			_turrets.remove_at(index)
+			continue
+		index += 1
+		if (index + _frame) % CULL_EVERY_N_FRAMES == 0:
+			entry[1] = _is_point_seen(aim.unit, aim.part.global_position, 1.5, planes)
+		if entry[1]:
+			aim.animate(delta)
 
 
 func _is_seen(component, planes):
 	var unit = component.unit
+	var center = unit.global_position + Vector3(0, component.center_y, 0)
+	return _is_point_seen(unit, center, component.cull_radius, planes)
+
+
+func _is_point_seen(unit, center, radius, planes):
 	if not unit.visible or not unit.is_inside_tree():
 		return false
-	var center = unit.global_position + Vector3(0, component.center_y, 0)
 	for plane in planes:
-		if plane.distance_to(center) > component.cull_radius:
+		if plane.distance_to(center) > radius:
 			return false
 	return true
 
@@ -77,13 +100,15 @@ func _attach_pending():
 
 
 func _attach(unit):
+	if unit.has_method("get_movement_trait") and unit.get_movement_trait() == null:
+		_attach_structure_turret(unit)
+		return
 	if (
 		not unit.has_method("get_movement_trait")
-		or unit.get_movement_trait() == null
 		or unit.type in SKIPPED_TYPES
 		or unit.get_node_or_null("Motion") != null
 	):
-		return  # buildings and the train
+		return  # the train
 	var component = UnitMotion.new()
 	component.name = "Motion"
 	unit.add_child(component)
@@ -91,6 +116,24 @@ func _attach(unit):
 		component.queue_free()
 		return
 	_components.append(component)
+
+
+func _attach_structure_turret(unit):
+	if unit.has_meta("_turret_recoil"):
+		return  # already attached
+	var geometry = unit.find_child("Geometry", true, false)
+	var model = geometry.get_node_or_null("Model") if geometry != null else null
+	var aim = TurretAim.create(unit, model)
+	if aim == null:
+		return
+	unit.child_entered_tree.connect(_on_structure_child_entered.bind(aim))
+	_turrets.append([aim, false])
+
+
+func _on_structure_child_entered(node, aim):
+	var script = node.get_script()
+	if script != null and "/projectiles/" in script.resource_path:
+		aim.fire(node.get("target_unit"))
 
 
 func _on_match_started():
