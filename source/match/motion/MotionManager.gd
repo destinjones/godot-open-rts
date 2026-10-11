@@ -5,17 +5,21 @@ extends Node
 # Added to Match. Every spawned mobile unit gets a UnitMotion component; this node drives
 # all of them from one _process so that a big match pays one loop, not one callback per
 # unit. A unit hidden by the fog of war or outside the camera view is not animated; the
-# camera frustum check runs every few frames per unit. Pausing the game pauses all of it.
+# camera frustum check runs every few frames per unit. With many units on screen, each one is
+# posed every second or third frame (with the summed time), which still reads as smooth.
+# Pausing the game pauses all of it.
 # Purely visual: nothing here changes where a unit is or where it faces.
 
 const UnitMotion = preload("res://source/match/motion/UnitMotion.gd")
 const ATTACH_PER_FRAME = 24  # spreads the set-up of a big wave of spawns over frames
 const CULL_EVERY_N_FRAMES = 3
+const FULL_RATE_UP_TO = 60  # animated units posed every frame; more share the frames
 const SKIPPED_TYPES = ["Train"]  # Train.gd animates its own carriages
 
 var _components = []
 var _pending = []
 var _frame = 0
+var _animated = 0  # units animated in the last frame
 
 
 func _ready():
@@ -28,6 +32,10 @@ func _process(delta):
 	_frame += 1
 	var camera = get_viewport().get_camera_3d()
 	var planes = camera.get_frustum() if camera != null else []
+	var stride = (
+		1 if _animated <= FULL_RATE_UP_TO else (2 if _animated <= FULL_RATE_UP_TO * 2 else 3)
+	)
+	_animated = 0
 	var index = 0
 	while index < _components.size():
 		var component = _components[index]
@@ -39,7 +47,11 @@ func _process(delta):
 		if seen and (index + _frame) % CULL_EVERY_N_FRAMES == 0 or not component.active:
 			seen = _is_seen(component, planes)
 		if seen:
-			component.animate(delta)
+			_animated += 1
+			component.pending_delta += delta
+			if (index + _frame) % stride == 0 or not component.active:
+				component.animate(component.pending_delta)
+				component.pending_delta = 0.0
 		elif component.active:
 			component.deactivate()
 

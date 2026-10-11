@@ -30,6 +30,7 @@ var kind = Kind.VEHICLE
 var center_y = 0.5  # cull sphere centre above the unit's origin
 var cull_radius = 1.5
 var active = false  # on screen and animated this frame
+var pending_delta = 0.0  # time not posed yet, see MotionManager
 
 var _pivot = null
 var _model = null
@@ -114,6 +115,7 @@ func animate(delta):
 func deactivate():
 	"""off screen or hidden by the fog of war: keep the pose, forget the speeds"""
 	active = false
+	pending_delta = 0.0
 	_fresh = true
 
 
