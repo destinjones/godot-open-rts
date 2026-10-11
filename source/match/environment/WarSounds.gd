@@ -10,7 +10,8 @@ extends Node3D
 # with the distance from the middle of the screen, the hearing range grows as the camera zooms
 # out, and everything gets quieter the further out the camera is. A listener placed above the
 # middle of the screen pans each sound to the side of the screen it comes from. Fights in the
-# fog of war are heard, muffled. The sounds come from tools/audio/make_war_sounds.py.
+# fog of war are heard, muffled. Vehicles and buildings that blow up are layered: a second,
+# slowed-down blast follows the first. The sounds come from tools/audio/make_war_sounds.py.
 
 const Unit = preload("res://source/match/units/Unit.gd")
 const Structure = preload("res://source/match/units/Structure.gd")
@@ -98,7 +99,7 @@ func _process(_delta):
 		)
 
 
-func play(kind, at_position, loudness = 1.0, audible = true):
+func play(kind, at_position, loudness = 1.0, audible = true, pitch = 1.0):
 	"""plays one sound of a kind at a world position; returns false if it was not heard"""
 	var now = Time.get_ticks_msec()
 	var settings = KINDS[kind]
@@ -118,7 +119,7 @@ func play(kind, at_position, loudness = 1.0, audible = true):
 	voice.stream = streams[randi() % streams.size()]
 	voice.global_position = at_position
 	voice.volume_db = linear_to_db(gain)
-	voice.pitch_scale = randf_range(0.9, 1.08)
+	voice.pitch_scale = pitch * randf_range(0.9, 1.08)
 	voice.play()
 	played_counts[kind] = played_counts.get(kind, 0) + 1
 	return true
@@ -207,11 +208,23 @@ func _on_rocket_gone(target):
 func _on_unit_leaving(unit):
 	if unit.hp == null or unit.hp > 0 or not unit.is_inside_tree():
 		return
-	var big = unit is Structure or not _unit_name(unit) in LIGHT_UNITS
-	if big:
-		play("explosion_large", unit.global_position, 1.0, unit.visible)
+	var at = unit.global_position
+	var audible = unit.visible
+	if unit is Structure:
+		# the blast, then the building coming down: the same boom slowed down, and rubble
+		play("explosion_large", at, 1.3, audible)
+		_play_later(0.35, ["explosion_large", at, 0.95, audible, 0.6])
+		_play_later(0.9, ["impact", at, 1.2, audible, 0.55])
+	elif not _unit_name(unit) in LIGHT_UNITS:
+		# a vehicle: the explosion and a second, smaller one as fuel and ammunition go up
+		play("explosion_large", at, 1.15, audible)
+		_play_later(0.14, ["explosion_small", at, 0.7, audible, 0.8])
 	else:
-		play("explosion_small", unit.global_position, 0.9, unit.visible)
+		play("explosion_small", at, 0.9, audible)
+
+
+func _play_later(delay_s, arguments):
+	get_tree().create_timer(delay_s, false).timeout.connect(play.bindv(arguments))
 
 
 func _unit_name(unit):
