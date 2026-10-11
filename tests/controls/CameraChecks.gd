@@ -4,6 +4,8 @@ extends "res://tests/commands/CommandChecks.gd"
 # - the mouse wheel zooms smoothly (the size glides, it does not jump) and towards the
 #   cursor: the ground under the cursor stays under it (IsometricCamera3D.gd),
 # - edge scrolling eases in and out instead of starting and stopping dead,
+# - keys held while a text field has focus (W, A, S, D typed into a search box) do not
+#   pan or rotate the map,
 # - Alt + click on the minimap pings that spot without moving the camera; a plain click
 #   still jumps there; a hit on one of the player's units pings the minimap red, once per
 #   spot (hud/MinimapPings.gd).
@@ -36,6 +38,7 @@ func _ready():
 	await _check_zoom_to_cursor()
 	await _check_edge_scroll_eases()
 	await _check_minimap_pings()
+	await _check_typing_does_not_pan()
 	print("camera checks: {0} failure(s)".format([_failures]))
 	get_tree().quit(1 if _failures > 0 else 0)
 
@@ -133,6 +136,29 @@ func _check_minimap_pings():
 	await _frames(2)
 	_expect(pings.pings.size() == 1, "... once: more hits there do not add pings")
 	await _cleanup([enemy])
+
+
+func _check_typing_does_not_pan():
+	camera_on(_ground(_cc.global_position + Vector3(10, 0, 10)), 16)
+	VirtualPointer.position = get_viewport().get_visible_rect().size / 2.0
+	var field = LineEdit.new()
+	_match.find_child("HUD").add_child(field)
+	field.grab_focus()
+	await _frames(5)
+	var before = _camera.global_position
+	Input.action_press("move_map_right")
+	await _frames(10)
+	var typing_moved = _camera.global_position.distance_to(before)
+	field.release_focus()
+	await _frames(10)
+	Input.action_release("move_map_right")
+	var free_moved = _camera.global_position.distance_to(before)
+	field.queue_free()
+	_expect(
+		typing_moved < 0.01,
+		"D held while typing in a text field leaves the map still (%.2f m)" % typing_moved
+	)
+	_expect(free_moved > 0.1, "... and pans it once the field lets go (%.2f m)" % free_moved)
 
 
 func _mouse_motion(screen_position):

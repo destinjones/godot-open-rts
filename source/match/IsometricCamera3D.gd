@@ -196,13 +196,21 @@ func _try_handling_movement(delta: float) -> bool:
 	return true
 
 
+func _is_typing() -> bool:
+	var focus_owner = get_viewport().gui_get_focus_owner()
+	return focus_owner is LineEdit or focus_owner is TextEdit
+
+
 func _calculate_screen_move_vector() -> Vector2:
 	var viewport_size = get_viewport().size
 	var mouse_pos = VirtualPointer.get_position(get_viewport())
 
-	var x_axis = Input.get_axis("move_map_left", "move_map_right")
-	var y_axis = Input.get_axis("move_map_up", "move_map_down")
-	var move_vector = Vector2(x_axis, y_axis)
+	var move_vector = Vector2.ZERO
+	if not _is_typing():  # W, A, S and D typed into a text field must not pan the map
+		move_vector = Vector2(
+			Input.get_axis("move_map_left", "move_map_right"),
+			Input.get_axis("move_map_up", "move_map_down")
+		)
 
 	if not _edge_scrolling_enabled():
 		return move_vector
@@ -279,7 +287,7 @@ func _update_zoom(delta: float):
 
 
 func _try_handling_arrowkey_rotation(delta: float):
-	if _is_rotating():
+	if _is_rotating() or _is_typing():
 		return
 	var angle_radians = (
 		delta

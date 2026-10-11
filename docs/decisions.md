@@ -113,4 +113,5 @@ reads as one ping), and Alt + click marks a spot in yellow without moving the ca
 click or drag on the minimap still jumps the camera. All the timings are exported on
 IsometricCamera3D and constants in hud/MinimapPings.gd. Why: zoom-to-centre made you re-aim
 after every wheel notch, and an attack off screen gave no sign at all. Pings have no sound
-here; the audio thread can bind to MatchSignals.unit_damaged.
+here; the audio thread can bind to MatchSignals.unit_damaged. Map keys (W, A, S, D, Q, E) are
+ignored while a text field has focus, so typing into a search box no longer pans the map.
