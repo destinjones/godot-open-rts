@@ -14,6 +14,7 @@ const Diplomacy = preload("res://source/match/diplomacy/Diplomacy.gd")
 const HarnessApi = preload("res://tools/harness/HarnessApi.gd")
 const Recorder = preload("res://tools/harness/Recorder.gd")
 const VirtualMouse = preload("res://tools/harness/VirtualMouse.gd")
+const TutorialScript = preload("res://source/data-model/TutorialScript.gd")
 
 const DEFAULTS = {
 	"name": "",
@@ -136,9 +137,12 @@ func run():
 		atmosphere.random_weather = false
 		await api.command({"do": "weather", "set": scenario["weather"]})
 	var guide = _match.find_child("Guide", true, false)
+	if guide != null and guide.has_signal("step_started"):
+		guide.step_started.connect(
+			func(index, id): recorder.note("tutorial step %d %s" % [index + 1, id], "tutorial")
+		)
 	if guide != null and not scenario["tutorial"]:
-		guide.set("_step", guide.STEPS.size())  # as if every step was skipped
-		guide.call("_refresh_tutorial")
+		guide.call("skip_tutorial")  # as if every step was skipped
 	for index in range(scenario["players"].size()):
 		var player_entry = scenario["players"][index]
 		if player_entry.get("type") == "human" and player_entry.get("helper", false):
@@ -187,6 +191,11 @@ func _match_settings(map_path):
 				entry["start_position"][0], entry["start_position"][1]
 			)
 		settings.players.append(player_settings)
+	if scenario["tutorial"] is String:  # a tutorial script from data/tutorial/, its rules too
+		settings.tutorial_script = scenario["tutorial"]
+		var rules = TutorialScript.load_script(scenario["tutorial"]).get("rules", {})
+		for rule in rules:
+			settings.set(rule, bool(rules[rule]))
 	var human_index = entries.find_custom(func(entry): return entry.get("type") == "human")
 	settings.visible_player = max(human_index, 0)
 	settings.visibility = (

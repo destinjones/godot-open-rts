@@ -18,6 +18,7 @@ mods add to it or patch it (see [mods](#mods)).
 | `ai/*.json` | One file per rival AI personality (its play style) |
 | `factions/*.json` | One file per playable faction: its units, roles, start units and perks |
 | `difficulties/*.json` | One file per AI difficulty, applied on top of the play style |
+| `tutorial/*.json` | Tutorial scripts: the steps the in-match tutorial walks through, and the guided first match (see `source/data-model/TutorialScript.gd`) |
 | `player_colors.json` | The colours players and AIs can pick in the Play menu |
 | `sounds/voices.json`, `sounds/voice_sets/*.json` | Which voice each unit answers with, and the advisor's announcements |
 

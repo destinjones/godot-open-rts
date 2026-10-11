@@ -1,8 +1,11 @@
 extends Control
 
 const CrashPrompt = preload("res://source/crash/CrashPrompt.gd")
+const IntroCard = preload("res://source/main-menu/IntroCard.gd")
 const SaveGame = preload("res://source/match/SaveGame.gd")
 const SaveLoadPanel = preload("res://source/main-menu/SaveLoadPanel.gd")
+const StartPicker = preload("res://source/main-menu/StartPicker.gd")
+const TutorialScript = preload("res://source/data-model/TutorialScript.gd")
 const EMBLEM = preload("res://assets/logos/ironbound_emblem.svg")
 const TITLE_FONT = preload("res://assets/ui/fonts/ironbound_title.tres")
 const BODY_FONT = preload("res://assets/ui/fonts/barlow-600.woff2")
@@ -14,6 +17,8 @@ func _ready():
 	_add_title()
 	if CrashPrompt.should_show():
 		add_child(CrashPrompt.new())
+	elif IntroCard.should_show():
+		show_intro.call_deferred()  # after the menu is laid out, so the card covers it
 	var play_button = find_child("Button")
 	var replays_button = Button.new()
 	replays_button.name = "ReplaysButton"
@@ -35,7 +40,21 @@ func _ready():
 		continue_button.tooltip_text = saves[0]["name"] + "  " + saves[0]["summary"]
 		continue_button.pressed.connect(_continue.bind(saves[0]["path"]))
 		play_button.add_sibling(continue_button)
+	var tutorial_button = Button.new()
+	tutorial_button.name = "TutorialButton"
+	tutorial_button.text = tr("TUTORIAL_BUTTON")
+	tutorial_button.tooltip_text = tr("TUTORIAL_BUTTON_TOOLTIP")
+	tutorial_button.pressed.connect(start_tutorial)
+	play_button.add_sibling(tutorial_button)  # right under Play
 	_lay_out_menu()
+
+
+func show_intro():
+	"""the "what is this game" card of the first launch, see IntroCard.gd"""
+	var card = IntroCard.new()
+	card.tutorial_chosen.connect(start_tutorial)
+	add_child(card)
+	return card
 
 
 func _continue(path):
@@ -44,6 +63,21 @@ func _continue(path):
 		_open_load()
 		return
 	SaveLoadPanel.load_save(get_tree(), data)
+
+
+func start_tutorial():
+	"""the guided first match (data/tutorial/first_match.json): place the city first"""
+	var settings = TutorialScript.match_settings(TutorialScript.FIRST_MATCH)
+	if settings == null:
+		return
+	var picker = StartPicker.new()
+	picker.match_settings = settings
+	picker.map_path = TutorialScript.map_path_of(
+		TutorialScript.load_script(TutorialScript.FIRST_MATCH)
+	)
+	get_parent().add_child(picker)
+	get_tree().current_scene = picker
+	queue_free()
 
 
 func _open_load():
