@@ -25,6 +25,7 @@ const FIRE_COLOR = Color(1.0, 0.45, 0.08)
 const CORE_COLOR = Color(1.0, 0.97, 0.8)
 const TRACER_COLOR = Color(1.0, 0.6, 0.12)
 const HEAVY_SHELL_SIZE = 1.1  # damage 3 and up: heavy and battle tanks, bunkers
+const HEAVY_ROCKET_DAMAGE = 3  # missile trucks, artillery: these shake the camera
 
 static var _live_effects = 0
 static var _resources = null
@@ -63,7 +64,10 @@ static func rocket_impact(target, position, damage = 1):
 	if not _is_seen(target, position):
 		return
 	var size = 0.65 + 0.13 * float(damage)
-	if CombatEffects.explosion(target, position, size, 0.6 * size):
+	var shake = 0.0
+	if damage >= HEAVY_ROCKET_DAMAGE:
+		shake = clampf(0.1 + 0.04 * float(damage), 0.15, 0.3)
+	if CombatEffects.explosion(target, position, size, 0.6 * size, shake):
 		hit_flash(target)
 		return
 	_flash(target, position, 1.4, FIRE_COLOR, 0.16)
