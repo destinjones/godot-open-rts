@@ -8,7 +8,8 @@ predate this page; it covers the reactive layers added on top of them. Tunables 
 
 Everything plays on one of the buses in `default_bus_layout.tres`, and each bus has its
 Options slider: Music, Effects (weapons, explosions, one-shots), Voices (unit replies,
-advisor) and Ambience (loops: wind, rain, engines, the ambient bed).
+advisor, radio chatter) and Ambience (loops: wind, rain, engines, the ambient bed).
+EffectsFar has no slider: it feeds Effects, so the Effects slider sets it too.
 
 ## Ambient bed (`source/match/environment/AmbientBed.gd`, `data/sounds/ambience.json`)
 
@@ -78,6 +79,26 @@ tanks cost the same as one.
 - **Callouts**: the advisor already says "low oil" and "storage full"; those calls now ring a
   two-note alarm chime first, so they stand out from routine news.
 
+## Spatialization and the mix (`default_bus_layout.tres`, `data/sounds/mix.json`)
+
+- **Panning.** Sounds are heard through a listener hovering over the middle of the screen,
+  facing the way the camera does, so a shot on the left is heard on the left. The presence
+  loops (engines, footsteps, rotors) are panned to the centre of the units making them, and
+  the city loop to the nearest depot.
+- **Falloff.** Loudness falls with the square of the distance from the middle of the
+  screen, the hearing range grows as the camera zooms out, and everything is quieter
+  zoomed out. Sounds past 45 % of the hearing range, and fights in the fog of war, play
+  through the EffectsFar bus, which low-passes them at 1.6 kHz like air over distance.
+- **Priority.** Every combat kind has a priority (0 casings, 1 small arms and impacts, 2
+  cannon, rockets and small explosions, 3 big explosions, artillery and aircraft going
+  down). Once six sounds have played within 0.15 s, a new one quieter than half the loudest
+  of them is dropped unless it is priority 3. When all 24 voices are busy, the lowest
+  priority, quietest voice is cut for a more important sound.
+- **Ducking.** Compressors sidechained in the bus layout: the music and the ambience duck
+  under the Effects bus, so a big battle pushes them down and a lone shot barely does; the
+  effects duck a little under Voices, so the advisor and unit replies stay clear.
+- **Limiter.** A hard limiter on Master (ceiling -0.5 dB) catches what still piles up.
+
 ## Checks and clips
 
 - `tests/audio/AmbientBedCheck.tscn` checks the bed against MusicPlayer's state machine.
@@ -85,6 +106,7 @@ tanks cost the same as one.
 - `tests/audio/CombatSoundsCheck.tscn` checks every unit's report, death and surface.
 - `tests/audio/WarSoundsCheck.tscn` stages a battle and checks it is heard.
 - `tests/audio/EconomySoundsCheck.tscn` builds a power plant and checks each feedback.
+- `tests/audio/MixCheck.tscn` checks the bus effects, the far bus and masking in a crowd.
 - `tests/audio/SoundClip.tscn -- --clip=<name>` records a clip of a scripted timeline with
   Godot's movie maker, for pull requests (see its header).
 
@@ -109,5 +131,10 @@ tanks cost the same as one.
   distance, and keep the game's tone.
 - **Callouts stay spoken.** Low oil and storage full already had advisor lines; adding a
   second, non-verbal callout would double them, so they gained a chime instead.
+- **Ducking is done by sidechain compressors, not by code.** They follow what is actually
+  loud, cost nothing in scripts, and leave the Options sliders (bus volumes) untouched.
+- **Masking over a hard cap.** Dropping quiet low-priority sounds in a crowd keeps the
+  close, important ones readable, which a plain voice cap does not: it would cut whichever
+  came last.
 - **Audio work was cleared during the feature freeze.** Destin asked for the audio thread
   explicitly (2026-10-11), so it runs alongside the feel tickets.

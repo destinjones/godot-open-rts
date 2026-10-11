@@ -13,9 +13,14 @@ extends Node3D
 # Sounds are heard from where the camera looks, like the ambient Soundscape: loudness falls
 # with the distance from the middle of the screen, the hearing range grows as the camera zooms
 # out, and everything gets quieter the further out the camera is. A listener placed above the
-# middle of the screen pans each sound to the side of the screen it comes from. Fights in the
-# fog of war are heard, muffled. Casings are only heard zoomed in. The sounds come from
-# tools/audio/make_war_sounds.py and make_combat_sounds.py.
+# middle of the screen pans each sound to the side of the screen it comes from. Far sounds and
+# fights in the fog of war are heard muffled, through the EffectsFar bus. Casings are only
+# heard zoomed in. The sounds come from tools/audio/make_war_sounds.py and
+# make_combat_sounds.py.
+#
+# In a crowd, sounds compete (data/sounds/mix.json): once a handful have played in the same
+# instant, a quiet, low-priority one is dropped instead of adding to the mush, and when every
+# voice is busy the lowest-priority, quietest one is the one cut off.
 
 const Unit = preload("res://source/match/units/Unit.gd")
 const Structure = preload("res://source/match/units/Structure.gd")
@@ -34,6 +39,7 @@ const MIN_GAIN = 0.03
 const CASING_DELAY_S = 0.22
 
 var played_counts = {}  # kind -> sounds played so far (read by tests)
+var masked_count = 0  # sounds dropped because a crowd of louder ones covered them (tests)
 
 var _config = {}  # data/sounds/combat.json
 var _kinds = {}  # kind -> {gain, max, gap_s}
@@ -41,6 +47,10 @@ var _unit_ids = {}  # scene path -> unit id ("" if not in data/units)
 var _streams = {}  # kind -> [AudioStream]
 var _voices = []
 var _voice_kinds = {}  # player -> kind it is playing
+var _voice_priorities = {}  # player -> priority of what it is playing
+var _mix = {}  # data/sounds/mix.json
+var _recent = []  # [[ticks ms, gain]] of the sounds played in the density window
+var _far_bus = &"Effects"
 var _last_played_ms = {}  # kind -> ticks
 var _listener = AudioListener3D.new()
 var _pivot = Vector3.ZERO
@@ -50,6 +60,10 @@ var _camera_size = 20.0
 
 func _ready():
 	_config = GameData.sounds("combat")
+	_mix = GameData.sounds("mix")
+	var far_bus = _mix.get("far_bus", "")
+	if far_bus != "" and AudioServer.get_bus_index(far_bus) != -1:
+		_far_bus = StringName(far_bus)
 	_kinds = _config.get("kinds", {})
 	for kind in _kinds:
 		_streams[kind] = []
@@ -101,16 +115,25 @@ func play(kind, at_position, loudness = 1.0, audible = true, pitch = 1.0):
 	var settings = _kinds[kind]
 	if now - _last_played_ms.get(kind, -100000) < float(settings.get("gap_s", 0.05)) * 1000.0:
 		return false
+	var closeness = _closeness(at_position)
 	var gain = float(settings.get("gain", 0.5)) * loudness * _gain_at(at_position)
 	if not audible:
 		gain *= HIDDEN_GAIN
 	if gain < MIN_GAIN:
 		return false
-	var voice = _pick_voice(kind, int(settings.get("max", 3)), gain)
+	var priority = int(settings.get("priority", 1))
+	if _masked(now, gain, priority):
+		masked_count += 1
+		return false
+	var voice = _pick_voice(kind, int(settings.get("max", 3)), gain, priority)
 	if voice == null:
 		return false
 	_last_played_ms[kind] = now
+	_recent.append([now, gain])
 	_voice_kinds[voice] = kind
+	_voice_priorities[voice] = priority
+	var far = not audible or closeness < 1.0 - float(_mix.get("far_from", 0.45))
+	voice.bus = _far_bus if far else &"Effects"
 	var streams = _streams[kind]
 	voice.stream = streams[randi() % streams.size()]
 	voice.global_position = at_position
@@ -121,15 +144,35 @@ func play(kind, at_position, loudness = 1.0, audible = true, pitch = 1.0):
 	return true
 
 
-func _gain_at(at_position):
+func _closeness(at_position):
+	"""1 in the middle of the screen, 0 at the edge of hearing"""
 	var hearing_range = 18.0 + _camera_size * 1.1
 	var distance = Vector2(at_position.x, at_position.z).distance_to(Vector2(_pivot.x, _pivot.z))
-	var closeness = clamp(1.0 - distance / hearing_range, 0.0, 1.0)
+	return clamp(1.0 - distance / hearing_range, 0.0, 1.0)
+
+
+func _gain_at(at_position):
+	var closeness = _closeness(at_position)
 	return closeness * closeness * lerp(1.0, 0.3, _zoom_out)
 
 
-func _pick_voice(kind, max_of_kind, gain):
-	"""a free voice; else the quietest one if the new sound is louder (oldest of a full kind)"""
+func _masked(now, gain, priority):
+	"""in a crowd of sounds, a quiet one of low priority would only add mush"""
+	var window_ms = float(_mix.get("density_window_s", 0.15)) * 1000.0
+	_recent = _recent.filter(func(entry): return now - entry[0] < window_ms)
+	if _recent.size() < int(_mix.get("density_max", 6)):
+		return false
+	if priority >= int(_mix.get("keep_priority", 3)):
+		return false
+	var loudest = 0.0
+	for entry in _recent:
+		loudest = max(loudest, entry[1])
+	return gain < loudest * float(_mix.get("mask_below", 0.5))
+
+
+func _pick_voice(kind, max_of_kind, gain, priority = 1):
+	"""a free voice; else the least important one (lowest priority, then quietest) if the new
+	sound matters more; a kind at its cap replaces its own oldest"""
 	var same_kind = []
 	var free = null
 	var quietest = null
@@ -139,7 +182,7 @@ func _pick_voice(kind, max_of_kind, gain):
 			continue
 		if _voice_kinds.get(voice) == kind:
 			same_kind.append(voice)
-		if quietest == null or voice.volume_db < quietest.volume_db:
+		if quietest == null or _less_important(voice, quietest):
 			quietest = voice
 	if same_kind.size() >= max_of_kind:
 		var oldest = same_kind[0]
@@ -149,9 +192,22 @@ func _pick_voice(kind, max_of_kind, gain):
 		return oldest
 	if free != null:
 		return free
-	if quietest != null and quietest.volume_db < linear_to_db(gain):
+	if quietest == null:
+		return null
+	var quietest_priority = _voice_priorities.get(quietest, 1)
+	if quietest_priority < priority:
+		return quietest
+	if quietest_priority == priority and quietest.volume_db < linear_to_db(gain):
 		return quietest
 	return null
+
+
+func _less_important(a, b):
+	var priority_a = _voice_priorities.get(a, 1)
+	var priority_b = _voice_priorities.get(b, 1)
+	if priority_a != priority_b:
+		return priority_a < priority_b
+	return a.volume_db < b.volume_db
 
 
 func _on_node_added(node):

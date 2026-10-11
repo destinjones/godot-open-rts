@@ -308,7 +308,8 @@ func _on_unit_damaged(unit):
 	if not _in_match or not is_instance_valid(unit):
 		return
 	if _is_ours(unit):
-		register_combat(HEAT_STRUCTURE_HIT if unit.is_in_group("structures") else HEAT_HIT)
+		var structure = unit.has_method("is_under_construction")  # there is no structures group
+		register_combat(HEAT_STRUCTURE_HIT if structure else HEAT_HIT)
 	elif _hit_by_us(unit):
 		register_combat(HEAT_HIT)
 
