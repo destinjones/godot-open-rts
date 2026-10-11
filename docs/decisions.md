@@ -68,3 +68,10 @@ army; a box with only buildings still takes them. Ctrl + click selects all of a 
 screen, like a double-click. Shift + number adds to a group, and pressing a group's number
 twice within 0.4 s centres the camera on it. The group bar sits top centre under the
 diplomacy bar, because the bottom centre is taken by the unit card next to the minimap.
+
+## 2026-10-11: rally points show where they send units
+A selected factory now shows a dashed teal line from its edge to its rally point, and the
+marker stays visible when the rally point follows a unit (it used to vanish). Dashed so it
+does not read as an order the building carries out; teal so it is not confused with the
+green move lines. Attack-move stays on F: A scrolls the camera (WASD), and controls.cfg
+can rebind it for anyone who wants StarCraft II's A.

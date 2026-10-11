@@ -34,6 +34,7 @@ CHECKS=(
   "CityCentreChecks|res://tests/citycentres/CityCentreChecks.tscn|"
   "CommandChecks|res://tests/commands/CommandChecks.tscn|"
   "SelectionChecks|res://tests/controls/SelectionChecks.tscn|"
+  "OrdersChecks|res://tests/controls/OrdersChecks.tscn|"
   "CrashPromptCheck|res://tests/crash/CrashPromptCheck.tscn|"
   "DiplomacyChecks|res://tests/diplomacy/DiplomacyChecks.tscn|"
   "LogisticsChecks|res://tests/logistics/LogisticsChecks.tscn|"

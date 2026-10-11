@@ -1,10 +1,12 @@
 extends Node3D
 
+# Where units made by this building go. The marker shows while the building is selected,
+# on the ground or on the unit it follows; UnitCommandHandler draws the line to it.
+
 var target_unit = null:
 	set(a_target_unit):
 		if target_unit == null and a_target_unit != null:
 			a_target_unit.tree_exited.connect(_on_target_unit_tree_exited)
-			hide()
 		elif target_unit != null and a_target_unit == null:
 			target_unit.tree_exited.disconnect(_on_target_unit_tree_exited)
 			_reset_position_to_parent()
@@ -28,10 +30,14 @@ func _physics_process(_delta):
 		global_position = target_unit.global_position
 
 
+func is_set():
+	"""a rally point that sends the units somewhere, not one left on the building"""
+	return target_unit != null or (global_position - _unit.global_position).length() > 0.5
+
+
 func _show():
-	if target_unit == null:
-		show()
-	else:
+	show()
+	if target_unit != null:
 		var targetability = target_unit.find_child("Targetability")
 		if targetability != null:
 			targetability.animate()
