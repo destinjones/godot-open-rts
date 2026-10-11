@@ -3,13 +3,17 @@ extends Control
 # Teaches the game while it is played:
 # - a tutorial at the top of the screen walking through the first goals, one at a time,
 #   each ticked off by what the player actually does (it can be folded away; the choice
-#   is remembered between matches),
+#   is remembered between matches). The steps are data: data/tutorial/standard.json, or
+#   the script the match names (the guided first match plays first_match.json), see
+#   TutorialScript.gd,
 # - one-off hints that pop up below it the first time something worth explaining happens
 #   (a blackout, a site outside the yard, a crashed drone...),
 # - the helper's panel and the auto-expand overview on the left,
 # - the manual (F1, or the Help button).
 # The match's rules (MatchRules, picked in the Play menu) can leave out the tutorial and
 # hints, the helper's panel or the auto-expand panel and bar; the manual always stays.
+
+signal step_started(index, id)  # a tutorial step began; index == steps.size(): all done
 
 const Human = preload("res://source/match/players/human/Human.gd")
 const Worker = preload("res://source/match/units/Worker.gd")
@@ -24,6 +28,9 @@ const Helper = preload("res://source/match/players/human/Helper.gd")
 const MatchRules = preload("res://source/data-model/MatchRules.gd")
 const MatchLimits = preload("res://source/match/MatchLimits.gd")
 const HudStyle = preload("res://source/match/hud/HudStyle.gd")
+const GameData = preload("res://source/data-model/GameData.gd")
+const TutorialScript = preload("res://source/data-model/TutorialScript.gd")
+const HarnessApi = preload("res://tools/harness/HarnessApi.gd")
 
 const SETTINGS_PATH = "user://guide.cfg"
 const REFRESH_INTERVAL_S = 0.5
@@ -32,20 +39,21 @@ const CAP_ALERT_INTERVAL_S = 20.0
 const PANEL_WIDTH = 300  # the width of the left column (HelperPanel, AutoExpandPanel)
 const DONE_COLOR = Color("#8fbf5a")
 const GAP = 6.0
-# the panel a tutorial step is about opens when the step starts (all start folded)
-const STEP_PANELS = {"AUTO_EXPAND": "AutoExpandPanel", "TRADE": "CityHud"}
-# tutorial steps in order: translation key suffix and the help topic that explains it
-const STEPS = [
-	["SELECT_CONSTRUCTOR", "CONSTRUCTORS"],
-	["BUILD_EXTRACTOR", "CONSTRUCTORS"],
-	["FINISH_EXTRACTOR", "CONSTRUCTORS"],
-	["DELIVERY", "SUPPLY_LINES"],
-	["POWER", "POWER"],
-	["AUTO_EXPAND", "AUTO_EXPAND"],
-	["TIER", "CITY_TIERS"],
-	["TRADE", "TRADE"],
-	["ARMY", "COMBAT"],
-	["COMMANDS", "COMMANDS"],
+# what a tutorial step's "done_when" may wait for (see _step_done)
+const CONDITIONS = [
+	"always",
+	"constructor_selected",
+	"extractor_placed",
+	"extractor_built",
+	"goods_delivered",
+	"power_plant_built",
+	"auto_expand_on",
+	"tier_2",
+	"traded",
+	"factory_built",
+	"combat_unit_made",
+	"army_ordered",
+	"spawned_destroyed",
 ]
 
 var player = null
@@ -56,12 +64,18 @@ var helper_panel = null
 var tutorial_on = true  # the match's rules, read once in _ready
 var ai_assist_on = true
 var auto_build_on = true
+var script_name = ""  # the match's tutorial script, "" for the standard one
+var steps = []  # the script's steps: {id, done_when, topic, panel, on_start}
 
+var _script = {}
+var _harness = null  # runs a step's on_start orders and finds what it points at
 var _step = 0
 var _delivered = false
 var _traded = false
 var _army = false
 var _commanded = false  # the player used a line, patrol or another army order
+var _spawned = []  # what the current step's on_start orders put on the map
+var _pointer = Label.new()  # bobs over what the current step's "point_at" names
 var _hints_shown = {}
 var _hint_queue = []
 var _hint_time_left_s = 0.0
@@ -91,9 +105,16 @@ func _ready():
 	tutorial_on = MatchRules.tutorial_on(self)
 	ai_assist_on = MatchRules.ai_assist_on(self)
 	auto_build_on = MatchRules.auto_build_on(self)
+	var a_match = get_tree().get_first_node_in_group("match")
+	var settings = a_match.get("settings") if a_match != null else null
+	if settings != null:
+		script_name = str(settings.get("tutorial_script") if "tutorial_script" in settings else "")
+	_script = TutorialScript.load_script(script_name)
+	steps = TutorialScript.steps_of(script_name)
 	_build_tutorial()
 	_tutorial.visible = tutorial_on
 	_build_hint()
+	_build_pointer()
 	if ai_assist_on:  # no panel, no H key
 		helper_panel = HelperPanel.new()
 		add_child(helper_panel)
@@ -164,7 +185,9 @@ func _build_tutorial():
 	_more_button.text = tr("GUIDE_MORE")
 	_more_button.focus_mode = Control.FOCUS_NONE
 	_more_button.add_theme_font_size_override("font_size", 13)
-	_more_button.pressed.connect(func(): toggle_help(STEPS[min(_step, STEPS.size() - 1)][1], true))
+	_more_button.pressed.connect(
+		func(): toggle_help(steps[min(_step, steps.size() - 1)].get("topic", "BASICS"), true)
+	)
 	buttons.add_child(_more_button)
 	var skip = _skip_button
 	skip.text = tr("GUIDE_SKIP")
@@ -174,6 +197,15 @@ func _build_tutorial():
 	skip.pressed.connect(_skip_step)
 	buttons.add_child(skip)
 	buttons.add_child(help_button)
+	if script_name != "":  # a scripted tutorial (the guided first match) can be left at once
+		var skip_all = Button.new()
+		skip_all.name = "SkipTutorialButton"
+		skip_all.text = tr("GUIDE_SKIP_ALL")
+		skip_all.tooltip_text = tr("GUIDE_SKIP_ALL_TOOLTIP")
+		skip_all.focus_mode = Control.FOCUS_NONE
+		skip_all.add_theme_font_size_override("font_size", 13)
+		skip_all.pressed.connect(skip_tutorial)
+		_tutorial_details.add_child(skip_all)
 	_set_folded(_load_setting("tutorial_folded", false))
 
 
@@ -222,6 +254,7 @@ func _process(delta):
 		_check_city_cap()  # a limit alert, shown under Raw rules too
 		_check_logistics()
 	_update_hint(delta)
+	_update_pointer()
 	_layout()
 
 
@@ -312,34 +345,121 @@ func _update_hint(delta):
 func _refresh_tutorial():
 	if player == null or not is_instance_valid(player):
 		return
-	while _step < STEPS.size() and _step_done(STEPS[_step][0]):
+	while _step < steps.size() and _opened_for_step == _step and _step_done(steps[_step]):
 		_step += 1
-	if _step >= STEPS.size():
-		_tutorial_title.text = tr("GUIDE_TITLE_DONE")
-		_tutorial_body.text = tr("GUIDE_DONE")
+		_flash_done()
+	if _step < steps.size() and _opened_for_step != _step:
+		_opened_for_step = _step
+		_start_step(steps[_step])
+		while _step < steps.size() and steps[_step].get("done_when") == "always":
+			_step += 1  # steps done before the match (placing the city) only count
+			_opened_for_step = _step
+			if _step < steps.size():
+				_start_step(steps[_step])
+	if _step >= steps.size():
+		if _opened_for_step != _step:
+			_opened_for_step = _step
+			step_started.emit(_step, "")
+		_tutorial_title.text = tr(_script.get("done_title", "GUIDE_TITLE_DONE"))
+		_tutorial_body.text = tr(_script.get("done_text", "GUIDE_DONE"))
 		_tutorial_title.add_theme_color_override("font_color", DONE_COLOR)
 		_more_button.hide()
 		_skip_button.hide()  # nothing left to skip
-		if not _folded_when_done:
+		var skip_all = _tutorial_details.get_node_or_null("SkipTutorialButton")
+		if skip_all != null:
+			skip_all.hide()
+		if not _folded_when_done and script_name == "":  # a scripted one ends on its text
 			# fold it once so it stops covering the middle of the screen; Show brings it back
 			_folded_when_done = true
 			_tutorial_details.visible = false
 			HudStyle.set_folded_icon(_fold_button, true)
 			_tutorial.reset_size()
 		return
-	var key = STEPS[_step][0]
-	if _opened_for_step != _step:
-		_opened_for_step = _step
-		_open_panel_for(key)
+	var key = steps[_step].get("id", "")
 	_tutorial_title.text = tr("GUIDE_TITLE").format(
-		[_step + 1, STEPS.size(), tr("GUIDE_STEP_{0}_TITLE".format([key]))]
+		[_step + 1, steps.size(), tr("GUIDE_STEP_{0}_TITLE".format([key]))]
 	)
 	_tutorial_body.text = tr("GUIDE_STEP_{0}".format([key]))
 
 
-func _open_panel_for(key):
-	"""unfolds the panel the step talks about, once, when the step starts"""
-	var panel = get_parent().find_child(STEP_PANELS.get(key, "-"), true, false)
+func _build_pointer():
+	_pointer.name = "TutorialPointer"
+	_pointer.text = "▼"
+	_pointer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pointer.add_theme_font_size_override("font_size", 34)
+	_pointer.add_theme_color_override("font_color", HudStyle.ACCENT)
+	_pointer.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	_pointer.add_theme_constant_override("outline_size", 8)
+	_pointer.hide()
+	add_child(_pointer)
+
+
+func _update_pointer():
+	"""a bobbing arrow over the thing the step is about, while the tutorial is open"""
+	var target = _pointer_target()
+	var camera = get_viewport().get_camera_3d()
+	if target == null or camera == null or not _tutorial.visible or not _tutorial_details.visible:
+		_pointer.hide()
+		return
+	var point = target.global_position + Vector3.UP * 1.2
+	var screen_point = camera.unproject_position(point)
+	if camera.is_position_behind(point) or _tutorial.get_global_rect().has_point(screen_point):
+		_pointer.hide()
+		return
+	var bob = sin(Time.get_ticks_msec() / 180.0) * 6.0
+	_pointer.reset_size()
+	_pointer.position = screen_point - Vector2(_pointer.size.x / 2.0, _pointer.size.y - bob)
+	_pointer.show()
+
+
+func _pointer_target():
+	""""point_at": a harness selector ("own:worker"), "deposit:<resource>" or "spawned" """
+	if _step >= steps.size() or player == null or _harness == null:
+		return null
+	var selector = str(steps[_step].get("point_at", ""))
+	if selector == "":
+		return null
+	if selector == "spawned":
+		var alive = _spawned.filter(func(unit): return is_instance_valid(unit))
+		return alive[0] if not alive.is_empty() else null
+	if selector.begins_with("deposit:"):
+		var base = _harness.ground("base")
+		return _harness.free_deposit(selector.trim_prefix("deposit:"), base)
+	var units = _harness.find_units(selector)
+	return units[0] if not units.is_empty() else null
+
+
+func _flash_done():
+	"""the panel glows green for a moment when a step is ticked off"""
+	var tween = create_tween()
+	_tutorial.self_modulate = Color(0.75, 1.35, 0.75)
+	tween.tween_property(_tutorial, "self_modulate", Color.WHITE, 0.9)
+
+
+func _start_step(step):
+	"""once, when a step starts: unfolds the panel it talks about, runs its orders"""
+	step_started.emit(steps.find(step), step.get("id", ""))
+	_open_panel_for(step)
+	_spawned = []
+	var orders = step.get("on_start", [])
+	if orders.is_empty() and not step.has("point_at"):
+		return
+	if _harness == null:
+		_harness = HarnessApi.new()
+		_harness.name = "TutorialOrders"
+		add_child(_harness)
+		_harness.match_node = get_tree().get_first_node_in_group("match")
+	for order in orders:
+		var result = await _harness.command(order)
+		for id in result.get("ids", []):
+			_spawned.append(instance_from_id(id))
+		if not result.get("ok", false):
+			push_warning("tutorial order %s failed: %s" % [order, result])
+
+
+func _open_panel_for(step):
+	"""unfolds the panel the step talks about"""
+	var panel = get_parent().find_child(step.get("panel", "-"), true, false)
 	if panel == null:
 		return
 	if panel.has_method("open_trade"):
@@ -348,31 +468,40 @@ func _open_panel_for(key):
 		panel.set_collapsed(false)
 
 
-func _step_done(key):
-	match key:
-		"SELECT_CONSTRUCTOR":
+func _step_done(step):
+	match step.get("done_when", ""):
+		"always":
+			return true
+		"constructor_selected":
 			return not _selected_constructors().is_empty()
-		"BUILD_EXTRACTOR":
+		"extractor_placed":
 			return not _own(func(unit): return unit is Extractor).is_empty()
-		"FINISH_EXTRACTOR":
+		"extractor_built":
 			return not (
 				_own(func(unit): return unit is Extractor and unit.is_constructed()).is_empty()
 			)
-		"DELIVERY":
+		"goods_delivered":
 			return _delivered
-		"POWER":
+		"power_plant_built":
 			return not _own(_is_power_plant).is_empty()
-		"AUTO_EXPAND":
+		"auto_expand_on":
 			if not auto_build_on:
 				return true  # nothing to teach: this match's rules have auto-build off
 			return not _own(func(unit): return AutoExpand.is_enabled_on(unit)).is_empty()
-		"TIER":
+		"tier_2":
 			return player.get_tier() >= 2
-		"TRADE":
+		"traded":
 			return _traded
-		"COMMANDS":
+		"factory_built":
+			return not _own(_is_factory).is_empty()
+		"army_ordered":
 			return _commanded
-	return _army  # gdlint: ignore = max-returns
+		"spawned_destroyed":
+			return (
+				not _spawned.is_empty()
+				and _spawned.all(func(unit): return not is_instance_valid(unit))
+			)
+	return _army  # combat_unit_made  # gdlint: ignore = max-returns
 
 
 func _selected_constructors():
@@ -390,8 +519,21 @@ static func _is_power_plant(unit):
 	)
 
 
+static func _is_factory(unit):
+	if not unit is Structure or not unit.is_constructed():
+		return false
+	var entry = GameData.unit_by_scene(unit._scene_path())
+	return entry != null and entry.get("role") == "factory"
+
+
 func _skip_step():
-	_step = min(_step + 1, STEPS.size())
+	_step = min(_step + 1, steps.size())
+	_refresh_tutorial()
+
+
+func skip_tutorial():
+	"""ends the tutorial at once; the match goes on as a normal one"""
+	_step = steps.size()
 	_refresh_tutorial()
 
 

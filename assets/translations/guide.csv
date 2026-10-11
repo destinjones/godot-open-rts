@@ -212,3 +212,17 @@ BLUEPRINT_TOO_CLOSE_TO_CITY_CENTRE,Too close to your other city centre
 BLUEPRINT_CITY_CENTRE_KEEPS,"Keeps {0} of your {1} buildings, the rest are abandoned"
 HELP_CITY_CENTRES_TITLE,City centres
 HELP_CITY_CENTRES_BODY,"Your city centre (the command center) is the heart of your city.\n\n[b]City circle.[/b] Every finished city centre rules a circle 24 m in radius, drawn on the ground in your colour. The buildings and houses inside it belong to that city.\n\n[b]Two city centres.[/b] Constructors can build a second city centre, at least 20 m from the first. Two is the most you can build. The city grows houses around both, and each one guards its own circle.\n\n[b]Losing your last city centre.[/b] A countdown of 3 minutes starts (top of the screen) and the old city's circle is marked in orange. Build a new city centre before it runs out: what still stands inside its circle is kept, everything else is abandoned. Rebuild where your city stood to keep it, or somewhere else to start over there. The blueprint tells you how many buildings it would keep. If the countdown runs out you are defeated.\n\n[b]White flag.[/b] A city centre under attack with no turret or fighting unit of yours (or of your ally) inside its circle surrenders: a white flag goes up and it takes no more damage. Send defenders into the circle within 15 seconds to lower it. Otherwise the city centre, the buildings and the houses in its circle go to the attacker with the most firepower there. Enemy cities surrender to you the same way, and the AIs play by the same rules.\n\nModders change these numbers in data/city_centres.json."
+GUIDE_SKIP_ALL,Skip tutorial
+GUIDE_SKIP_ALL_TOOLTIP,End the tutorial now and keep playing this match as a normal one
+GUIDE_STEP_TUTORIAL_PLACE_CITY_TITLE,Place your city
+GUIDE_STEP_TUTORIAL_PLACE_CITY,Your city stands where you placed it. From here on it builds itself; your job is to feed it.
+GUIDE_STEP_TUTORIAL_HAULER_TITLE,Watch a hauler bring it home
+GUIDE_STEP_TUTORIAL_HAULER,"A hauler (truck) drives to the new extractor, loads up and drives the goods home along the supply line drawn on the ground. Click it to see its route. Goods count only once they arrive."
+GUIDE_STEP_TUTORIAL_FACTORY_TITLE,Build a vehicle factory
+GUIDE_STEP_TUTORIAL_FACTORY,"Your city sent you some extra stock for this. Select a constructor, pick the Vehicle factory in its build menu (bottom right) and click near your city to place it."
+GUIDE_STEP_TUTORIAL_UNIT_TITLE,Make a unit
+GUIDE_STEP_TUTORIAL_UNIT,"Select the finished factory and click a unit in its menu, for example a Tank. It rolls out when the bar fills."
+GUIDE_STEP_TUTORIAL_FIGHT_TITLE,Drive off the scout
+GUIDE_STEP_TUTORIAL_FIGHT,A rival scout is snooping near your city. Select your unit and right-click the scout to attack it.
+TUTORIAL_DONE_TITLE,You ran the whole loop
+TUTORIAL_DONE,"Dig, haul, build, fight: that is Ironbound. Keep playing this match, or start a real one from Play. F1 opens the manual any time."
