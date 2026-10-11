@@ -24,6 +24,7 @@ const GraphicsQuality = preload("res://source/options/GraphicsQuality.gd")
 const Look = preload("res://source/match/environment/Look.gd")
 const SaveGame = preload("res://source/match/SaveGame.gd")
 const CityCentres = preload("res://source/match/city/CityCentres.gd")
+const CombatEffects = preload("res://source/match/effects/CombatEffects.gd")
 
 const CommandCenter = preload("res://source/match/units/CommandCenter.tscn")
 const Factions = preload("res://source/data-model/Factions.gd")
@@ -89,6 +90,10 @@ func _ready():
 		var weather_effects = WeatherEffects.new()
 		weather_effects.name = "WeatherEffects"
 		add_child(weather_effects)
+	if get_node_or_null("CombatEffects") == null:  # wrecks, explosions, scorch marks
+		var combat_effects = CombatEffects.new()
+		combat_effects.name = "CombatEffects"
+		add_child(combat_effects)
 	if get_node_or_null("ReplayRecorder") == null:
 		var replay_recorder = ReplayRecorder.new()
 		replay_recorder.name = "ReplayRecorder"
