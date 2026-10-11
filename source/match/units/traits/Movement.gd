@@ -40,7 +40,22 @@ const DEFAULT_SETTINGS = {
 	"give_up_when_stuck_s": 30.0,
 	"keep_on_navmesh_every_ticks": 6,
 	"parked_units_make_way": true,
+	"turn_to_face": true,
+	"handling": {},
+	"handling_by_unit": {},
 }
+# Handling (data/movement.json, "handling"): with crowd steering, a unit turns its heading
+# toward its path at a turn rate and drives along that heading, so it never slides sideways;
+# it turns in place first when the path lies further off than "turn_in_place_deg". Its speed
+# ramps up and down at "acceleration_mps2" / "braking_mps2", it brakes for its destination
+# and coasts to a stop. Profiles are picked by "handling_by_unit" (unit id) or the domain.
+const HANDLING_DEFAULTS = {
+	"turn_rate_deg_s": 240.0,
+	"acceleration_mps2": 9.0,
+	"braking_mps2": 14.0,
+	"turn_in_place_deg": 55.0,
+}
+const ARRIVAL_MIN_SPEED_MPS = 0.6  # braking for the destination never crawls the last bit
 const PROGRESS_EPSILON_M = 0.05
 const MOVING_PRIORITY = 1.0
 const PARKED_PRIORITY = 0.5
@@ -82,6 +97,14 @@ var _stuck_s = 0.0
 var _repathed = false
 var _navmesh_tick = randi() % 64
 var _moved_since_navmesh_check = true
+
+var _handling = null
+var _current_speed = 0.0  # m/s along the heading
+var _heading = null  # yaw (radians) the unit drives along; null until it first moves
+var _applied_yaw = 0.0  # the yaw last written, to notice turns made by others
+var _turning_in_place = false
+var _coasting = false
+var _face_point = null  # a point to turn towards while standing (face_towards)
 
 @onready var _match = find_parent("Match")
 @onready var _unit = get_parent()
@@ -175,6 +198,21 @@ func move(movement_target: Vector3):
 		target_position = movement_target
 	else:
 		_pending_target = movement_target  # asked for its path on a later frame
+
+
+func get_current_speed():
+	"""m/s the unit is driving at along its heading (crowd steering), for visuals"""
+	return _current_speed
+
+
+func face_towards(point):
+	"""turns a standing unit towards point at its turn rate; instant without crowd steering"""
+	if not _crowd or not settings()["turn_to_face"]:
+		var flat = Vector3(point.x, _unit.global_position.y, point.z)
+		if not flat.is_equal_approx(_unit.global_position):
+			_unit.global_transform = _unit.global_transform.looking_at(flat, Vector3.UP)
+		return
+	_face_point = point
 
 
 func stop():
@@ -380,7 +418,7 @@ func _update_passive_movement_tracking(safe_velocity, moving_actively):
 
 
 func _on_velocity_computed(safe_velocity: Vector3):
-	var moving_actively = _is_moving_actively()
+	var moving_actively = _is_moving_actively() or _coasting  # rolling out is not a push
 	if not moving_actively and safe_velocity.is_zero_approx():
 		# an idle unit nobody pushes: nothing moves, so skip touching its transform
 		_update_passive_movement_tracking(safe_velocity, moving_actively)
@@ -391,7 +429,11 @@ func _on_velocity_computed(safe_velocity: Vector3):
 		step = safe_velocity * get_physics_process_delta_time()
 	if not _crowd:
 		_update_stuck_prevention(step, moving_actively)
-	_rotate_in_direction(step * Vector3(1, 0, 1))
+	if _crowd and settings()["turn_to_face"]:
+		if moving_actively and _heading != null:
+			_apply_heading()  # faces where it drives; a push slides it without turning it
+	else:
+		_rotate_in_direction(step * Vector3(1, 0, 1))
 	var origin = _unit.global_position
 	_unit.global_position = origin.move_toward(origin + step, _interim_speed)
 	_moved_since_navmesh_check = true
@@ -437,12 +479,113 @@ func _crowd_physics_process(delta):
 	if avoidance_priority != priority and settings()["parked_units_make_way"]:
 		avoidance_priority = priority
 	if target_position == Vector3.INF:
-		set_velocity(Vector3.ZERO)  # idle: avoidance can still push the unit aside
+		set_velocity(_coast(delta))  # idle: avoidance can still push the unit aside
 		return
+	_face_point = null
+	_coasting = false
 	if _track_progress(delta):
 		return
 	var next_path_position: Vector3 = get_next_path_position()
-	set_velocity((next_path_position - _unit.global_position).normalized() * full_speed)
+	var desired = (next_path_position - _unit.global_position) * Vector3(1, 0, 1)
+	if not settings()["turn_to_face"]:
+		set_velocity(desired.normalized() * full_speed)
+		return
+	set_velocity(_steer(desired, full_speed, delta))
+
+
+func _handling_profile():
+	if _handling == null:
+		var tunables = settings()
+		var profile = "vehicle"
+		if domain == Constants.Match.Navigation.Domain.AIR:
+			profile = "air"
+		elif domain == Constants.Match.Navigation.Domain.WATER:
+			profile = "boat"
+		var entry = GameData.unit_by_scene(_unit._scene_path()) if "player" in _unit else null
+		if entry != null:
+			profile = tunables["handling_by_unit"].get(entry.get("id", ""), profile)
+		_handling = HANDLING_DEFAULTS.duplicate()
+		_handling.merge(tunables["handling"].get(profile, {}), true)
+	return _handling
+
+
+func _sync_heading():
+	"""picks up the unit's facing when it was turned by someone else (an attack, a spawn)"""
+	var yaw = _unit.global_rotation.y
+	if _heading == null or absf(wrapf(yaw - _applied_yaw, -PI, PI)) > 0.001:
+		_heading = yaw
+		_applied_yaw = yaw
+
+
+func _turn_heading(wanted_yaw, delta):
+	"""turns the heading toward wanted_yaw at the turn rate; returns the angle still to go"""
+	var turn = deg_to_rad(float(_handling_profile()["turn_rate_deg_s"])) * delta
+	var error = wrapf(wanted_yaw - _heading, -PI, PI)
+	_heading = wrapf(_heading + clampf(error, -turn, turn), -PI, PI)
+	return absf(wrapf(wanted_yaw - _heading, -PI, PI))
+
+
+func _steer(desired, full_speed, delta):
+	"""the velocity along the unit's heading: turned toward the path, slowed for sharp turns
+	(stopped to turn in place for very sharp ones) and for the destination, and changed no
+	faster than the unit accelerates or brakes"""
+	_sync_heading()
+	if desired.length_squared() < 0.0001:
+		return _heading_vector() * _current_speed
+	var handling = _handling_profile()
+	var error = _turn_heading(atan2(-desired.x, -desired.z), delta)
+	var in_place = deg_to_rad(float(handling["turn_in_place_deg"]))
+	_turning_in_place = error > in_place
+	var target_speed = full_speed * clampf(cos(error / in_place * PI * 0.5), 0.0, 1.0)
+	var braking = float(handling["braking_mps2"])
+	var remaining = max(
+		0.0,
+		(
+			_unit.global_position_yless.distance_to(target_position * Vector3(1, 0, 1))
+			- target_desired_distance
+		)
+	)
+	target_speed = min(target_speed, sqrt(2.0 * braking * remaining) + ARRIVAL_MIN_SPEED_MPS)
+	if _turning_in_place:
+		target_speed = 0.0
+	var rate = float(handling["acceleration_mps2"]) if target_speed > _current_speed else braking
+	_current_speed = move_toward(_current_speed, target_speed, rate * delta)
+	return _heading_vector() * _current_speed
+
+
+func _coast(delta):
+	"""after a stop the unit rolls out along its heading instead of halting dead, and a
+	standing unit turns toward the point it was told to face"""
+	_turning_in_place = false
+	if _current_speed > 0.0 and settings()["turn_to_face"] and _heading != null:
+		_sync_heading()
+		_coasting = true
+		var braking = float(_handling_profile()["braking_mps2"]) * 2.0  # brakes hard on a stop
+		_current_speed = move_toward(_current_speed, 0.0, braking * delta)
+		return _heading_vector() * _current_speed
+	_coasting = false
+	_current_speed = 0.0
+	if _face_point != null:
+		_sync_heading()
+		var to_point = (_face_point - _unit.global_position) * Vector3(1, 0, 1)
+		if (
+			to_point.length_squared() < 0.0001
+			or _turn_heading(atan2(-to_point.x, -to_point.z), delta) < 0.001
+		):
+			_face_point = null
+		_apply_heading()
+	return Vector3.ZERO
+
+
+func _heading_vector():
+	return Vector3(-sin(_heading), 0.0, -cos(_heading))
+
+
+func _apply_heading():
+	var unit_transform = _unit.global_transform
+	unit_transform.basis = Basis(Vector3.UP, _heading).scaled(unit_transform.basis.get_scale())
+	_unit.global_transform = unit_transform
+	_applied_yaw = _unit.global_rotation.y
 
 
 func _track_progress(delta):
@@ -455,6 +598,8 @@ func _track_progress(delta):
 		_stuck_s = 0.0
 		_repathed = false
 		return false
+	if _turning_in_place:
+		return false  # swinging round is progress too
 	_stuck_s += delta
 	if (
 		distance <= radius * tunables["arrival_slack_radii"]
