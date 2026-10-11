@@ -23,7 +23,7 @@ change the save format, which needs asking first.
 A hint (HINT_*) now shows once ever, not once per match. The keys it has shown are kept
 in Options (`seen_hints`, saved in options.tres), with a "Show first-time tips" switch and
 a "Show all tips again" button on Options > Interface. Only a real game, one started from
-source/Main.gd, writes them (FeatureFlags.remember_seen_hints), so tests and the play
+source/Main.gd, writes them (FeatureFlags.remember_first_run), so tests and the play
 harness never use up a player's hints. Alerts (unit cap, city full, raids) are not hints
 and still repeat. Why: hints that come back every match read as nagging.
 
@@ -34,3 +34,13 @@ needs, makes, health, the cost with what the player is short of, and why it is l
 The plain tooltip_text (BuildMenu.describe) stays as the fallback. The controls thread
 owns hud/ layout; this only swaps the button class and fills the tooltip. Why: one source
 of truth for what a building does, and a locked or unaffordable button says why.
+
+## 2026-10-11: first-run defaults and the intro card
+On the very first launch the main menu shows a "What is Ironbound?" card (IntroCard.gd):
+four lines on the game loop, then Play the tutorial or Go to the menu. Either answer sets
+Options.intro_seen, so it shows once. The Play menu starts a new player on Plain & Simple
+(small, open, 50x50) against an Easy AI, then remembers the last map and AI difficulty
+(Options.last_map, last_ai_difficulty). Like the hints, only a real game writes these
+(FeatureFlags.remember_first_run, renamed from remember_seen_hints). Why: the old default
+was whichever two-player map sorted first, often a large or asymmetric one, against a
+Normal AI; AoE4 and Northgard both point a new player at a guided match first.

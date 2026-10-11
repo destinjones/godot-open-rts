@@ -108,6 +108,12 @@ const RESETTABLE = [
 # hints already shown once; they never come back until Options > Interface brings them back
 @export var seen_hints = PackedStringArray()
 
+# --- first run (source/main-menu/Main.gd and Play.gd)
+@export var intro_seen = false  # the "what is this game" card shown on the first launch
+# the Play menu's last map id and AI difficulty; empty: the starter ones (see Play.gd)
+@export var last_map = ""
+@export var last_ai_difficulty = ""
+
 # --- camera and mouse (read by IsometricCamera3D.gd)
 @export_range(0.25, 3.0) var camera_scroll_speed = 1.0
 @export var edge_scrolling = true

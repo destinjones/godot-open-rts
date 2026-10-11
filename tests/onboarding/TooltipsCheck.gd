@@ -77,7 +77,8 @@ func _check_bars(hud):
 
 func _check_menu(hud, human, shot, wanted_id):
 	var buttons = hud.find_children("*", "Button", true, false).filter(
-		func(button): return button.get_script() == RichTooltipButton and button.is_visible_in_tree()
+		func(button):
+			return button.get_script() == RichTooltipButton and button.is_visible_in_tree()
 	)
 	_expect(not buttons.is_empty(), "the menu has hover cards (%s)" % shot)
 	var shown = null
