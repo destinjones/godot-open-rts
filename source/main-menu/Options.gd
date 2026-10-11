@@ -327,6 +327,7 @@ func _build_camera_tab(rows):
 	_slider_row(rows, "camera_scroll_speed", "Scroll speed", 25, 300, 5, "%")
 	_check_row(rows, "edge_scrolling", "Scroll when the mouse touches the screen edge")
 	_check_row(rows, "invert_zoom", "Invert mouse wheel zoom")
+	_check_row(rows, "screen_shake", "Screen shake")
 	_section(rows, "Mouse")
 	_check_row(rows, "mouse_restricted", "Keep the mouse inside the game window")
 
@@ -526,6 +527,7 @@ func _load_values():
 		"show_fps",
 		"edge_scrolling",
 		"invert_zoom",
+		"screen_shake",
 		"mouse_restricted"
 	]:
 		_controls[property].set_pressed_no_signal(options.get(property))
