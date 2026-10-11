@@ -128,11 +128,12 @@ func _process(delta):
 					unit.action = null
 		if step.get("chatter", false) and _soundscape != null:
 			_soundscape._chatter_in = 0.0
-	if not _units.is_empty() and is_instance_valid(_units[0]):  # the camera follows them
+	var alive = _units.filter(func(unit): return is_instance_valid(unit) and unit.is_inside_tree())
+	if not alive.is_empty():  # the camera follows them
 		var centre = Vector3.ZERO
-		for unit in _units:
+		for unit in alive:
 			centre += unit.global_position
-		_camera.set_position_safely(centre / _units.size())
+		_camera.set_position_safely(centre / alive.size())
 	if _bed != null:
 		_bed.update_targets(_bed_state["state"], _bed_state["intensity"], _bed_state["tier"], 100)
 		_bed._fade(delta)
