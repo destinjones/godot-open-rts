@@ -4,7 +4,9 @@ extends Node
 # construction complete, research complete, low oil, storage full, trade, war, helper
 # alerts). Lines come from the "advisor" voice set in data/sounds/ and are picked by
 # VoiceBank, so repeated events vary their wording. An announcement that arrives while
-# another one plays waits in a short queue instead of cutting it off.
+# another one plays waits in a short queue instead of cutting it off. Economy alarms (low oil,
+# storage full) ring a chime first, so they stand out from routine news
+# (data/sounds/economy.json alert_events).
 
 const GameData = preload("res://source/data-model/GameData.gd")
 const Structure = preload("res://source/match/units/Structure.gd")
@@ -31,6 +33,7 @@ const COOLDOWN_MS = {
 const LOW_OIL = 5  # announce when the oil stock drops below this...
 const OIL_RECOVERED = 12  # ...and again only after it climbed back above this
 const POLL_S = 2.0
+const ALERT_CHIME = "res://assets/audio/economy/alert_economy.ogg"
 const HELPER_ALERTS = {
 	"on": "helper_on",
 	"off": "helper_off",
@@ -48,6 +51,10 @@ var _queue = []  # [[event, time ms]]
 var _last_ms = {}  # event -> time it was last announced
 var _last_base_damage_ms = -BASE_UNDER_ATTACK_QUIET_MS
 var _oil_low = false
+var _alert_events = []
+var _alert_lead_s = 0.45
+var _chime_player = null
+var _chiming = false
 
 @onready var _audio_player = find_child("AudioStreamPlayer")
 @onready var _player = get_parent()
@@ -55,6 +62,13 @@ var _oil_low = false
 
 func _ready():
 	_set_id = GameData.voices().get("advisor", "advisor")
+	var economy = GameData.sounds("economy")
+	_alert_events = economy.get("alert_events", [])
+	_alert_lead_s = float(economy.get("alert_lead_s", 0.45))
+	_chime_player = AudioStreamPlayer.new()
+	_chime_player.bus = &"Effects"
+	_chime_player.stream = load(ALERT_CHIME)
+	add_child(_chime_player)
 	_audio_player.finished.connect(_play_next)
 	MatchSignals.match_started.connect(announce.bind("match_started"))
 	MatchSignals.match_aborted.connect(announce.bind("match_aborted"))
@@ -91,7 +105,7 @@ func announce(event):
 		_queue.clear()
 		_play(event)
 		return
-	if _audio_player.playing:
+	if _audio_player.playing or _chiming:
 		if last_event in FINAL_EVENTS:
 			return
 		_queue = _queue.filter(func(entry): return entry[0] != event)
@@ -108,7 +122,18 @@ func _play(event):
 		return
 	last_event = event
 	_audio_player.stream = stream
+	if event in _alert_events and _chime_player != null:
+		_chime_player.play()
+		_chiming = true  # the line waits for the chime, and the queue for the line
+		get_tree().create_timer(_alert_lead_s).timeout.connect(_after_chime.bind(stream))
+		return
 	_audio_player.play()
+
+
+func _after_chime(stream):
+	_chiming = false
+	if _audio_player.stream == stream:
+		_audio_player.play()
 
 
 func _play_next():

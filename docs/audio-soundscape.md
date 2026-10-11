@@ -64,12 +64,27 @@ tanks cost the same as one.
   blast), aircraft (a falling engine whine), structures (blast, collapse, rubble).
   Each death is a list of `[delay, kind, loudness, pitch]` layers in the data.
 
+## Building and the economy (`source/match/environment/EconomySounds.gd`, `data/sounds/economy.json`)
+
+- **Build clangs**: laying out a site drives two stakes and sets a crate down (quieter for
+  sites the helper lays out); a spot that is refused gives a muted double buzz; a finished
+  building rings two hammer strikes and a bright chord.
+- **Working buildings** are loops mixed from what is near the middle of the screen, like
+  unit presence: sites hammer, grind and weld while someone is building them (and fall
+  quiet when nobody is), factories with a queue stamp and rattle, and power stations and
+  pylons on a live grid hum. In a brownout the hum sags in pitch.
+- **Deposits**: goods reaching one of the player's depots near the camera are set down with
+  a crate thump and a small chime (not every delivery, and at most every half second).
+- **Callouts**: the advisor already says "low oil" and "storage full"; those calls now ring a
+  two-note alarm chime first, so they stand out from routine news.
+
 ## Checks and clips
 
 - `tests/audio/AmbientBedCheck.tscn` checks the bed against MusicPlayer's state machine.
 - `tests/audio/UnitPresenceCheck.tscn` checks idle and moving units on a test map.
 - `tests/audio/CombatSoundsCheck.tscn` checks every unit's report, death and surface.
 - `tests/audio/WarSoundsCheck.tscn` stages a battle and checks it is heard.
+- `tests/audio/EconomySoundsCheck.tscn` builds a power plant and checks each feedback.
 - `tests/audio/SoundClip.tscn -- --clip=<name>` records a clip of a scripted timeline with
   Godot's movie maker, for pull requests (see its header).
 
@@ -92,5 +107,7 @@ tanks cost the same as one.
   instead of their base unit's.
 - **Infantry deaths have no screams.** Bodies and gear going down read clearly at RTS
   distance, and keep the game's tone.
+- **Callouts stay spoken.** Low oil and storage full already had advisor lines; adding a
+  second, non-verbal callout would double them, so they gained a chime instead.
 - **Audio work was cleared during the feature freeze.** Destin asked for the audio thread
   explicitly (2026-10-11), so it runs alongside the feel tickets.

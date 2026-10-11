@@ -15,6 +15,8 @@ extends Node
 #   unit-presence: a few tanks, a squad and a helicopter idling, driving off, and stopping.
 #   combat: two mixed armies meet: rifles, machine guns, cannon, artillery, rockets, impacts
 #           on armour and infantry, and deaths of every size.
+#   economy: a site laid out and built, the finish, the power plant humming, a refused spot,
+#            goods arriving, and the low-oil call with its chime.
 
 const CLIPS = {
 	# [game second, what happens]
@@ -44,6 +46,17 @@ const CLIPS = {
 		[24.0, {"caption": "radio chatter", "chatter": true}],
 		[30.0, {"end": true}],
 	],
+	"economy":
+	[
+		[0.0, {"caption": "a site is laid out", "site": "power_plant"}],
+		[1.0, {"caption": "being built", "build": true}],
+		[9.0, {"caption": "finished", "finish": true}],
+		[11.0, {"caption": "the power plant hums"}],
+		[17.0, {"caption": "a refused spot", "refused": true}],
+		[19.0, {"caption": "goods arrive", "deliver": 3}],
+		[22.0, {"caption": "low oil", "announce": "low_oil"}],
+		[28.0, {"end": true}],
+	],
 	"combat":
 	[
 		[0.0, {"caption": "two armies close in", "battle": true}],
@@ -67,6 +80,8 @@ var _units = []
 var _spot = Vector3(60.0, 0.0, 60.0)
 var _camera = null
 var _soundscape = null
+var _site = null
+var _building = false
 
 
 func _ready():
@@ -126,6 +141,33 @@ func _process(delta):
 		for key in ["tier", "state", "intensity"]:
 			if key in step:
 				_bed_state[key] = step[key]
+		if "site" in step:
+			_site = load(GameData.unit_by_id(step["site"])["scene"]).instantiate()
+			_site.set_meta("placed_by_hand", true)
+			var human = get_tree().get_nodes_in_group("players")[0]
+			MatchSignals.setup_and_spawn_unit.emit(_site, Transform3D(Basis(), _spot), human)
+			_camera.set_size_safely(14.0)
+			_camera.set_position_safely(_spot)
+		_building = step.get("build", _building)
+		if step.get("finish", false) and is_instance_valid(_site):
+			_building = false
+			_site._construction_progress = 1.0
+			_site._finish_construction()
+		if step.get("refused", false):
+			MatchSignals.structure_placement_refused.emit(
+				get_tree().get_nodes_in_group("players")[0]
+			)
+		for i in range(step.get("deliver", 0)):
+			var economy = _soundscape.find_child("EconomySounds", false, false)
+			economy._last_ms.erase("deposit")
+			economy.play("deposit", _spot + Vector3(i * 2.0, 0.0, 0.0))
+		if "announce" in step:
+			var narrator = get_tree().current_scene.find_child(
+				"VoiceNarratorController", true, false
+			)
+			if narrator != null:
+				narrator._last_ms.erase(step["announce"])
+				narrator.announce(step["announce"])
 		if step.get("battle", false):
 			_battle()
 		if "spawn" in step:
@@ -141,6 +183,8 @@ func _process(delta):
 					unit.action = null
 		if step.get("chatter", false) and _soundscape != null:
 			_soundscape._chatter_in = 0.0
+	if _building and is_instance_valid(_site) and _site.is_under_construction():
+		_site._construction_progress = min(_site._construction_progress + delta * 0.1, 0.95)
 	var alive = _units.filter(func(unit): return is_instance_valid(unit) and unit.is_inside_tree())
 	if not alive.is_empty():  # the camera follows them
 		var centre = Vector3.ZERO
