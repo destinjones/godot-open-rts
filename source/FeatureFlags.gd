@@ -13,3 +13,8 @@ extends Node
 @export_group("Match/Debug")
 @export var frame_incrementer = false
 @export var god_mode = false
+
+# first-run state (hints seen, the intro card, the Play menu's last choices) is remembered
+# in the options only in a real game, one started from its main scene (source/Main.gd sets
+# this), so tests and the play harness never use it up
+var remember_first_run = false

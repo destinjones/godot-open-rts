@@ -87,3 +87,7 @@ HOVER_TRUCKS,"Haulers: {0} on the way, {1} waiting here"
 INFO_DETAILS,What it does
 INFO_GRID_ONLY,carries the power grid {0} m around it
 INFO_TRADE_DEPOT,a depot for trade caravans
+TIP_HEALTH,Health {0}
+TIP_YOU_HAVE,(you have {0})
+TIP_LOCKED,Locked: {0}
+TIP_CITY_CENTRE_LIMIT,you have as many city centres as a player may have
