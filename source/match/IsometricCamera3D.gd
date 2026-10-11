@@ -3,10 +3,11 @@ extends Camera3D
 # The match (and map editor) camera: orthographic, looking down at 30 degrees.
 #
 # Screen shake: MatchSignals.camera_shake(strength, world_position) adds "trauma" (0..1)
-# that decays over time; the view's offset is trauma squared times smooth noise, so small
-# hits barely register and big ones kick. A source further from the centre of the view
-# shakes less, off-screen ones not at all. The offset goes through h_offset/v_offset only,
-# so the camera transform the rest of the game reads (picking, minimap) never moves.
+# that decays over time; the view's offset is trauma to the power 1.5 times smooth noise, so
+# a vehicle dying on screen is felt (a few pixels) and a building collapse kicks. A source
+# further from the centre of the view shakes less, off-screen ones not at all. The offset goes
+# through h_offset/v_offset only, so the camera transform the rest of the game reads
+# (picking, minimap) never moves.
 # A big hit close to the view also freezes the game for a few frames (hit-stop), only at
 # normal speed so the play harness and the debug speed controls are left alone.
 # Both are off with the "Screen shake" option.
@@ -16,7 +17,7 @@ const EXPECTED_PROJECTION = PROJECTION_ORTHOGONAL
 const VirtualPointer = preload("res://source/utils/VirtualPointer.gd")
 const SHAKE_DECAY = 1.6  # trauma lost per second
 const SHAKE_MAX_PER_HIT = 0.6  # one hit never maxes the trauma out on its own
-const SHAKE_MAX_OFFSET = 0.03  # at full trauma, as a fraction of the visible height
+const SHAKE_MAX_OFFSET = 0.045  # at full trauma, as a fraction of the visible height
 const SHAKE_FREQUENCY = 14.0  # roughly Hz: a rattle, not a sway
 const SHAKE_REACH = 1.0  # sources this many view heights from the centre do not shake
 const HIT_STOP_MIN_STRENGTH = 0.45  # after distance attenuation
@@ -111,7 +112,7 @@ func _update_shake(delta: float):
 		return
 	_trauma = max(0.0, _trauma - SHAKE_DECAY * delta)
 	_shake_time += delta
-	var amount = _trauma * _trauma * SHAKE_MAX_OFFSET * size
+	var amount = pow(_trauma, 1.5) * SHAKE_MAX_OFFSET * size
 	# two far-apart rows of the same noise, so the axes move independently
 	h_offset = amount * _shake_noise.get_noise_2d(_shake_time, 0.0)
 	v_offset = amount * _shake_noise.get_noise_2d(_shake_time, 50.0)
