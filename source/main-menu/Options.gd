@@ -81,7 +81,9 @@ const MOUSE_BINDINGS = [
 	["Line formation", "Right drag"],
 	["Rotate camera", "Middle drag"],
 	["Reset camera rotation", "Middle double click"],
-	["Zoom", "Mouse wheel"],
+	["Zoom (towards the cursor)", "Mouse wheel"],
+	["Jump the camera", "Click / drag the minimap"],
+	["Ping a spot", "Alt + click the minimap"],
 ]
 
 @export var overlay = false

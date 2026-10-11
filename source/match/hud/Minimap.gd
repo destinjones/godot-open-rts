@@ -5,6 +5,7 @@ const Moving = preload("res://source/match/units/actions/Moving.gd")
 const SupplyRoutesOverlay = preload("res://source/match/hud/SupplyRoutesOverlay.gd")
 const Hauler = preload("res://source/match/units/Hauler.gd")
 const MinimapTerrain = preload("res://source/match/hud/MinimapTerrain.gd")
+const MinimapPings = preload("res://source/match/hud/MinimapPings.gd")
 
 const GROUND_LEVEL_PLANE = Plane(Vector3.UP, 0)
 const MINIMAP_PIXELS_PER_WORLD_METER = 2
@@ -13,6 +14,7 @@ const UNIT_SYNC_EVERY_PHYSICS_TICKS = 3
 var _unit_to_corresponding_node_mapping = {}
 var _camera_movement_active = false
 var _routes_overlay = null
+var _pings = null
 var _ticks_until_unit_sync = 0
 
 @onready var _match = find_parent("Match")
@@ -29,6 +31,10 @@ func _ready():
 	_routes_overlay.name = "SupplyRoutesOverlay"
 	_routes_overlay.pixels_per_meter = MINIMAP_PIXELS_PER_WORLD_METER
 	_viewport_background.add_sibling(_routes_overlay)
+	_pings = MinimapPings.new()
+	_pings.name = "MinimapPings"
+	_pings.pixels_per_meter = MINIMAP_PIXELS_PER_WORLD_METER
+	find_child("MinimapViewport").add_child(_pings)
 	await _match.ready  # make sure Match is ready as it may change map on setup
 	var map = _match.find_child("Map")
 	find_child("MinimapViewport").size = map.size * MINIMAP_PIXELS_PER_WORLD_METER
@@ -188,8 +194,25 @@ func _issue_movement_action(position_2d_within_texture_rect):
 	MatchSignals.terrain_targeted.emit(target_point_on_colliding_surface)
 
 
+func _mark_spot(position_2d_within_texture_rect):
+	var world_position_2d = _texture_rect_position_to_world_position(
+		position_2d_within_texture_rect
+	)
+	if world_position_2d != null:
+		ping(Vector3(world_position_2d.x, 0, world_position_2d.y), MinimapPings.MARK_COLOR)
+
+
+func ping(world_position, color = MinimapPings.ATTACK_COLOR):
+	"""rings on the minimap at a spot in the world (MinimapPings.gd)"""
+	if _pings != null:
+		_pings.ping(world_position, color)
+
+
 func _on_gui_input(event):
 	if event is InputEventMouseButton:
+		if event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT and event.alt_pressed:
+			_mark_spot(event.position)  # Alt + click: a ping, the camera stays
+			return
 		if event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
 			_try_teleporting_camera_based_on_local_texture_rect_position(event.position)
 			_camera_movement_active = true
