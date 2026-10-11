@@ -80,10 +80,14 @@ func _ready():
 	if narrator != null:
 		narrator._last_ms.erase("low_oil")
 		narrator.announce("low_oil")
-		_expect(narrator._chiming, "the low-oil call rings a chime first")
-		_expect(narrator._chime_player.bus == &"Effects", "on the Effects bus")
-		await get_tree().create_timer(0.6).timeout
-		_expect(not narrator._chiming, "then the advisor speaks")
+		var voice = narrator.find_child("AudioStreamPlayer")
+		_expect(voice.stream is AudioStreamPlaylist, "the low-oil call rings a chime first")
+		_expect(
+			voice.stream is AudioStreamPlaylist and voice.stream.get_list_stream(1) != null,
+			"then the advisor speaks"
+		)
+		narrator.announce("match_started")
+		_expect(narrator.last_event == "low_oil", "and the next line waits for both")
 	_finish()
 
 

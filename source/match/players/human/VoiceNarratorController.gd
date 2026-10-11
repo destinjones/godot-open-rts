@@ -53,8 +53,7 @@ var _last_base_damage_ms = -BASE_UNDER_ATTACK_QUIET_MS
 var _oil_low = false
 var _alert_events = []
 var _alert_lead_s = 0.45
-var _chime_player = null
-var _chiming = false
+var _chime = null
 
 @onready var _audio_player = find_child("AudioStreamPlayer")
 @onready var _player = get_parent()
@@ -65,10 +64,7 @@ func _ready():
 	var economy = GameData.sounds("economy")
 	_alert_events = economy.get("alert_events", [])
 	_alert_lead_s = float(economy.get("alert_lead_s", 0.45))
-	_chime_player = AudioStreamPlayer.new()
-	_chime_player.bus = &"Effects"
-	_chime_player.stream = load(ALERT_CHIME)
-	add_child(_chime_player)
+	_chime = load(ALERT_CHIME) if ResourceLoader.exists(ALERT_CHIME) else null
 	_audio_player.finished.connect(_play_next)
 	MatchSignals.match_started.connect(announce.bind("match_started"))
 	MatchSignals.match_aborted.connect(announce.bind("match_aborted"))
@@ -105,7 +101,7 @@ func announce(event):
 		_queue.clear()
 		_play(event)
 		return
-	if _audio_player.playing or _chiming:
+	if _audio_player.playing:
 		if last_event in FINAL_EVENTS:
 			return
 		_queue = _queue.filter(func(entry): return entry[0] != event)
@@ -121,19 +117,22 @@ func _play(event):
 	if stream == null:
 		return
 	last_event = event
+	if event in _alert_events and _chime != null:
+		stream = _with_chime(stream)
 	_audio_player.stream = stream
-	if event in _alert_events and _chime_player != null:
-		_chime_player.play()
-		_chiming = true  # the line waits for the chime, and the queue for the line
-		get_tree().create_timer(_alert_lead_s).timeout.connect(_after_chime.bind(stream))
-		return
 	_audio_player.play()
 
 
-func _after_chime(stream):
-	_chiming = false
-	if _audio_player.stream == stream:
-		_audio_player.play()
+func _with_chime(line):
+	"""the chime, then the line coming in over its tail, as one stream: the player stays
+	busy until the line ends, so the queue waits for both"""
+	var playlist = AudioStreamPlaylist.new()
+	playlist.loop = false
+	playlist.stream_count = 2
+	playlist.set_list_stream(0, _chime)
+	playlist.set_list_stream(1, line)
+	playlist.fade_time = max(_chime.get_length() - _alert_lead_s, 0.0)
+	return playlist
 
 
 func _play_next():
