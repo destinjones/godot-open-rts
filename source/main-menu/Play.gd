@@ -9,6 +9,11 @@ const PlayerSlotOptions = preload("res://source/main-menu/PlayerSlotOptions.gd")
 const MatchRulesOptions = preload("res://source/main-menu/MatchRulesOptions.gd")
 const Factions = preload("res://source/data-model/Factions.gd")
 
+# what a new player starts on: a small, open map against an easy rival; after a match the
+# menu opens on the last map and AI difficulty instead (Options.last_map / last_ai_difficulty)
+const STARTER_MAP = "plain_and_simple"
+const STARTER_AI_DIFFICULTY = "easy"
+
 var _map_paths = []
 var _ai_personalities = []  # option index - SIMPLE_CLAIRVOYANT_AI -> personality id
 var _sandbox_check_box = null
@@ -22,10 +27,11 @@ var _rules_options = MatchRulesOptions.new()  # tutorial, AI assist and auto-bui
 
 func _ready():
 	_setup_map_list()
-	_on_map_list_item_selected(0)
+	_on_map_list_item_selected(_map_list.get_selected_items()[0])
 	_setup_ai_personalities()
 	_setup_sandbox_check_box()
 	_setup_slot_options()
+	_select_default_difficulty()
 	_rules_options.setup(find_child("VBoxContainer2"))
 	_style_start_button(find_child("StartButton"))
 	var option_nodes = find_child("GridContainer").find_children("OptionButton*")
@@ -145,7 +151,32 @@ func _setup_map_list():
 	_map_list.clear()
 	for map_path in _map_paths:
 		_map_list.add_item(Constants.Match.MAPS[map_path]["name"])
-	_map_list.select(0)
+	var wanted = Globals.options.last_map if Globals.options.last_map != "" else STARTER_MAP
+	_map_list.select(max(_map_paths.map(_map_id).find(wanted), 0))
+
+
+func _select_default_difficulty():
+	var difficulty = Globals.options.last_ai_difficulty
+	if GameData.ai_difficulty(difficulty) == null:
+		difficulty = STARTER_AI_DIFFICULTY
+	for slot in range(find_child("GridContainer").find_children("OptionButton*").size()):
+		_slot_options.set_difficulty(slot, difficulty)
+
+
+func _remember_choices(match_settings):
+	"""the next visit of the menu opens on this map and AI difficulty"""
+	if not FeatureFlags.remember_first_run:
+		return
+	Globals.options.last_map = _map_id(_get_selected_map_path())
+	for player in match_settings.players:
+		if player.controller == Constants.PlayerType.SIMPLE_CLAIRVOYANT_AI:
+			Globals.options.last_ai_difficulty = player.ai_difficulty
+			break
+	Globals.options.save()
+
+
+static func _map_id(map_path):
+	return Constants.Match.MAPS[map_path].get("id", map_path.get_file().get_basename())
 
 
 func _create_match_settings():
@@ -204,6 +235,7 @@ func _get_selected_map_path():
 func _on_start_button_pressed():
 	hide()
 	var match_settings = _create_match_settings()
+	_remember_choices(match_settings)
 	var new_scene = null
 	if match_settings.players.any(
 		func(player): return player.controller == Constants.PlayerType.HUMAN
