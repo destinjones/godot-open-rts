@@ -26,3 +26,11 @@ a "Show all tips again" button on Options > Interface. Only a real game, one sta
 source/Main.gd, writes them (FeatureFlags.remember_seen_hints), so tests and the play
 harness never use up a player's hints. Alerts (unit cap, city full, raids) are not hints
 and still repeat. Why: hints that come back every match read as nagging.
+
+## 2026-10-11: build-menu tooltips are cards made from the building-card data
+Build and production buttons open a rich hover card (RichTooltipButton + Tooltips.gd)
+built from BuildingInfoText, the same source as the selection card: role, what it does,
+needs, makes, health, the cost with what the player is short of, and why it is locked.
+The plain tooltip_text (BuildMenu.describe) stays as the fallback. The controls thread
+owns hud/ layout; this only swaps the button class and fills the tooltip. Why: one source
+of truth for what a building does, and a locked or unaffordable button says why.
