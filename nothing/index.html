@@ -238,7 +238,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
 /* Blender renders */
 .tier-box { display: block; height: 150px; width: 100%; object-fit: contain; object-position: 50% 100%; margin: 6px auto 8px; }
 .tier-box[src*="casual"] { height: 150px; padding-top: 34px; }
-.spin-box { position: relative; width: min(100%, 520px, calc(100svh - var(--bar) - 120px)); aspect-ratio: 1; margin: 0 auto; background: #0d0327 url(box-spin-0.webp) center / cover no-repeat; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; border-radius: 16px; }
+.spin-box { position: relative; width: min(100%, 520px, calc(100svh - var(--bar) - 120px)); aspect-ratio: 1; margin: 0 auto; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; border-radius: 16px; }
 .spin-box.dragging { cursor: grabbing; }
 .spin-box canvas { display: block; width: 100%; height: 100%; }
 .spin-hint { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: .14em; color: #00e5ff; background: rgba(13,3,39,.8); border: 1px solid rgba(0,229,255,.4); border-radius: 999px; padding: 5px 12px; white-space: nowrap; pointer-events: none; transition: opacity .4s; }
@@ -339,10 +339,10 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
 
   <section class="vp-sec alt vp-center rv">
     <div class="vp-spinwrap">
-      <div class="spin-box" id="spin-box" role="slider" tabindex="0" aria-label="Empty box. Drag, or use the arrow keys, to spin it." aria-valuemin="0" aria-valuemax="359" aria-valuenow="0"><canvas id="spin-cv" width="800" height="800"></canvas><div class="spin-hint" aria-hidden="true">⟲ DRAG TO SPIN ⟳</div></div>
+      <div class="spin-box" id="spin-box" tabindex="0" role="img" aria-label="A 3D open, empty cardboard box. Drag in any direction, or use the arrow keys, to turn it."><canvas id="spin-cv"></canvas><div class="spin-hint" id="spin-hint" aria-hidden="true">LOADING NOTHING…</div></div>
       <div class="txt">
         <h2>Inspect it from <span class="cyan">every angle.</span></h2>
-        <p class="lead" style="margin-top:14px">Drag it. Spin it. Look inside. 360° of verified, hand-inspected nothing.</p>
+        <p class="lead" style="margin-top:14px">Grab it. Turn it any way you like. Look inside. 360° of verified, hand-inspected nothing.</p>
         <div class="vp-box" style="display:block;margin-top:14px"><div class="spec">CONTENTS: 0 · CORNERS: 8 · SURPRISES: NONE</div></div>
       </div>
     </div>
@@ -601,49 +601,6 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
   if (price && pop && price.scrollWidth > price.clientWidth){ price.scrollLeft = pop.offsetLeft - (price.clientWidth - pop.offsetWidth) / 2; }
 
 
-  // Drag-to-spin box: 72 Blender renders (one every 5°) in a 9x8 sprite sheet.
-  (function(){
-    var box = document.getElementById('spin-box'), cv = document.getElementById('spin-cv');
-    if (!box || !cv) return;
-    var ctx = cv.getContext('2d'), N = 72, COLS = 9, SZ = 400, sheet = new Image(), ready = false;
-    var pos = 0, vel = 0, auto = !reduce, dragging = false, lastX = 0, lastT = 0, idleAt = 0, drawn = -1;
-    var AUTO_SPEED = N / 14000; // frames per ms: one full turn every 14 s
-    function draw(){
-      var f = ((Math.round(pos) % N) + N) % N;
-      if (!ready || f === drawn) return; drawn = f;
-      ctx.drawImage(sheet, (f % COLS) * SZ, Math.floor(f / COLS) * SZ, SZ, SZ, 0, 0, cv.width, cv.height);
-      box.setAttribute('aria-valuenow', f * 5);
-    }
-    sheet.onload = function(){ ready = true; drawn = -1; draw(); };
-    sheet.src = 'box-spin.webp';
-    var prev = performance.now();
-    function loop(t){
-      var dt = Math.min(64, t - prev); prev = t;
-      if (!dragging){
-        if (Math.abs(vel) > 0.0005){ pos += vel * dt; vel *= Math.pow(0.996, dt); }
-        else if (auto && t > idleAt){ pos += AUTO_SPEED * dt; }
-      }
-      draw(); requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
-    var PX_PER_FRAME = 4; // drag 4px = 5°
-    box.addEventListener('pointerdown', function(e){
-      dragging = true; vel = 0; lastX = e.clientX; lastT = e.timeStamp;
-      box.classList.add('dragging', 'touched'); box.setPointerCapture(e.pointerId);
-    });
-    box.addEventListener('pointermove', function(e){
-      if (!dragging) return;
-      var dx = e.clientX - lastX, dt = Math.max(1, e.timeStamp - lastT);
-      pos += dx / PX_PER_FRAME; vel = (dx / PX_PER_FRAME) / dt;
-      lastX = e.clientX; lastT = e.timeStamp;
-    });
-    function end(){ if (!dragging) return; dragging = false; box.classList.remove('dragging'); idleAt = performance.now() + 2500; vel = Math.max(-0.08, Math.min(0.08, vel)); }
-    box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
-    box.addEventListener('keydown', function(e){
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight'){ e.preventDefault(); vel = 0; pos += e.key === 'ArrowRight' ? 2 : -2; idleAt = performance.now() + 2500; box.classList.add('touched'); }
-    });
-  })();
-
   // Tangible Nothing: a real checkbox in spirit.
   var addon = document.getElementById('vp-addon');
   function toggleAddon(){
@@ -682,6 +639,120 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
   }
   setTimeout(function(){ nextFeed(); setInterval(nextFeed, 5200); }, 2600);
 })();
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+// Real-time 3D box: a Blender model (box.glb) you can turn in any direction.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const wrap = document.getElementById('spin-box'), canvas = document.getElementById('spin-cv'), hint = document.getElementById('spin-hint');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); }
+catch (e) { hint.textContent = 'YOUR BROWSER SHOWS NOTHING. FITTING.'; throw e; }
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.3;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+camera.position.set(0, 1.25, 5.6);
+camera.lookAt(0, -0.18, 0);
+
+const key = new THREE.DirectionalLight(0xfff1e0, 1.6);
+key.position.set(1.5, 4, 2.5);
+key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+key.shadow.camera.left = key.shadow.camera.bottom = -1.6;
+key.shadow.camera.right = key.shadow.camera.top = 1.6;
+key.shadow.bias = -0.0008; key.shadow.normalBias = 0.02;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xff2e97, 0.9); rim.position.set(-3, 1, -2); scene.add(rim);
+const fill = new THREE.DirectionalLight(0x00e5ff, 0.5); fill.position.set(3, 0.5, -1); scene.add(fill);
+const front = new THREE.DirectionalLight(0xffffff, 0.7); front.position.set(0, 0.5, 4); scene.add(front);
+
+// Neon floor rings and a soft contact shadow; they stay put while the box turns.
+const floorY = -0.9;
+const ringA = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.012, 8, 128), new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
+const ringB = new THREE.Mesh(new THREE.TorusGeometry(1.01, 0.009, 8, 128), new THREE.MeshBasicMaterial({ color: 0xff2e97 }));
+for (const r of [ringA, ringB]) { r.rotation.x = Math.PI / 2; r.position.y = floorY; scene.add(r); }
+const sc = document.createElement('canvas'); sc.width = sc.height = 128;
+const g = sc.getContext('2d'), grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+grd.addColorStop(0, 'rgba(0,0,0,.6)'); grd.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sc), transparent: true, depthWrite: false }));
+shadow.rotation.x = -Math.PI / 2; shadow.position.y = floorY - 0.001; scene.add(shadow);
+
+const model = new THREE.Group();
+model.quaternion.setFromEuler(new THREE.Euler(0.5, -0.65, 0));
+scene.add(model);
+
+new GLTFLoader().load('box.glb', (gltf) => {
+  gltf.scene.traverse((o) => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
+  model.add(gltf.scene);
+  hint.textContent = 'DRAG TO TURN IT ANY WAY';
+  dirty = true;
+}, undefined, () => { hint.textContent = 'COULD NOT LOAD NOTHING. IRONIC.'; });
+
+function resize() {
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix(); dirty = true;
+}
+new ResizeObserver(resize).observe(wrap);
+
+// Turn the box about the screen's axes, so dragging always moves it the way your hand moves.
+const AX_Y = new THREE.Vector3(0, 1, 0), AX_X = new THREE.Vector3(1, 0, 0), q = new THREE.Quaternion();
+function turn(dx, dy) {
+  if (dx) model.quaternion.premultiply(q.setFromAxisAngle(AX_Y, dx));
+  if (dy) model.quaternion.premultiply(q.setFromAxisAngle(AX_X, dy));
+  dirty = true;
+}
+let dragging = false, lx = 0, ly = 0, lt = 0, vx = 0, vy = 0, idleUntil = 0, dirty = true;
+const RAD_PER_PX = 0.0105, AUTO = reduce ? 0 : (Math.PI * 2) / 16000; // one lap every 16 s when idle
+
+wrap.addEventListener('pointerdown', (e) => {
+  dragging = true; vx = vy = 0; lx = e.clientX; ly = e.clientY; lt = e.timeStamp;
+  wrap.classList.add('dragging', 'touched'); wrap.setPointerCapture(e.pointerId);
+});
+wrap.addEventListener('pointermove', (e) => {
+  if (!dragging) return;
+  const dx = (e.clientX - lx) * RAD_PER_PX, dy = (e.clientY - ly) * RAD_PER_PX, dt = Math.max(1, e.timeStamp - lt);
+  turn(dx, dy);
+  vx = 0.6 * vx + 0.4 * (dx / dt); vy = 0.6 * vy + 0.4 * (dy / dt);
+  lx = e.clientX; ly = e.clientY; lt = e.timeStamp;
+});
+const end = () => { if (!dragging) return; dragging = false; wrap.classList.remove('dragging'); idleUntil = performance.now() + 2500; };
+wrap.addEventListener('pointerup', end); wrap.addEventListener('pointercancel', end);
+wrap.addEventListener('keydown', (e) => {
+  const k = { ArrowLeft: [-0.15, 0], ArrowRight: [0.15, 0], ArrowUp: [0, -0.15], ArrowDown: [0, 0.15] }[e.key];
+  if (!k) return; e.preventDefault(); vx = vy = 0; turn(k[0], k[1]); idleUntil = performance.now() + 2500; wrap.classList.add('touched');
+});
+
+// Only draw while the box is on screen.
+let visible = false, prev = performance.now();
+new IntersectionObserver((es) => { visible = es[0].isIntersecting; if (visible) { prev = performance.now(); requestAnimationFrame(loop); } }).observe(wrap);
+function loop(t) {
+  if (!visible) return;
+  const dt = Math.min(50, t - prev); prev = t;
+  if (!dragging) {
+    if (Math.abs(vx) + Math.abs(vy) > 1e-5) {
+      turn(vx * dt, vy * dt); const k = Math.pow(0.995, dt); vx *= k; vy *= k;
+    } else if (AUTO && t > idleUntil) {
+      turn(AUTO * dt, 0);
+    }
+  }
+  if (dirty) { renderer.render(scene, camera); dirty = false; }
+  requestAnimationFrame(loop);
+}
 </script>
 </body>
 </html>

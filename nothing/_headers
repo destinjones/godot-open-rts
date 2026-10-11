@@ -7,3 +7,6 @@
   Cache-Control: public, max-age=31536000, immutable
 /og.jpg
   Cache-Control: public, max-age=31536000, immutable
+/box.glb
+  Content-Type: model/gltf-binary
+  Cache-Control: public, max-age=86400
