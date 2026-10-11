@@ -36,8 +36,13 @@ func _ready():
 		Globals.options.set(property, defaults.get(property))
 	_expect(not IntroCard.should_show(), "no intro card in tests and the play harness")
 	FeatureFlags.remember_first_run = true
+	# a crash report left by an earlier run (a test killed by a timeout) would show the
+	# crash prompt instead of the card; the prompt has its own check (tests/crash/)
+	var crash_reporter_was = CrashReporter.enabled
+	CrashReporter.enabled = false
 	await _check_intro_skip()
 	await _check_intro_tutorial()
+	CrashReporter.enabled = crash_reporter_was
 	await _check_play_defaults()
 	FeatureFlags.remember_first_run = false
 	for property in KEPT:
