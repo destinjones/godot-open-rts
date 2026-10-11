@@ -188,6 +188,7 @@ func _build_tutorial():
 	buttons.add_theme_constant_override("separation", 8)
 	_tutorial_details.add_child(buttons)
 	_more_button.text = tr("GUIDE_MORE")
+	_more_button.tooltip_text = tr("GUIDE_MORE_TOOLTIP")
 	_more_button.focus_mode = Control.FOCUS_NONE
 	_more_button.add_theme_font_size_override("font_size", 13)
 	_more_button.pressed.connect(
@@ -236,7 +237,8 @@ func _build_hint():
 	_hint_label.add_theme_font_size_override("font_size", 14)
 	row.add_child(_hint_label)
 	var close = Button.new()
-	close.text = "OK"
+	close.text = tr("HINT_OK")
+	close.tooltip_text = tr("HINT_OK_TOOLTIP")
 	close.focus_mode = Control.FOCUS_NONE
 	close.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	close.pressed.connect(func(): _hint_time_left_s = 0.0)

@@ -228,3 +228,6 @@ TUTORIAL_DONE_TITLE,You ran the whole loop
 TUTORIAL_DONE,"Dig, haul, build, fight: that is Ironbound. Keep playing this match, or start a real one from Play. F1 opens the manual any time."
 HINT_TRUCK_IDLE,"A truck has had nothing to carry for a minute. Trucks find work by themselves: build another extractor to keep it busy, or recycle spare trucks at a depot (F1: Supply lines)."
 HINT_DEPOSIT_DRY,A deposit ran dry and its extractor has stopped. Build a new extractor on another deposit; the minimap and the start screen show where they are.
+GUIDE_MORE_TOOLTIP,Open the manual at the page about this step
+HINT_OK,OK
+HINT_OK_TOOLTIP,Close this tip. Each tip shows only once; Options > Interface can bring them back.
