@@ -268,7 +268,7 @@ if MODE in ('gold', 'gold2', 'blue', 'plain'):
     scene.render.filepath = OUT
     bpy.ops.render.render(write_still=True)
 
-elif MODE == 'spin':
+elif MODE in ('spin', 'frames'):
     # Neon ring under the box, on the site's #0d0327 background
     bpy.ops.mesh.primitive_torus_add(major_radius=1.05, minor_radius=0.01, location=(0, 0, 0.0))
     ring = bpy.context.active_object; ring.data.materials.append(mat_emit('Ring', (0.0, 0.85, 1.0), 6.0))
@@ -278,10 +278,11 @@ elif MODE == 'spin':
     bg.inputs['Color'].default_value = (*bgc, 1); bg.inputs['Strength'].default_value = 1.0
     scene.render.film_transparent = False
     place_cam(3.9, 30, 0, 0.45)
-    scene.frame_start, scene.frame_end = 1, 288   # 12 s at 24 fps
+    NF = 288 if MODE == 'spin' else 72
+    scene.frame_start, scene.frame_end = 1, NF   # spin: 12 s at 24 fps; frames: one still every 5 degrees
     scene.render.fps = 24
     root.rotation_euler.z = 0; root.keyframe_insert('rotation_euler', index=2, frame=1)
-    root.rotation_euler.z = 2 * math.pi; root.keyframe_insert('rotation_euler', index=2, frame=289)
+    root.rotation_euler.z = 2 * math.pi; root.keyframe_insert('rotation_euler', index=2, frame=NF + 1)
     try:
         for fc in root.animation_data.action.fcurves:
             for kp in fc.keyframe_points:
@@ -296,6 +297,13 @@ elif MODE == 'spin':
                             kp.interpolation = 'LINEAR'
     scene.render.resolution_x = scene.render.resolution_y = 720
     s = scene.render.image_settings
+    if MODE == 'frames':
+        scene.render.resolution_x = scene.render.resolution_y = 480
+        s.file_format = 'PNG'; s.color_mode = 'RGB'
+        scene.render.filepath = OUT + '/f_'
+        bpy.ops.render.render(animation=True)
+        open(OUT + '.done', 'w').write('ok')
+        raise SystemExit
     try:
         s.media_type = 'VIDEO'
     except Exception:

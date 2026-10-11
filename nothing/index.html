@@ -238,11 +238,12 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
 /* Blender renders */
 .tier-box { display: block; height: 150px; width: 100%; object-fit: contain; object-position: 50% 100%; margin: 6px auto 8px; }
 .tier-box[src*="casual"] { height: 150px; padding-top: 34px; }
-.vp-tier .nb-lv { text-align: center; font-family: ui-monospace, monospace; font-size: 11.5px; letter-spacing: .12em; color: #ffcc00; margin: 0 0 10px; text-shadow: 0 0 10px rgba(255,204,0,.6); }
-.vp-tier .nb-lv.blue { color: #3fd2ff; text-shadow: 0 0 10px rgba(0,208,255,.6); }
-.vp-tier .nb-lv.base { color: #b7a8e0; text-shadow: none; }
-.spin-vid { display: block; width: min(100%, 520px, calc(100svh - var(--bar) - 120px)); aspect-ratio: 1; margin: 0 auto; background: #0d0327; }
-@media (max-width: 600px) { .tier-box { height: 96px; margin: 4px auto 6px; } .tier-box[src*="casual"] { height: 96px; padding-top: 20px; } .spin-vid { width: min(100%, 46svh); } }
+.spin-box { position: relative; width: min(100%, 520px, calc(100svh - var(--bar) - 120px)); aspect-ratio: 1; margin: 0 auto; background: #0d0327 url(box-spin-0.webp) center / cover no-repeat; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; border-radius: 16px; }
+.spin-box.dragging { cursor: grabbing; }
+.spin-box canvas { display: block; width: 100%; height: 100%; }
+.spin-hint { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: .14em; color: #00e5ff; background: rgba(13,3,39,.8); border: 1px solid rgba(0,229,255,.4); border-radius: 999px; padding: 5px 12px; white-space: nowrap; pointer-events: none; transition: opacity .4s; }
+.spin-box.touched .spin-hint { opacity: 0; }
+@media (max-width: 600px) { .tier-box { height: 96px; margin: 4px auto 6px; } .tier-box[src*="casual"] { height: 96px; padding-top: 20px; } .spin-box { width: min(100%, 46svh); } }
 
 /* Desktop type scale: everything one step larger so it reads at laptop distance */
 @media (min-width: 1024px) {
@@ -274,7 +275,6 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
   .vp-tier .a { font-size: 46px; }
   .vp-tier .a s { font-size: 18px; } .vp-tier .a span { font-size: 15px; }
   .vp-tier li { font-size: 16px; }
-  .vp-tier .nb-lv { font-size: 13px; }
   .tier-box { height: 150px; } .tier-box[src*="casual"] { height: 150px; padding-top: 34px; }
   #vp-buy { padding-top: 36px; padding-bottom: 36px; } #vp-buy h2 { margin-bottom: 6px; }
   .vp-tier .d { display: none; } .vp-tier li { padding: 3px 0 3px 18px; } .vp-tier .a { margin: 4px 0 10px; } .vp-tier { padding: 20px 22px; }
@@ -339,10 +339,10 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
 
   <section class="vp-sec alt vp-center rv">
     <div class="vp-spinwrap">
-      <video class="spin-vid" src="box-spin.mp4" autoplay muted loop playsinline preload="auto" aria-label="An open, empty cardboard box slowly rotating 360 degrees."></video>
+      <div class="spin-box" id="spin-box" role="slider" tabindex="0" aria-label="Empty box. Drag, or use the arrow keys, to spin it." aria-valuemin="0" aria-valuemax="359" aria-valuenow="0"><canvas id="spin-cv" width="800" height="800"></canvas><div class="spin-hint" aria-hidden="true">⟲ DRAG TO SPIN ⟳</div></div>
       <div class="txt">
         <h2>Inspect it from <span class="cyan">every angle.</span></h2>
-        <p class="lead" style="margin-top:14px">Spin it. Tilt it. Look inside. 360° of verified, hand-inspected nothing.</p>
+        <p class="lead" style="margin-top:14px">Drag it. Spin it. Look inside. 360° of verified, hand-inspected nothing.</p>
         <div class="vp-box" style="display:block;margin-top:14px"><div class="spec">CONTENTS: 0 · CORNERS: 8 · SURPRISES: NONE</div></div>
       </div>
     </div>
@@ -434,7 +434,6 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
       <div class="vp-tier">
         <h3>CASUAL</h3>
         <img class="tier-box" src="box-casual.webp" width="360" height="264" alt="An open, empty cardboard box." loading="lazy">
-        <div class="nb-lv base">POWER LEVEL: 0 · BASE FORM</div>
         <div class="d">Nothing, monthly. No commitment to nothing.</div>
         <div class="a">$7<span>/mo</span></div>
         <ul><li>Nothing, monthly</li><li>Digital delivery</li><li>Cancel anytime</li></ul>
@@ -444,7 +443,6 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
         <div class="tag">MOST POPULAR</div>
         <h3>DEVOTED</h3>
         <img class="tier-box" src="box-devoted.webp" width="237" height="360" alt="An open, empty cardboard box surrounded by a golden Super Saiyan aura." loading="lazy">
-        <div class="nb-lv">POWER LEVEL: 0 · SUPER</div>
         <div class="d">Nothing, yearly. Cheaper per unit of nothing.</div>
         <div class="a"><s>$84</s>$59<span>/yr</span></div>
         <ul><li>Nothing, yearly</li><li>Save $25 of nothing</li><li>Priority nothing</li><li>Cancel anytime</li></ul>
@@ -453,7 +451,6 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
       <div class="vp-tier">
         <h3>ETERNAL</h3>
         <img class="tier-box" src="box-eternal.webp" width="237" height="360" alt="An open, empty cardboard box surrounded by a blue Super Saiyan aura with lightning." loading="lazy">
-        <div class="nb-lv blue">POWER LEVEL: 0 · SUPER BLUE</div>
         <div class="d">Nothing, forever. Until you die. Then nothing.</div>
         <div class="a">$149<span> once</span></div>
         <ul><li>Nothing, permanently</li><li>Never pay again</li><li>Founding member status</li></ul>
@@ -602,6 +599,50 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-se
   // On a phone the plans swipe sideways; start on the popular one.
   var price = document.querySelector('.vp-price'), pop = document.querySelector('.vp-tier.pop');
   if (price && pop && price.scrollWidth > price.clientWidth){ price.scrollLeft = pop.offsetLeft - (price.clientWidth - pop.offsetWidth) / 2; }
+
+
+  // Drag-to-spin box: 72 Blender renders (one every 5°) in a 9x8 sprite sheet.
+  (function(){
+    var box = document.getElementById('spin-box'), cv = document.getElementById('spin-cv');
+    if (!box || !cv) return;
+    var ctx = cv.getContext('2d'), N = 72, COLS = 9, SZ = 400, sheet = new Image(), ready = false;
+    var pos = 0, vel = 0, auto = !reduce, dragging = false, lastX = 0, lastT = 0, idleAt = 0, drawn = -1;
+    var AUTO_SPEED = N / 14000; // frames per ms: one full turn every 14 s
+    function draw(){
+      var f = ((Math.round(pos) % N) + N) % N;
+      if (!ready || f === drawn) return; drawn = f;
+      ctx.drawImage(sheet, (f % COLS) * SZ, Math.floor(f / COLS) * SZ, SZ, SZ, 0, 0, cv.width, cv.height);
+      box.setAttribute('aria-valuenow', f * 5);
+    }
+    sheet.onload = function(){ ready = true; drawn = -1; draw(); };
+    sheet.src = 'box-spin.webp';
+    var prev = performance.now();
+    function loop(t){
+      var dt = Math.min(64, t - prev); prev = t;
+      if (!dragging){
+        if (Math.abs(vel) > 0.0005){ pos += vel * dt; vel *= Math.pow(0.996, dt); }
+        else if (auto && t > idleAt){ pos += AUTO_SPEED * dt; }
+      }
+      draw(); requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+    var PX_PER_FRAME = 4; // drag 4px = 5°
+    box.addEventListener('pointerdown', function(e){
+      dragging = true; vel = 0; lastX = e.clientX; lastT = e.timeStamp;
+      box.classList.add('dragging', 'touched'); box.setPointerCapture(e.pointerId);
+    });
+    box.addEventListener('pointermove', function(e){
+      if (!dragging) return;
+      var dx = e.clientX - lastX, dt = Math.max(1, e.timeStamp - lastT);
+      pos += dx / PX_PER_FRAME; vel = (dx / PX_PER_FRAME) / dt;
+      lastX = e.clientX; lastT = e.timeStamp;
+    });
+    function end(){ if (!dragging) return; dragging = false; box.classList.remove('dragging'); idleAt = performance.now() + 2500; vel = Math.max(-0.08, Math.min(0.08, vel)); }
+    box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
+    box.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight'){ e.preventDefault(); vel = 0; pos += e.key === 'ArrowRight' ? 2 : -2; idleAt = performance.now() + 2500; box.classList.add('touched'); }
+    });
+  })();
 
   // Tangible Nothing: a real checkbox in spirit.
   var addon = document.getElementById('vp-addon');
