@@ -103,3 +103,13 @@ docs/audio-soundscape.md ("Decisions"); the ones that shape later work:
 - Ducking is sidechain compressors on the buses, so the Options sliders stay in charge, and
   a crowd of sounds drops the quiet low-priority ones rather than whichever came last.
 - Sounds are synthesized with numpy (tools/audio/), so they are original and regenerable.
+
+## 2026-10-11: the cursor says what a click will do
+With units selected, the cursor turns into a red crosshair over an enemy they can attack and
+a yellow build mark over an unfinished building a selected constructor can build; while
+fight, patrol or guard waits for its click it shows that order's crosshair in the colour of
+its ground line. An order nobody can carry out flashes a red "no" cursor and leaves a red
+cross on the spot. The sound for it belongs to the audio thread: it can bind to
+MatchSignals.units_ordered(units, "cannot"), which this layer only reacts to visually.
+Cursors are tinted Kenney crosshairs (already in assets/ui), so no new art. The selection
+box now reads the harness's virtual mouse too, and is green like the move lines.

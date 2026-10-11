@@ -1,4 +1,4 @@
-[gd_scene load_steps=49 format=3 uid="uid://camns8fqod8d4"]
+[gd_scene load_steps=50 format=3 uid="uid://camns8fqod8d4"]
 
 [ext_resource type="Script" path="res://source/match/environment/Soundscape.gd" id="36_sound"]
 [ext_resource type="Script" path="res://source/match/environment/RoadVisuals.gd" id="35_roads"]
@@ -34,6 +34,7 @@
 [ext_resource type="Script" path="res://source/match/hud/CityHud.gd" id="33_cityhud"]
 [ext_resource type="PackedScene" path="res://source/match/environment/Atmosphere.tscn" id="34_atmo"]
 [ext_resource type="Script" path="res://source/match/hud/ControlGroupBar.gd" id="35_groupbar"]
+[ext_resource type="Script" path="res://source/match/handlers/CursorHandler.gd" id="36_cursor"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ysb0j"]
 sky_top_color = Color(0.3, 0.5, 0.78, 1)
@@ -487,5 +488,8 @@ rectangular_selection_3d = NodePath("../../RectangularSelection3D")
 
 [node name="MatchEndHandler" parent="Handlers" instance=ExtResource("26_4d7im")]
 visible = false
+
+[node name="CursorHandler" type="Node" parent="Handlers"]
+script = ExtResource("36_cursor")
 
 [node name="UnitVisibilityHandler" parent="Handlers" instance=ExtResource("32_fci1c")]
