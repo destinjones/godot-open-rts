@@ -1,6 +1,7 @@
 extends Control
 
 const CrashPrompt = preload("res://source/crash/CrashPrompt.gd")
+const IntroCard = preload("res://source/main-menu/IntroCard.gd")
 const SaveGame = preload("res://source/match/SaveGame.gd")
 const SaveLoadPanel = preload("res://source/main-menu/SaveLoadPanel.gd")
 const StartPicker = preload("res://source/main-menu/StartPicker.gd")
@@ -16,6 +17,8 @@ func _ready():
 	_add_title()
 	if CrashPrompt.should_show():
 		add_child(CrashPrompt.new())
+	elif IntroCard.should_show():
+		show_intro.call_deferred()  # after the menu is laid out, so the card covers it
 	var play_button = find_child("Button")
 	var replays_button = Button.new()
 	replays_button.name = "ReplaysButton"
@@ -44,6 +47,14 @@ func _ready():
 	tutorial_button.pressed.connect(start_tutorial)
 	play_button.add_sibling(tutorial_button)  # right under Play
 	_lay_out_menu()
+
+
+func show_intro():
+	"""the "what is this game" card of the first launch, see IntroCard.gd"""
+	var card = IntroCard.new()
+	card.tutorial_chosen.connect(start_tutorial)
+	add_child(card)
+	return card
 
 
 func _continue(path):

@@ -30,7 +30,7 @@ func _ready():
 	var kept_show = Globals.options.show_tips
 	Globals.options.seen_hints = PackedStringArray()
 	Globals.options.show_tips = true
-	FeatureFlags.remember_seen_hints = true
+	FeatureFlags.remember_first_run = true
 	MatchSignals.hint_shown.connect(func(key): _shown.append(key))
 	var a_match = load("res://tests/manual/TestOneCityOneRival.tscn").instantiate()
 	add_child(a_match)
@@ -42,7 +42,7 @@ func _ready():
 	a_match.queue_free()
 	await _frames(5)
 	await _check_options_menu()
-	FeatureFlags.remember_seen_hints = false
+	FeatureFlags.remember_first_run = false
 	Globals.options.seen_hints = kept_seen
 	Globals.options.show_tips = kept_show
 	Globals.options.save()

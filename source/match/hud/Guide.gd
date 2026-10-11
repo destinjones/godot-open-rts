@@ -328,7 +328,7 @@ func show_hint(key, args = []):
 	Nothing shows when the match's rules or the options have tips off."""
 	if key in _hints_shown or not tutorial_on or not Globals.options.show_tips:
 		return
-	var remember = FeatureFlags.remember_seen_hints
+	var remember = FeatureFlags.remember_first_run
 	if remember and key in Globals.options.seen_hints:
 		return
 	_hints_shown[key] = true

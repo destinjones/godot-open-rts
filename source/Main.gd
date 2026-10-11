@@ -4,7 +4,7 @@ extends Control
 
 
 func _ready():
-	FeatureFlags.remember_seen_hints = true  # see Guide.show_hint
+	FeatureFlags.remember_first_run = true  # see FeatureFlags.gd
 	_logos.tree_exited.connect(
 		get_tree().change_scene_to_file.bind("res://source/main-menu/Main.tscn")
 	)
