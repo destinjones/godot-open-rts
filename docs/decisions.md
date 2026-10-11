@@ -14,3 +14,11 @@ gave no target to measure against; the docs are the ruler and screenshots the me
 A HUD declutter and first-five-minutes pass (intro camera, quick battle, delayed AI offers)
 were started and then stopped. Why: they are new features, and features are frozen until
 the feel layer is done.
+
+## 2026-10-11: ticket 1 may change unit movement
+Destin approved turn-to-face and acceleration/braking in the movement trait, which is core
+simulation. Pathing, the navmesh and avoidance settings stay untouched, and
+"turn_to_face": false in data/movement.json restores the old movement. Why: the instant facing
+snap and constant speed were the main cause of the sliding feel, and a visual-only fix can't
+remove them. Known cost: a tank ordered behind itself turns in place first and arrives about
+1.3 s later (tracked turn rate 150°/s).
