@@ -1,56 +1,43 @@
 extends Node3D
 
-# Sounds of battle: weapon fire, shell impacts, rocket hits and units blowing up.
+# Sounds of battle: a report for every weapon type, spent casings, impacts that sound like what
+# was hit, explosions with their echo rolling back, and a death that matches the unit's size.
 #
 # Nothing in the combat code has to call this. It watches the scene tree: a projectile node
 # being added to a unit means that unit just fired, a rocket leaving the tree means it hit,
 # and a unit leaving the tree with no hp left means it was destroyed.
 #
+# Which unit fires which weapon, what a round sounds like on infantry, armour or a building,
+# and the layers of each kind of death are in data/sounds/combat.json.
+#
 # Sounds are heard from where the camera looks, like the ambient Soundscape: loudness falls
 # with the distance from the middle of the screen, the hearing range grows as the camera zooms
 # out, and everything gets quieter the further out the camera is. A listener placed above the
 # middle of the screen pans each sound to the side of the screen it comes from. Fights in the
-# fog of war are heard, muffled. Vehicles and buildings that blow up are layered: a second,
-# slowed-down blast follows the first. The sounds come from tools/audio/make_war_sounds.py.
+# fog of war are heard, muffled. Casings are only heard zoomed in. The sounds come from
+# tools/audio/make_war_sounds.py and make_combat_sounds.py.
 
 const Unit = preload("res://source/match/units/Unit.gd")
 const Structure = preload("res://source/match/units/Structure.gd")
 const CannonShell = preload("res://source/match/units/projectiles/CannonShell.gd")
 const Rocket = preload("res://source/match/units/projectiles/Rocket.gd")
 
+const GameData = preload("res://source/data-model/GameData.gd")
+
 const AUDIO_DIR = "res://assets/audio/war/"
-const SOUNDS = {
-	"cannon": 3,
-	"heavy_cannon": 2,
-	"rifle": 3,
-	"rocket": 2,
-	"impact": 3,
-	"explosion_small": 2,
-	"explosion_large": 2,
-}
 const VOICES = 24
 const CLOSE_CAMERA_SIZE = 12.0
 const FAR_CAMERA_SIZE = 70.0
 const SHELL_SPEED_M_PER_S = 160.0
 const HIDDEN_GAIN = 0.4  # neither side of the fight is visible
 const MIN_GAIN = 0.03
-# how loud each kind of sound is, how many of a kind may overlap, and the shortest gap between
-# two of a kind, so that a big battle stays a roar instead of clipping into noise
-const KINDS = {
-	"cannon": {"gain": 0.75, "max": 5, "gap_s": 0.05},
-	"heavy_cannon": {"gain": 0.9, "max": 4, "gap_s": 0.06},
-	"rifle": {"gain": 0.5, "max": 4, "gap_s": 0.06},
-	"rocket": {"gain": 0.6, "max": 4, "gap_s": 0.07},
-	"impact": {"gain": 0.45, "max": 5, "gap_s": 0.05},
-	"explosion_small": {"gain": 0.8, "max": 3, "gap_s": 0.12},
-	"explosion_large": {"gain": 1.0, "max": 3, "gap_s": 0.2},
-}
-const RIFLE_UNITS = ["Militia", "Raider"]
-const HEAVY_CANNON_UNITS = ["HeavyTank", "BattleTank", "AntiGroundTurret"]
-const LIGHT_UNITS = ["Militia", "Raider", "Worker", "Drone", "Pylon"]
+const CASING_DELAY_S = 0.22
 
 var played_counts = {}  # kind -> sounds played so far (read by tests)
 
+var _config = {}  # data/sounds/combat.json
+var _kinds = {}  # kind -> {gain, max, gap_s}
+var _unit_ids = {}  # scene path -> unit id ("" if not in data/units)
 var _streams = {}  # kind -> [AudioStream]
 var _voices = []
 var _voice_kinds = {}  # player -> kind it is playing
@@ -62,10 +49,17 @@ var _camera_size = 20.0
 
 
 func _ready():
-	for kind in SOUNDS:
+	_config = GameData.sounds("combat")
+	_kinds = _config.get("kinds", {})
+	for kind in _kinds:
 		_streams[kind] = []
-		for i in range(1, SOUNDS[kind] + 1):
-			_streams[kind].append(load("{0}{1}_{2}.ogg".format([AUDIO_DIR, kind, i])))
+		for i in range(1, int(_kinds[kind].get("variants", 1)) + 1):
+			var path = "{0}{1}_{2}.ogg".format([AUDIO_DIR, kind, i])
+			if ResourceLoader.exists(path):
+				_streams[kind].append(load(path))
+		if _streams[kind].is_empty():
+			push_warning("war sounds: no file for " + kind)
+			_kinds.erase(kind)
 	for i in range(VOICES):
 		var voice = AudioStreamPlayer3D.new()
 		voice.attenuation_model = AudioStreamPlayer3D.ATTENUATION_DISABLED
@@ -101,16 +95,18 @@ func _process(_delta):
 
 func play(kind, at_position, loudness = 1.0, audible = true, pitch = 1.0):
 	"""plays one sound of a kind at a world position; returns false if it was not heard"""
-	var now = Time.get_ticks_msec()
-	var settings = KINDS[kind]
-	if now - _last_played_ms.get(kind, -100000) < settings.gap_s * 1000.0:
+	if not kind in _kinds:
 		return false
-	var gain = settings.gain * loudness * _gain_at(at_position)
+	var now = Time.get_ticks_msec()
+	var settings = _kinds[kind]
+	if now - _last_played_ms.get(kind, -100000) < float(settings.get("gap_s", 0.05)) * 1000.0:
+		return false
+	var gain = float(settings.get("gain", 0.5)) * loudness * _gain_at(at_position)
 	if not audible:
 		gain *= HIDDEN_GAIN
 	if gain < MIN_GAIN:
 		return false
-	var voice = _pick_voice(kind, settings.max, gain)
+	var voice = _pick_voice(kind, int(settings.get("max", 3)), gain)
 	if voice == null:
 		return false
 	_last_played_ms[kind] = now
@@ -175,18 +171,20 @@ func _on_cannon_fired(shell):
 	var shooter = shell.get_parent()
 	var target = shell.target_unit
 	var audible = shooter.visible or target.visible
-	var shooter_name = _unit_name(shooter)
-	if shooter_name in RIFLE_UNITS:
-		play("rifle", shooter.global_position, 1.0, audible)
-		return
-	var kind = "heavy_cannon" if shooter_name in HEAVY_CANNON_UNITS else "cannon"
+	var kind = weapon_of(shooter, "cannon_shell")
 	play(kind, shooter.global_position, 1.0, audible)
-	# the shell lands a moment later where the target is
+	_casings(kind, shooter, audible)
+	if randf() >= float(_config.get("impacts", {}).get(kind, 1.0)):
+		return
+	# the round lands a moment later where the target is
 	var flight_s = shooter.global_position.distance_to(target.global_position) / SHELL_SPEED_M_PER_S
 	var hit_position = target.global_position
-	get_tree().create_timer(flight_s + 0.04).timeout.connect(
-		play.bind("impact", hit_position, 1.0, audible)
-	)
+	var surface = surface_of(target)
+	if kind in _config.get("heavy_impacts", []):
+		_play_later(flight_s + 0.04, ["impact", hit_position, 1.0, audible])
+		_play_later(flight_s + 0.05, [surface, hit_position, 0.6, audible])
+	else:
+		_play_later(flight_s + 0.04, [surface, hit_position, 0.8, audible])
 
 
 func _on_rocket_fired(rocket):
@@ -194,7 +192,8 @@ func _on_rocket_fired(rocket):
 		return
 	var shooter = rocket.get_parent()
 	var target = rocket.target_unit
-	play("rocket", shooter.global_position, 1.0, shooter.visible or target.visible)
+	var kind = weapon_of(shooter, "rocket")
+	play(kind, shooter.global_position, 1.0, shooter.visible or target.visible)
 	rocket.tree_exiting.connect(_on_rocket_gone.bind(target))
 
 
@@ -203,6 +202,7 @@ func _on_rocket_gone(target):
 	# explosion is heard instead)
 	if is_instance_valid(target) and target.is_inside_tree() and target.hp > 0:
 		play("explosion_small", target.global_position, 0.55, target.visible)
+		play(surface_of(target), target.global_position, 0.5, target.visible)
 
 
 func _on_unit_leaving(unit):
@@ -210,22 +210,59 @@ func _on_unit_leaving(unit):
 		return
 	var at = unit.global_position
 	var audible = unit.visible
+	for layer in _config.get("deaths", {}).get(size_of(unit), []):
+		var arguments = [layer[1], at, float(layer[2]), audible, float(layer[3])]
+		if float(layer[0]) <= 0.0:
+			play.callv(arguments)
+		else:
+			_play_later(float(layer[0]), arguments)
+
+
+func weapon_of(shooter, projectile):
+	"""the report a unit's shot makes (data/sounds/combat.json weapons)"""
+	var weapon = _config.get("weapons", {}).get(_unit_id(shooter))
+	if weapon == null:
+		weapon = _config.get("default_weapons", {}).get(projectile, "cannon")
+	return weapon
+
+
+func surface_of(target):
+	"""what a round sounds like on its target: infantry, a building or armour"""
+	if _unit_id(target) in _config.get("infantry", []):
+		return "impact_soft"
+	if target is Structure:
+		return "impact_building"
+	return "impact_armor"
+
+
+func size_of(unit):
+	"""the kind of death a unit dies (data/sounds/combat.json sizes)"""
+	var size = _config.get("sizes", {}).get(_unit_id(unit))
+	if size != null:
+		return size
 	if unit is Structure:
-		# the blast, then the building coming down: the same boom slowed down, and rubble
-		play("explosion_large", at, 1.3, audible)
-		_play_later(0.35, ["explosion_large", at, 0.95, audible, 0.6])
-		_play_later(0.9, ["impact", at, 1.2, audible, 0.55])
-	elif not _unit_name(unit) in LIGHT_UNITS:
-		# a vehicle: the explosion and a second, smaller one as fuel and ammunition go up
-		play("explosion_large", at, 1.15, audible)
-		_play_later(0.14, ["explosion_small", at, 0.7, audible, 0.8])
-	else:
-		play("explosion_small", at, 0.9, audible)
+		return "structure"
+	if unit.movement_domain == Constants.Match.Navigation.Domain.AIR:
+		return "aircraft"
+	return _config.get("default_size", "medium")
+
+
+func _casings(kind, shooter, audible):
+	var chance = float(_config.get("casings", {}).get(kind, 0.0))
+	if chance <= 0.0 or randf() >= chance:
+		return
+	if _zoom_out >= float(_config.get("casing_zoom_out_below", 0.4)):
+		return
+	_play_later(CASING_DELAY_S + randf() * 0.1, ["casing", shooter.global_position, 1.0, audible])
 
 
 func _play_later(delay_s, arguments):
 	get_tree().create_timer(delay_s, false).timeout.connect(play.bindv(arguments))
 
 
-func _unit_name(unit):
-	return unit.scene_file_path.get_file().get_basename()
+func _unit_id(unit):
+	var scene_path = unit.scene_file_path
+	if not _unit_ids.has(scene_path):
+		var entry = GameData.unit_by_scene(scene_path)
+		_unit_ids[scene_path] = entry["id"] if entry != null else ""
+	return _unit_ids[scene_path]

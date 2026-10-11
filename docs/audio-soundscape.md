@@ -46,10 +46,30 @@ tanks cost the same as one.
   wordless chatter with squelch clicks, on the Voices bus, from where the unit stands.
   Every 9 to 18 s when calm, 5 to 10 s under tension, 3 to 6 s in battle.
 
+## Combat (`source/match/environment/WarSounds.gd`, `data/sounds/combat.json`)
+
+- **A report per weapon type**: rifle (militia), machine gun (raiders, buggies, gun nests,
+  APCs), cannon, heavy cannon, autocannon (flak), rocket (helicopters, technicals), missile
+  (anti-air), and rocket artillery salvos. A unit's report is looked up by its id.
+- **Casings** ring after machine guns, autocannon and cannon now and then, only when the
+  camera is close enough to hear them.
+- **Impacts by surface**: rounds thud into the earth around infantry, clang and ricochet off
+  armour, crunch into buildings. Cannon shells also keep their dirt-and-blast impact under
+  the surface layer. Small arms are heard landing a third of the time, so a firefight is
+  not wall-to-wall impacts.
+- **Explosions tail off**: vehicles, heavy vehicles and buildings get a rolling echo off the
+  hills half a second after the blast.
+- **Deaths by size**: infantry (bodies and kit going down, no blast, no voices), light
+  vehicles (a small blast), medium (a blast and a secondary), heavy (a bigger, slower double
+  blast), aircraft (a falling engine whine), structures (blast, collapse, rubble).
+  Each death is a list of `[delay, kind, loudness, pitch]` layers in the data.
+
 ## Checks and clips
 
 - `tests/audio/AmbientBedCheck.tscn` checks the bed against MusicPlayer's state machine.
 - `tests/audio/UnitPresenceCheck.tscn` checks idle and moving units on a test map.
+- `tests/audio/CombatSoundsCheck.tscn` checks every unit's report, death and surface.
+- `tests/audio/WarSoundsCheck.tscn` stages a battle and checks it is heard.
 - `tests/audio/SoundClip.tscn -- --clip=<name>` records a clip of a scripted timeline with
   Godot's movie maker, for pull requests (see its header).
 
@@ -67,5 +87,10 @@ tanks cost the same as one.
   per-unit detail lives in the one-shots (weapons, chatter).
 - **Chatter is wordless.** The voice sets only have reply lines (select, move, attack);
   playing those unprompted would sound like orders nobody gave.
+- **Combat sounds are keyed by unit id in data**, replacing the scene-name lists in
+  WarSounds. Units built on another unit (scout buggy, gun nest) get their own report
+  instead of their base unit's.
+- **Infantry deaths have no screams.** Bodies and gear going down read clearly at RTS
+  distance, and keep the game's tone.
 - **Audio work was cleared during the feature freeze.** Destin asked for the audio thread
   explicitly (2026-10-11), so it runs alongside the feel tickets.
