@@ -7,7 +7,8 @@ extends Node3D
 # - command keys and the matching unit-menu buttons: fight (F), patrol (P), guard (V) wait
 #   for a click on the map (a left-drag in fight mode draws a fighting line); patrol my
 #   base (B), stop (X), retreat (Z), fire stance (L) and hold position (K) act at once,
-# - lines on the ground under selected units show where their orders take them.
+# - lines on the ground under selected units show where their orders take them, and a
+#   selected factory shows a line to its rally point.
 # Key bindings are input map actions (see Keybinds.gd), so they can be changed.
 
 signal mode_changed(mode)
@@ -38,6 +39,7 @@ const COLORS = {
 	"fight": Color(1.0, 0.42, 0.3, 0.9),
 	"patrol": Color(0.4, 0.75, 1.0, 0.9),
 	"guard": Color(1.0, 0.85, 0.3, 0.9),
+	"rally": Color(0.1, 0.8, 0.62, 1.0),
 }
 # action name -> what it does; the instant ones need no click on the map
 const MODES = ["fight", "patrol", "guard"]
@@ -317,6 +319,7 @@ func _process(_delta):
 	for unit in [] if dragging else selected_units():  # while dragging only the new line shows
 		if unit.action != null and unit.action.has_method("get_plan"):
 			drew = _draw_plan(unit, unit.action.get_plan(), drew)
+		drew = _draw_rally(unit, drew)
 	if dragging:
 		drew = _draw_drag_preview(drew)
 	if drew:
@@ -363,6 +366,34 @@ func _draw_plan(unit, plan, drew):
 		previous = point
 	if plan.get("loop", false) and plan["points"].size() > 1:
 		_segment(plan["points"].back(), plan["points"].front(), COLORS["patrol"])
+	return drew
+
+
+func _draw_rally(unit, drew):
+	var rally_point = unit.find_child("RallyPoint", false, false)
+	if rally_point == null or not rally_point.has_method("is_set") or not rally_point.is_set():
+		return drew
+	var color = COLORS["rally"]
+	var end = rally_point.global_position * Vector3(1, 0, 1)
+	var start = unit.global_position_yless
+	var radius = unit.radius if unit.radius != null else 0.0
+	if start.distance_to(end) <= radius:
+		return drew
+	start += (end - start).normalized() * radius  # from the building's edge, not across it
+	drew = _begin_lines(drew)
+	# dashed, so it does not read as an order the building itself carries out
+	var length = start.distance_to(end)
+	var dash = 0.8  # m drawn, then half that left out
+	var across = (end - start).cross(Vector3.UP).normalized() * 0.035
+	var travelled = 0.0
+	while travelled < length:
+		var a = start.lerp(end, travelled / length)
+		var b = start.lerp(end, min(travelled + dash, length) / length)
+		for offset in [-1, 0, 1]:  # three lines side by side read on bright sand
+			_segment(a + across * offset, b + across * offset, color)
+		travelled += dash * 1.5
+	for offset in [-1, 0, 1]:
+		_ring(end, SLOT_RADIUS_M + 0.035 * offset, color)
 	return drew
 
 
