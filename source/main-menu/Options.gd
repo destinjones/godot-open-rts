@@ -62,7 +62,8 @@ const KEY_SECTIONS = [
 		[
 			["shift_selecting", "Add to selection (hold)"],
 			["unit_groups_set_1", "Set group 1 to 9"],
-			["unit_groups_access_1", "Select group 1 to 9"],
+			["unit_groups_add_1", "Add to group 1 to 9"],
+			["unit_groups_access_1", "Select group 1 to 9 (twice: go to it)"],
 			["rotate_structure", "Rotate building"],
 		],
 	],
@@ -75,6 +76,7 @@ const KEY_SECTIONS = [
 ]
 const MOUSE_BINDINGS = [
 	["Select", "Left click / drag"],
+	["Select all of a type on screen", "Double click / Ctrl + click"],
 	["Move, attack, gather", "Right click"],
 	["Line formation", "Right drag"],
 	["Rotate camera", "Middle drag"],
@@ -353,6 +355,7 @@ func _build_camera_tab(rows):
 	_slider_row(rows, "camera_scroll_speed", "Scroll speed", 25, 300, 5, "%")
 	_check_row(rows, "edge_scrolling", "Scroll when the mouse touches the screen edge")
 	_check_row(rows, "invert_zoom", "Invert mouse wheel zoom")
+	_check_row(rows, "screen_shake", "Screen shake")
 	_section(rows, "Mouse")
 	_check_row(rows, "mouse_restricted", "Keep the mouse inside the game window")
 
@@ -363,7 +366,7 @@ func _build_controls_tab(rows):
 		_section(rows, section[0])
 		for binding in section[1]:
 			var key = _key_text(binding[0])
-			if binding[0] == "unit_groups_set_1":
+			if binding[0] in ["unit_groups_set_1", "unit_groups_add_1"]:
 				key = key.replace("1", "1-9")
 			elif binding[0] == "unit_groups_access_1":
 				key = "1-9"
@@ -553,6 +556,7 @@ func _load_values():
 		"show_tips",
 		"edge_scrolling",
 		"invert_zoom",
+		"screen_shake",
 		"mouse_restricted"
 	]:
 		_controls[property].set_pressed_no_signal(options.get(property))

@@ -1,0 +1,11 @@
+{
+  "_comment": "How the sounds share the mix so a big fight stays readable (source/match/environment/WarSounds.gd and Soundscape.gd). Bus effects (the limiter, the sidechain ducking, the distance filter) are in default_bus_layout.tres.",
+  "_comment_density": "in any density_window_s, once density_max sounds have played, a new one quieter than mask_below times the loudest of them is dropped unless its kind's priority (data/sounds/combat.json) is at least keep_priority: in a crowd, quiet sounds only add mush",
+  "density_window_s": 0.15,
+  "density_max": 6,
+  "mask_below": 0.5,
+  "keep_priority": 3,
+  "_comment_distance": "sounds further than far_from of the hearing range, and fights in the fog, play through the EffectsFar bus, which takes the top off them like air over distance",
+  "far_from": 0.45,
+  "far_bus": "EffectsFar"
+}

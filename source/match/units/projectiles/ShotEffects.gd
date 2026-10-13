@@ -8,6 +8,11 @@ extends RefCounted
 # per-instance `transparency` so the materials stay shared. Effects outside the camera view or
 # in the fog of war are skipped, and when many are alive at once the smoke and dust are dropped
 # first and then everything, so a huge battle costs a bounded amount.
+#
+# Rocket hits and the shells of heavy guns get a particle explosion and a scorch mark from
+# CombatEffects instead, while it has budget for them; rifles always stay on the cheap path.
+
+const CombatEffects = preload("res://source/match/effects/CombatEffects.gd")
 
 const MAX_LIVE_EFFECTS = 160
 const MAX_LIVE_EFFECTS_FOR_SMOKE = 90
@@ -19,6 +24,8 @@ const RECOIL_S = 0.16
 const FIRE_COLOR = Color(1.0, 0.45, 0.08)
 const CORE_COLOR = Color(1.0, 0.97, 0.8)
 const TRACER_COLOR = Color(1.0, 0.6, 0.12)
+const HEAVY_SHELL_SIZE = 1.1  # damage 3 and up: heavy and battle tanks, bunkers
+const HEAVY_ROCKET_DAMAGE = 3  # missile trucks, artillery: these shake the camera
 
 static var _live_effects = 0
 static var _resources = null
@@ -28,6 +35,9 @@ static func cannon_shot(shooter, origin_transform, target):
 	"""muzzle flash, smoke, recoil and a tracer that ends in sparks and dust on the target;
 	sized by the shooter's damage so rifles look smaller than tank guns"""
 	var target_position = _aim_point(target)
+	var flight_s = shell_flight_s(origin_transform.origin.distance_to(target_position))
+	# a turret leads a moving target (TurretAim): the tracer flies to where it will be
+	target_position += shooter.get_meta("_aim_velocity", Vector3.ZERO) * flight_s
 	var size = clampf(0.45 + 0.22 * float(shooter.attack_damage), 0.55, 1.4)
 	var shooter_seen = _is_seen(shooter, origin_transform.origin)
 	var target_seen = _is_seen(target, target_position)
@@ -38,12 +48,15 @@ static func cannon_shot(shooter, origin_transform, target):
 			recoil(shooter, 0.06 * size)
 	if not shooter_seen and not target_seen:
 		return
-	var distance = origin_transform.origin.distance_to(target_position)
-	var flight_s = clampf(distance / TRACER_SPEED_M_PER_S, TRACER_MIN_S, TRACER_MAX_S)
 	_tracer(shooter, origin_transform.origin, target_position, 0.05 * size + 0.02, flight_s)
 	if target_seen:
 		var timer = shooter.get_tree().create_timer(flight_s, false)
 		timer.timeout.connect(_cannon_impact.bind(target, target_position, size))
+
+
+static func shell_flight_s(distance):
+	"""how long a cannon tracer flies over distance metres"""
+	return clampf(distance / TRACER_SPEED_M_PER_S, TRACER_MIN_S, TRACER_MAX_S)
 
 
 static func rocket_launch(shooter, origin_position):
@@ -53,8 +66,15 @@ static func rocket_launch(shooter, origin_position):
 	_smoke(shooter, origin_position, 0.5, Color(0.45, 0.43, 0.4), 0.8)
 
 
-static func rocket_impact(target, position):
+static func rocket_impact(target, position, damage = 1):
 	if not _is_seen(target, position):
+		return
+	var size = 0.65 + 0.13 * float(damage)
+	var shake = 0.0
+	if damage >= HEAVY_ROCKET_DAMAGE:
+		shake = clampf(0.1 + 0.04 * float(damage), 0.15, 0.3)
+	if CombatEffects.explosion(target, position, size, 0.6 * size, shake):
+		hit_flash(target)
 		return
 	_flash(target, position, 1.4, FIRE_COLOR, 0.16)
 	_flash(target, position, 0.7, CORE_COLOR, 0.09)
@@ -83,7 +103,10 @@ static func hit_flash(target):
 
 
 static func recoil(shooter, distance):
-	"""kicks the shooter's model back along its barrel and eases it home"""
+	"""kicks the shooter's model back along its barrel and eases it home; a unit with an
+	aiming turret kicks the turret instead (TurretAim) and its hull only rocks"""
+	if shooter.has_meta("_turret_recoil"):
+		return
 	var model = shooter.get_meta("_recoil_model") if shooter.has_meta("_recoil_model") else null
 	if model == null:
 		var geometry = shooter.find_child("Geometry", true, false)
@@ -116,6 +139,11 @@ static func _cannon_impact(target, fallback_position, size):
 	var anchor = target if is_instance_valid(target) and target.is_inside_tree() else null
 	if anchor == null:
 		return
+	if size >= HEAVY_SHELL_SIZE:
+		var scorch = 0.35 * size if randf() < 0.35 else 0.0
+		if CombatEffects.explosion(target, position, 0.5 * size, scorch):
+			hit_flash(target)
+			return
 	_flash(anchor, position, 0.45 * size, FIRE_COLOR, 0.08)
 	_flash(anchor, position, 0.2 * size, CORE_COLOR, 0.05)
 	_smoke(anchor, position, 0.35 * size, Color(0.5, 0.42, 0.32), 0.45)
