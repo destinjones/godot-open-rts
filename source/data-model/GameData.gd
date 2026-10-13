@@ -31,7 +31,8 @@ const MOVEMENT_DOMAINS = {"land": 1, "water": 2, "amphibious": 3}  # navigation 
 const GENERATED_SCENES_ROOT = "res://data-units/"
 const MODEL_FIELDS = ["model", "model_scale", "model_offset", "model_rotation_y_deg"]
 const NOT_INHERITED = ["factions"]
-const SOUND_CONFIGS = ["ambience", "units", "combat", "economy"]  # data/sounds/<name>.json, see sounds()
+# data/sounds/<name>.json, see sounds()
+const SOUND_CONFIGS = ["ambience", "units", "combat", "economy"]
 # used for keys data/city_centres.json leaves out
 const CITY_CENTRE_DEFAULTS = {
 	"max_per_player": 2,
