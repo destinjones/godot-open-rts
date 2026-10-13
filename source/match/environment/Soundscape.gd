@@ -57,7 +57,7 @@ func _ready():
 	for sound_name in ["wind_loop", "rain_loop", "city_loop"]:
 		var stream = load(AUDIO_DIR + sound_name + ".ogg")
 		stream.loop = true
-		_add_player(sound_name, stream, true)
+		_add_player(sound_name, stream, true, sound_name == "city_loop")
 	_presence = GameData.sounds("units")
 	var layers = _presence.get("layers", {})
 	for layer in layers:
@@ -70,7 +70,7 @@ func _ready():
 				continue
 			var stream = load(SOUNDS_DIR + path + ".ogg")
 			stream.loop = true
-			_add_player(sound_name, stream, true)
+			_add_player(sound_name, stream, true, true)
 			_layer_players[layer][kind] = sound_name
 	for path in _presence.get("chatter", {}).get("sounds", []):
 		_chatter_streams.append(load(SOUNDS_DIR + path + ".ogg"))
@@ -95,8 +95,15 @@ func _ready():
 	MatchSignals.goods_delivered.connect(_on_goods_delivered)
 
 
-func _add_player(sound_name, stream, looping):
+func _add_player(sound_name, stream, looping, positional = false):
+	"""a positional loop is panned to where its sources are (heard through the WarSounds
+	listener); its loudness is still set here, not by distance"""
 	var player = AudioStreamPlayer.new()
+	if positional:
+		player = AudioStreamPlayer3D.new()
+		player.attenuation_model = AudioStreamPlayer3D.ATTENUATION_DISABLED
+		player.panning_strength = 0.5
+		player.doppler_tracking = AudioStreamPlayer3D.DOPPLER_TRACKING_DISABLED
 	player.name = sound_name.to_pascal_case()
 	player.stream = stream
 	player.volume_db = SILENT_DB
@@ -163,12 +170,16 @@ func _update_targets():
 func _city_closeness():
 	var closest = INF
 	for depot in _depots():
-		closest = min(closest, _flat_distance(depot.global_position, _pivot))
+		var distance = _flat_distance(depot.global_position, _pivot)
+		if distance < closest:
+			closest = distance
+			_players["city_loop"].global_position = depot.global_position  # heard from there
 	return clamp(1.0 - closest / CITY_HEARING_RANGE_M, 0.0, 1.0)
 
 
 func update_presence(weights):
-	"""sets the presence loops from {layer: [moving weight, resting weight]} (also for tests)"""
+	"""sets the presence loops from {layer: [moving weight, resting weight, moving centre,
+	resting centre]} (also for tests; the centres are optional)"""
 	var layers = _presence.get("layers", {})
 	for sound_name in _pitch_targets:
 		_targets[sound_name] = 0.0
@@ -181,22 +192,35 @@ func update_presence(weights):
 		var idle_share = float(config.get("idle_share", 0.0))
 		var moving_loop = _layer_players[layer]["moving"]
 		var idle_loop = _layer_players[layer].get("idle", "")
+		var centres = weights.get(layer, [])
+		var moving_at = centres[2] if centres.size() > 2 else null
+		var resting_at = centres[3] if centres.size() > 3 else null
 		if idle_loop != "":
 			_targets[moving_loop] += _loudness(moving) * gain
 			_targets[idle_loop] += _loudness(resting * idle_share) * gain
 			_pitch_targets[idle_loop] = 1.0
 			_pitch_targets[moving_loop] = 1.0
+			_place(moving_loop, moving_at)
+			_place(idle_loop, resting_at)
 		else:
 			_targets[moving_loop] += _loudness(moving + resting * idle_share) * gain
+			_place(moving_loop, moving_at if moving_at != null else resting_at)
 			var share = moving / (moving + resting) if moving + resting > 0.0 else 1.0
 			_pitch_targets[moving_loop] = lerp(float(config.get("idle_pitch", 1.0)), 1.0, share)
 	for sound_name in _pitch_targets:
 		_targets[sound_name] = min(_targets[sound_name], 1.0)
 
 
+func _place(sound_name, centre):
+	"""pans a presence loop towards the units making it"""
+	var player = _players.get(sound_name)
+	if centre != null and player is AudioStreamPlayer3D:
+		player.global_position = centre
+
+
 func _presence_weights():
-	"""layer -> [moving, resting]: the units near the middle of the screen that make it,
-	nearer ones counting more"""
+	"""layer -> [moving, resting, moving centre, resting centre]: the units near the middle of
+	the screen that make it, nearer ones counting more, and where they are on the whole"""
 	var hearing_range = ENGINE_HEARING_RANGE_M + _camera_size * 0.5
 	var weights = {}
 	for unit in get_tree().get_nodes_in_group("units"):
@@ -214,9 +238,14 @@ func _presence_weights():
 		for layer in layers:
 			if not layer in _layer_players:
 				continue
-			var weight = weights.get(layer, [0.0, 0.0])
+			var weight = weights.get(layer, [0.0, 0.0, Vector3.ZERO, Vector3.ZERO])
 			weight[0 if moving else 1] += closeness
+			weight[2 if moving else 3] += unit.global_position * closeness
 			weights[layer] = weight
+	for layer in weights:  # weighted sums of positions -> centres
+		var weight = weights[layer]
+		weight[2] = weight[2] / weight[0] if weight[0] > 0.0 else null
+		weight[3] = weight[3] / weight[1] if weight[1] > 0.0 else null
 	return weights
 
 

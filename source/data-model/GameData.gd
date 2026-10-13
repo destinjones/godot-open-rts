@@ -32,7 +32,7 @@ const GENERATED_SCENES_ROOT = "res://data-units/"
 const MODEL_FIELDS = ["model", "model_scale", "model_offset", "model_rotation_y_deg"]
 const NOT_INHERITED = ["factions"]
 # data/sounds/<name>.json, see sounds()
-const SOUND_CONFIGS = ["ambience", "units", "combat", "economy"]
+const SOUND_CONFIGS = ["ambience", "units", "combat", "economy", "mix"]
 # used for keys data/city_centres.json leaves out
 const CITY_CENTRE_DEFAULTS = {
 	"max_per_player": 2,
