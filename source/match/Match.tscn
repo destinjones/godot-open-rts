@@ -1,4 +1,4 @@
-[gd_scene load_steps=48 format=3 uid="uid://camns8fqod8d4"]
+[gd_scene load_steps=49 format=3 uid="uid://camns8fqod8d4"]
 
 [ext_resource type="Script" path="res://source/match/environment/Soundscape.gd" id="36_sound"]
 [ext_resource type="Script" path="res://source/match/environment/RoadVisuals.gd" id="35_roads"]
@@ -33,6 +33,7 @@
 [ext_resource type="PackedScene" uid="uid://b8p6lcwubx1tp" path="res://source/match/handlers/UnitVisibilityHandler.tscn" id="32_fci1c"]
 [ext_resource type="Script" path="res://source/match/hud/CityHud.gd" id="33_cityhud"]
 [ext_resource type="PackedScene" path="res://source/match/environment/Atmosphere.tscn" id="34_atmo"]
+[ext_resource type="Script" path="res://source/match/hud/ControlGroupBar.gd" id="35_groupbar"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ysb0j"]
 sky_top_color = Color(0.3, 0.5, 0.78, 1)
@@ -438,6 +439,18 @@ layout_mode = 2
 [node name="UnitMenus" parent="HUD/MarginContainer3/VBoxContainer" instance=ExtResource("13_6cypl")]
 layout_mode = 2
 size_flags_horizontal = 8
+
+[node name="ControlGroupBar" type="HBoxContainer" parent="HUD"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -240.0
+offset_top = 86.0
+offset_right = 240.0
+offset_bottom = 134.0
+grow_horizontal = 2
+mouse_filter = 2
+script = ExtResource("35_groupbar")
 
 [node name="CityHud" type="PanelContainer" parent="HUD"]
 anchors_preset = 1

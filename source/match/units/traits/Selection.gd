@@ -77,6 +77,12 @@ func _update_circle_params():
 
 func _on_input_event(_camera, event, _click_position, _click_normal, _shape_idx):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if event.ctrl_pressed and _unit.is_in_group("controlled_units"):
+			# Ctrl + click: every unit of this type on screen (DoubleClickUnitSelectionHandler)
+			var handler = get_tree().get_first_node_in_group("type_selection_handler")
+			if handler != null:
+				handler.select_all_of_type_on_screen(_unit.type)
+				return
 		if _selected and Input.is_action_pressed("shift_selecting"):
 			deselect()
 			return
