@@ -155,6 +155,9 @@ func _set_size(a_size: float):
 
 
 func set_position_safely(target_position: Vector3):
+	# a jump (minimap, control group, harness) ends any scroll coast and zoom drift
+	_scroll_velocity = Vector2.ZERO
+	_zoom_anchor = null
 	global_transform.origin = _target_position_to_camera_position(target_position)
 
 
