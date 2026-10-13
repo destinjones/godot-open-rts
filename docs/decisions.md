@@ -68,3 +68,17 @@ army; a box with only buildings still takes them. Ctrl + click selects all of a 
 screen, like a double-click. Shift + number adds to a group, and pressing a group's number
 twice within 0.4 s centres the camera on it. The group bar sits top centre under the
 diplomacy bar, because the bottom centre is taken by the unit card next to the minimap.
+
+## 2026-10-11: audio and reactive soundscape cleared despite the feature freeze
+Destin asked for the audio thread explicitly, so it ran alongside the feel work. It owns
+data/sounds/, assets/audio/ and the playback code; Thread A owns voices.json entries for new
+units. Five PRs (#57, #58, #60, #61, #64): an ambient bed, unit presence, combat density,
+economy feedback, then spatialization and the mix. The full reasoning is in
+docs/audio-soundscape.md ("Decisions"); the ones that shape later work:
+- The ambient bed reads MusicPlayer's heat state instead of detecting threat itself, so the
+  music and the world escalate together and there is one place to tune.
+- Unit presence is one mixed loop per layer (engines, footsteps, rotors), not one per unit.
+- Combat, economy and mix levels are data (data/sounds/*.json) keyed by unit id.
+- Ducking is sidechain compressors on the buses, so the Options sliders stay in charge, and
+  a crowd of sounds drops the quiet low-priority ones rather than whichever came last.
+- Sounds are synthesized with numpy (tools/audio/), so they are original and regenerable.
