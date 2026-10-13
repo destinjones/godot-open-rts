@@ -6,7 +6,9 @@ extends Node
 #   and a kick back on every shot,
 # - ground vehicles and boats: pitch when speeding up or braking (squat and dive), body roll
 #   out of turns (boats bank into them), a light suspension bob, a shot rocks the hull, and
-#   wheels ("Wheel*" meshes) roll with the speed,
+#   wheels ("Wheel*" meshes) roll with the speed; a turret, gun or launcher aims at the
+#   target on its own and recoils along its barrel (TurretAim.gd), and the hull rocks away
+#   from wherever the barrel points,
 # - helicopters and drones: a hover bob, a tilt forward with speed and a bank in turns;
 #   fixed-wing aircraft only bank. Rotors spin where the unit does not spin them itself.
 #
@@ -21,6 +23,7 @@ extends Node
 enum Kind { INFANTRY, VEHICLE, BOAT, HOVER, PLANE }
 
 const RotorSpin = preload("res://source/match/units/RotorSpin.gd")
+const TurretAim = preload("res://source/match/motion/TurretAim.gd")
 const INFANTRY_MODEL_WORDS = ["rifleman", "militia", "infantry", "soldier"]
 const SPRING_STIFFNESS = 90.0
 const SPRING_DAMPING = 9.0
@@ -53,6 +56,7 @@ var _roll_velocity = 0.0
 var _kick = 0.0
 var _rotors = []
 var _wheels = []  # [node, radius in metres]
+var _turret = null  # TurretAim, for models with a separate turret, gun or launcher
 
 
 func setup(a_unit):
@@ -83,6 +87,8 @@ func setup(a_unit):
 		_rotors = RotorSpin.collect(unit)  # Helicopter.gd and Drone.gd spin their own
 	if kind == Kind.VEHICLE:
 		_wheels = _collect_wheels()
+	if kind == Kind.VEHICLE or kind == Kind.BOAT:
+		_turret = TurretAim.create(unit, _model)
 	unit.child_entered_tree.connect(_on_unit_child_entered)
 	return true
 
@@ -225,6 +231,8 @@ func _animate_vehicle(delta):
 	for wheel in _wheels:
 		# rolling forward (-Z) turns the top of the wheel forward: negative about local X
 		wheel[0].rotate_object_local(Vector3.RIGHT, -_speed * delta / wheel[1])
+	if _turret != null:
+		_turret.animate(delta)
 
 
 func _animate_aircraft(delta):
@@ -259,5 +267,10 @@ func _on_unit_child_entered(node):
 	if script == null or not "/projectiles/" in script.resource_path:
 		return  # shots are added to their shooter (AttackingWhileInRange)
 	_kick = 1.0
-	if kind == Kind.VEHICLE or kind == Kind.BOAT:
+	if _turret != null:
+		_turret.fire(node.get("target_unit"))
+		var rock = _turret.hull_kick()  # away from the barrel, whichever way it points
+		_pitch_velocity += rock.x
+		_roll_velocity += rock.y
+	elif kind == Kind.VEHICLE or kind == Kind.BOAT:
 		_pitch_velocity += 0.6  # the gun rocks the hull back

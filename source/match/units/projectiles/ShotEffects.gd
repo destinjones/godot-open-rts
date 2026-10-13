@@ -34,6 +34,9 @@ static func cannon_shot(shooter, origin_transform, target):
 	"""muzzle flash, smoke, recoil and a tracer that ends in sparks and dust on the target;
 	sized by the shooter's damage so rifles look smaller than tank guns"""
 	var target_position = _aim_point(target)
+	var flight_s = shell_flight_s(origin_transform.origin.distance_to(target_position))
+	# a turret leads a moving target (TurretAim): the tracer flies to where it will be
+	target_position += shooter.get_meta("_aim_velocity", Vector3.ZERO) * flight_s
 	var size = clampf(0.45 + 0.22 * float(shooter.attack_damage), 0.55, 1.4)
 	var shooter_seen = _is_seen(shooter, origin_transform.origin)
 	var target_seen = _is_seen(target, target_position)
@@ -44,12 +47,15 @@ static func cannon_shot(shooter, origin_transform, target):
 			recoil(shooter, 0.06 * size)
 	if not shooter_seen and not target_seen:
 		return
-	var distance = origin_transform.origin.distance_to(target_position)
-	var flight_s = clampf(distance / TRACER_SPEED_M_PER_S, TRACER_MIN_S, TRACER_MAX_S)
 	_tracer(shooter, origin_transform.origin, target_position, 0.05 * size + 0.02, flight_s)
 	if target_seen:
 		var timer = shooter.get_tree().create_timer(flight_s, false)
 		timer.timeout.connect(_cannon_impact.bind(target, target_position, size))
+
+
+static func shell_flight_s(distance):
+	"""how long a cannon tracer flies over distance metres"""
+	return clampf(distance / TRACER_SPEED_M_PER_S, TRACER_MIN_S, TRACER_MAX_S)
 
 
 static func rocket_launch(shooter, origin_position):
@@ -93,7 +99,10 @@ static func hit_flash(target):
 
 
 static func recoil(shooter, distance):
-	"""kicks the shooter's model back along its barrel and eases it home"""
+	"""kicks the shooter's model back along its barrel and eases it home; a unit with an
+	aiming turret kicks the turret instead (TurretAim) and its hull only rocks"""
+	if shooter.has_meta("_turret_recoil"):
+		return
 	var model = shooter.get_meta("_recoil_model") if shooter.has_meta("_recoil_model") else null
 	if model == null:
 		var geometry = shooter.find_child("Geometry", true, false)
