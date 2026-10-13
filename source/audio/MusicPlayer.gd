@@ -14,6 +14,9 @@ extends Node
 # With the Dummy audio driver (tests, CI, headless) the states still change and are logged,
 # but no stream is decoded; pass --music to play anyway. The tracks come from
 # tools/audio/make_music.py.
+#
+# The ambient bed under a match (source/match/environment/AmbientBed.gd) follows the same state
+# and intensity(), so the world grows tense and loud together with the music.
 
 enum State { SILENT, MENU, CALM, TENSION, BATTLE, ENDED }
 
@@ -112,6 +115,19 @@ func register_combat(weight, at_s = -1.0):
 	heat += weight
 	_last_combat_s = now
 	_update_state(now)
+
+
+func intensity(now = -1.0):
+	"""how hot the fighting is: 0 calm .. 1 a full battle (heat, or the city's threat)"""
+	if not _in_match:
+		return 0.0
+	_cool_down(now_s() if now < 0.0 else now)
+	var threat_floor = [0.0, 0.35, 1.0][clampi(_city_threat, 0, 2)]
+	return clamp(max(heat / BATTLE_HEAT, threat_floor), 0.0, 1.0)
+
+
+func state_name():
+	return State.keys()[state]
 
 
 func _poll():
@@ -292,7 +308,8 @@ func _on_unit_damaged(unit):
 	if not _in_match or not is_instance_valid(unit):
 		return
 	if _is_ours(unit):
-		register_combat(HEAT_STRUCTURE_HIT if unit.is_in_group("structures") else HEAT_HIT)
+		var structure = unit.has_method("is_under_construction")  # there is no structures group
+		register_combat(HEAT_STRUCTURE_HIT if structure else HEAT_HIT)
 	elif _hit_by_us(unit):
 		register_combat(HEAT_HIT)
 
