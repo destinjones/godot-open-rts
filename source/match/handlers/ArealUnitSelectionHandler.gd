@@ -1,5 +1,12 @@
 extends Node3D
 
+# Box selection: a left-drag selects the player's units inside the box (ground and air).
+# Like StarCraft II, a box holding both units and buildings takes only the units, so a
+# sweep across the base grabs the army, not the factories; a box with only buildings
+# takes the buildings. The highlight while dragging shows exactly what will be selected.
+
+const Structure = preload("res://source/match/units/Structure.gd")
+
 @export var rectangular_selection_3d: NodePath
 
 var _rectangular_selection_3d = null
@@ -46,6 +53,30 @@ func _get_controlled_units_from_navigation_domain_within_topdown_polygon_2d(
 	return units_within_polygon
 
 
+func _units_within_box(topdown_polygon_2d):
+	var units = _get_controlled_units_from_navigation_domain_within_topdown_polygon_2d(
+		Constants.Match.Navigation.Domain.TERRAIN, topdown_polygon_2d
+	)
+	units.merge(
+		_get_controlled_units_from_navigation_domain_within_topdown_polygon_2d(
+			Constants.Match.Navigation.Domain.AIR,
+			_rebase_topdown_polygon_2d_to_different_plane(
+				topdown_polygon_2d, Constants.Match.Air.PLANE
+			)
+		)
+	)
+	return prefer_mobile_units(units)
+
+
+static func prefer_mobile_units(units):
+	"""units over buildings: the buildings only when nothing else is in the box"""
+	var mobile = Utils.Set.new()
+	for unit in units.iterate():
+		if not unit is Structure:
+			mobile.add(unit)
+	return units if mobile.empty() else mobile
+
+
 func _rebase_topdown_polygon_2d_to_different_plane(topdown_polygon_2d, plane):
 	var rebased_topdown_polygon_2d = []
 	var camera = get_viewport().get_camera_3d()
@@ -63,17 +94,7 @@ func _on_selection_started():
 
 
 func _on_selection_changed(topdown_polygon_2d):
-	var units_to_highlight = _get_controlled_units_from_navigation_domain_within_topdown_polygon_2d(
-		Constants.Match.Navigation.Domain.TERRAIN, topdown_polygon_2d
-	)
-	units_to_highlight.merge(
-		_get_controlled_units_from_navigation_domain_within_topdown_polygon_2d(
-			Constants.Match.Navigation.Domain.AIR,
-			_rebase_topdown_polygon_2d_to_different_plane(
-				topdown_polygon_2d, Constants.Match.Air.PLANE
-			)
-		)
-	)
+	var units_to_highlight = _units_within_box(topdown_polygon_2d)
 	var units_not_to_highlight_anymore = Utils.Set.subtracted(
 		_highlighted_units, units_to_highlight
 	)
@@ -92,15 +113,4 @@ func _on_selection_finished(topdown_polygon_2d):
 	_rectangular_selection_3d.changed.disconnect(_on_selection_changed)
 	_unforce_highlight(_highlighted_units)
 	_highlighted_units = Utils.Set.new()
-	var units_to_select = _get_controlled_units_from_navigation_domain_within_topdown_polygon_2d(
-		Constants.Match.Navigation.Domain.TERRAIN, topdown_polygon_2d
-	)
-	units_to_select.merge(
-		_get_controlled_units_from_navigation_domain_within_topdown_polygon_2d(
-			Constants.Match.Navigation.Domain.AIR,
-			_rebase_topdown_polygon_2d_to_different_plane(
-				topdown_polygon_2d, Constants.Match.Air.PLANE
-			)
-		)
-	)
-	Utils.Match.select_units(units_to_select)
+	Utils.Match.select_units(_units_within_box(topdown_polygon_2d))
