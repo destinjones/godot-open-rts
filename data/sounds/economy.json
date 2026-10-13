@@ -1,0 +1,21 @@
+{
+  "_comment": "Feedback of building and the economy (source/match/environment/EconomySounds.gd). loops are mixed from the buildings near the middle of the screen: sites being built, power stations and pylons on a live grid (lower and rougher in a brownout), factories with a queue. one_shots are played where they happen, on the Effects bus. The files come from tools/audio/make_economy_sounds.py.",
+  "loops": {
+    "construction": {"sound": "construction_loop", "gain": 0.5},
+    "power_hum": {"sound": "power_hum_loop", "gain": 0.35, "brownout_pitch": 0.85},
+    "factory": {"sound": "factory_loop", "gain": 0.4}
+  },
+  "power_hum": ["power_plant", "solar_plant", "pylon"],
+  "hearing_range_m": 18.0,
+  "one_shots": {
+    "build_place": {"variants": 1, "gain": 0.7, "gap_s": 0.15},
+    "build_refused": {"variants": 1, "gain": 0.5, "gap_s": 0.3},
+    "build_complete": {"variants": 1, "gain": 0.75, "gap_s": 0.4},
+    "deposit": {"variants": 3, "gain": 0.4, "gap_s": 0.5}
+  },
+  "_comment_deposit": "goods reaching one of the player's depots near the camera: a crate set down and a small chime, at most this often",
+  "deposit_chance": 0.6,
+  "_comment_alerts": "the advisor's calls that get an alarm chime first, and how long the voice waits for it",
+  "alert_events": ["low_oil", "storage_full"],
+  "alert_lead_s": 0.45
+}

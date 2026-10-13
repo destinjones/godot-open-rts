@@ -31,6 +31,8 @@ const MOVEMENT_DOMAINS = {"land": 1, "water": 2, "amphibious": 3}  # navigation 
 const GENERATED_SCENES_ROOT = "res://data-units/"
 const MODEL_FIELDS = ["model", "model_scale", "model_offset", "model_rotation_y_deg"]
 const NOT_INHERITED = ["factions"]
+# data/sounds/<name>.json, see sounds()
+const SOUND_CONFIGS = ["ambience", "units", "combat", "economy", "mix"]
 # used for keys data/city_centres.json leaves out
 const CITY_CENTRE_DEFAULTS = {
 	"max_per_player": 2,
@@ -241,6 +243,11 @@ static func voice_set_id_for(unit_entry, faction = ""):
 	return defaults.get("unit")
 
 
+static func sounds(config):
+	"""data/sounds/<config>.json, one of SOUND_CONFIGS: how the soundscape is mixed"""
+	return get_data()["sounds"].get(config, {})
+
+
 static func movement():
 	return get_data()["movement"]
 
@@ -416,6 +423,7 @@ static func _load_all():
 		"city_centres": _parse_dict_file(BASE_DATA_DIR + "/city_centres.json"),
 		"voices": _parse_dict_file(BASE_DATA_DIR + "/sounds/voices.json"),
 		"voice_sets": _load_dir(BASE_DATA_DIR + "/sounds/voice_sets"),
+		"sounds": _load_sound_configs(BASE_DATA_DIR),
 		"movement": _load_object_file(BASE_DATA_DIR + "/movement.json").get("movement", {}),
 		"factions": _load_dir(BASE_DATA_DIR + "/factions"),
 		"faction_scene_cache": {},
@@ -441,6 +449,7 @@ static func _load_all():
 		data["city_centres"].merge(_parse_dict_file(mod_dir + "/city_centres.json"), true)
 		_merge_voices(data["voices"], _parse_dict_file(mod_dir + "/sounds/voices.json"))
 		_merge_voice_sets(data["voice_sets"], _load_dir(mod_dir + "/sounds/voice_sets"))
+		_deep_merge(data["sounds"], _load_sound_configs(mod_dir))
 		data["movement"].merge(
 			_load_object_file(mod_dir + "/movement.json").get("movement", {}), true
 		)
@@ -588,6 +597,13 @@ static func _merge_voice_sets(base_sets, mod_sets):
 			if key != "lines" and key != "folder":
 				target[key] = mod_set[key]
 		target["lines"] = lines
+
+
+static func _load_sound_configs(data_dir):
+	var configs = {}
+	for config in SOUND_CONFIGS:
+		configs[config] = _parse_dict_file(data_dir + "/sounds/" + config + ".json")
+	return configs
 
 
 static func _parse_dict_file(path):

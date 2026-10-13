@@ -1,0 +1,40 @@
+{
+  "_comment": "How units sound just by being there (source/match/environment/Soundscape.gd). Each unit id names its presence layers; layers are loops mixed from every unit near the middle of the screen, nearer ones counting more. A layer plays its 'moving' loop for units on the move and its 'idle' loop (or the moving loop at idle_pitch) for units standing still, at the idle share of the loudness; idle 0 means the layer is silent at rest. Units missing here use 'default_vehicle'. Structures are not listed: they are buildings, not units. The loops come from tools/audio/make_unit_presence.py, make_war_sounds.py and make_soundscape.py.",
+  "units": {
+    "militia": ["footsteps", "chatter"],
+    "tank": ["tank_engine", "chatter"],
+    "battle_tank": ["tank_engine", "chatter"],
+    "heavy_tank": ["tank_engine", "chatter"],
+    "artillery": ["tank_engine", "chatter"],
+    "amphibious_apc": ["tank_engine", "chatter"],
+    "missile_truck": ["truck_engine", "chatter"],
+    "raider": ["truck_engine", "chatter"],
+    "rocket_technical": ["truck_engine", "chatter"],
+    "scout_buggy": ["truck_engine"],
+    "hover_skimmer": ["truck_engine"],
+    "patrol_boat": ["truck_engine", "chatter"],
+    "worker": ["truck_engine"],
+    "hauler": ["truck_engine"],
+    "caravan": ["truck_engine"],
+    "helicopter": ["rotor", "rotor_wash", "chatter"],
+    "gunship": ["rotor", "rotor_wash", "chatter"],
+    "drone": ["drone"],
+    "train": []
+  },
+  "default_vehicle": ["truck_engine"],
+  "layers": {
+    "tank_engine": {"moving": "war/tank_engine_loop", "idle": "units/tank_idle_loop", "gain": 0.6, "idle_share": 0.4},
+    "truck_engine": {"moving": "ambience/engine_hum_loop", "idle": "units/truck_idle_loop", "gain": 0.45, "idle_share": 0.35},
+    "footsteps": {"moving": "units/footsteps_loop", "gain": 0.55, "idle_share": 0.0},
+    "rotor": {"moving": "war/rotor_loop", "gain": 0.55, "idle_share": 1.0, "idle_pitch": 0.94, "zoomed_out": 0.5},
+    "rotor_wash": {"moving": "units/rotor_wash_loop", "gain": 0.35, "idle_share": 1.0, "zoomed_out": 0.3},
+    "drone": {"moving": "war/drone_loop", "gain": 0.35, "idle_share": 0.8, "idle_pitch": 0.9}
+  },
+  "_comment_chatter": "now and then a unit of the player near the middle of the screen keys its radio: wordless chatter on the Voices bus, from where the unit is. More often as the fighting heats up (MusicPlayer state).",
+  "chatter": {
+    "sounds": ["units/chatter_1", "units/chatter_2", "units/chatter_3", "units/chatter_4", "units/chatter_5", "units/chatter_6"],
+    "gain": 0.3,
+    "range_m": 30.0,
+    "every_s": {"CALM": [9.0, 18.0], "TENSION": [5.0, 10.0], "BATTLE": [3.0, 6.0]}
+  }
+}
