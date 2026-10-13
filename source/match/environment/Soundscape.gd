@@ -15,9 +15,11 @@ extends Node
 # make_unit_presence.py.
 # Weapon fire and explosions are WarSounds, a child of this node. Under it all runs the
 # AmbientBed, another child: a bed per city tier with threat layers that follow the music.
+# Building and the economy are heard through EconomySounds, a third child.
 
 const WarSounds = preload("res://source/match/environment/WarSounds.gd")
 const AmbientBed = preload("res://source/match/environment/AmbientBed.gd")
+const EconomySounds = preload("res://source/match/environment/EconomySounds.gd")
 const GameData = preload("res://source/data-model/GameData.gd")
 
 const AUDIO_DIR = "res://assets/audio/ambience/"
@@ -85,6 +87,9 @@ func _ready():
 	var bed = AmbientBed.new()
 	bed.name = "AmbientBed"
 	add_child(bed)
+	var economy = EconomySounds.new()
+	economy.name = "EconomySounds"
+	add_child(economy)
 	_add_player("trade_horn", load(AUDIO_DIR + "trade_horn.ogg"), false)
 	MatchSignals.trade_completed.connect(_on_trade_completed)
 	MatchSignals.goods_delivered.connect(_on_goods_delivered)
