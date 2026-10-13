@@ -73,3 +73,33 @@ topic (Guide.HINT_TOPICS) and shows a "Read more" button that opens it; alerts h
 The "(F1: ...)" pointers in two hint texts went, the button replaces them. Known gap:
 the camera polls W A S D, so typing in the search box also pans the map; the fix belongs
 to the camera (control layer), passed to the controls thread.
+
+## 2026-10-11: control and UX layer cleared despite the feature freeze
+Destin asked for a second thread to bring the controls up to the StarCraft II standard
+(docs/feel.md, "Control"), so it runs alongside the feel work instead of waiting for it. It
+owns source/match/hud/ layout, input and camera handling; the art thread owns models,
+shaders, VFX and the model fields in data/units/; the audio thread owns all sound, and the
+onboarding thread owns translations, tooltips and the manual. Four PRs, one per area:
+selection, orders, camera, feedback. Most of the list already existed (box select,
+double-click, groups, attack-move, queued orders, rally points), so each PR only fills gaps.
+
+## 2026-10-11: selection works like StarCraft II
+A box over units and buildings takes only the units, so sweeping across the base grabs the
+army; a box with only buildings still takes them. Ctrl + click selects all of a type on
+screen, like a double-click. Shift + number adds to a group, and pressing a group's number
+twice within 0.4 s centres the camera on it. The group bar sits top centre under the
+diplomacy bar, because the bottom centre is taken by the unit card next to the minimap.
+
+## 2026-10-11: audio and reactive soundscape cleared despite the feature freeze
+Destin asked for the audio thread explicitly, so it ran alongside the feel work. It owns
+data/sounds/, assets/audio/ and the playback code; Thread A owns voices.json entries for new
+units. Five PRs (#57, #58, #60, #61, #64): an ambient bed, unit presence, combat density,
+economy feedback, then spatialization and the mix. The full reasoning is in
+docs/audio-soundscape.md ("Decisions"); the ones that shape later work:
+- The ambient bed reads MusicPlayer's heat state instead of detecting threat itself, so the
+  music and the world escalate together and there is one place to tune.
+- Unit presence is one mixed loop per layer (engines, footsteps, rotors), not one per unit.
+- Combat, economy and mix levels are data (data/sounds/*.json) keyed by unit id.
+- Ducking is sidechain compressors on the buses, so the Options sliders stay in charge, and
+  a crowd of sounds drops the quiet low-priority ones rather than whichever came last.
+- Sounds are synthesized with numpy (tools/audio/), so they are original and regenerable.
