@@ -131,3 +131,15 @@ cross on the spot. The sound for it belongs to the audio thread: it can bind to
 MatchSignals.units_ordered(units, "cannot"), which this layer only reacts to visually.
 Cursors are tinted Kenney crosshairs (already in assets/ui), so no new art. The selection
 box now reads the harness's virtual mouse too, and is green like the move lines.
+
+## 2026-10-11: the camera follows the cursor, like StarCraft II
+The mouse wheel zooms towards the cursor: the ground under it stays under it, and the zoom
+glides over a fraction of a second instead of jumping a step. Edge scrolling eases in over
+0.12 s and out over 0.08 s rather than starting and stopping dead. The minimap pings: a hit
+on one of your units or buildings rings it red (one ping per 12 m spot every 6 s, so a fight
+reads as one ping), and Alt + click marks a spot in yellow without moving the camera. A plain
+click or drag on the minimap still jumps the camera. All the timings are exported on
+IsometricCamera3D and constants in hud/MinimapPings.gd. Why: zoom-to-centre made you re-aim
+after every wheel notch, and an attack off screen gave no sign at all. Pings have no sound
+here; the audio thread can bind to MatchSignals.unit_damaged. Map keys (W, A, S, D, Q, E) are
+ignored while a text field has focus, so typing into a search box no longer pans the map.

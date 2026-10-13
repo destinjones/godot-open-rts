@@ -11,6 +11,10 @@ extends Camera3D
 # A big hit close to the view also freezes the game for a few frames (hit-stop), only at
 # normal speed so the play harness and the debug speed controls are left alone.
 # Both are off with the "Screen shake" option.
+#
+# The mouse wheel zooms smoothly towards the point under the cursor (StarCraft II style), and
+# scrolling, by the screen edge or the keys, eases in and out instead of starting and
+# stopping dead.
 
 const EXPECTED_X_ROTATION_DEGREES = -30.0
 const EXPECTED_PROJECTION = PROJECTION_ORTHOGONAL
@@ -32,6 +36,10 @@ const HIT_STOP_COOLDOWN_S = 0.6  # a big battle must not turn into a slideshow
 @export var screen_margin_for_movement = 2  # px
 @export var movement_speed = 1.1
 @export var bounding_planes: Array[Plane] = []
+@export var scroll_ease_in_s = 0.12  # from standing to full speed
+@export var scroll_ease_out_s = 0.08  # from full speed to standing
+@export var zoom_smoothing = 14.0  # 1/s: how fast the size follows the wheel
+@export var zoom_to_cursor = true
 @export_group("Rotation")
 @export var mouse_rotation_speed = 0.005  # [rad/px]
 @export var arrowkey_rotation_speed = 2  # [rad/s]
@@ -47,6 +55,9 @@ var _trauma = 0.0
 var _shake_time = 0.0
 var _shake_noise = FastNoiseLite.new()
 var _last_hit_stop_ms = -100000
+var _scroll_velocity = Vector2.ZERO  # -1..1 per axis, eased towards the wanted direction
+var _target_size = null  # where a wheel zoom is heading
+var _zoom_anchor = null  # the screen point that stays put while zooming
 
 
 func _ready():
@@ -66,6 +77,7 @@ func _ready():
 func _process(delta: float):
 	# real time, capped so that one long frame (a hitch) does not swallow the whole shake
 	_update_shake(min(delta / max(Engine.time_scale, 0.001), 1.0 / 30.0))
+	_update_zoom(delta / max(Engine.time_scale, 0.001))
 
 
 func add_shake(strength: float, world_position = null):
@@ -131,6 +143,11 @@ func _unhandled_input(event: InputEvent):
 
 
 func set_size_safely(a_size: float):
+	_target_size = null  # a size set from code wins over a wheel zoom on its way
+	_set_size(a_size)
+
+
+func _set_size(a_size: float):
 	if a_size == size:
 		return
 	size = clamp(a_size, size_min, size_max)
@@ -138,6 +155,9 @@ func set_size_safely(a_size: float):
 
 
 func set_position_safely(target_position: Vector3):
+	# a jump (minimap, control group, harness) ends any scroll coast and zoom drift
+	_scroll_velocity = Vector2.ZERO
+	_zoom_anchor = null
 	global_transform.origin = _target_position_to_camera_position(target_position)
 
 
@@ -153,12 +173,18 @@ func _try_handling_movement(delta: float) -> bool:
 	if _is_rotating():
 		return false
 
-	var screen_move_vector = _calculate_screen_move_vector()
-	if screen_move_vector.is_zero_approx():
+	var wanted = _calculate_screen_move_vector()
+	wanted = wanted.normalized() if not wanted.is_zero_approx() else Vector2.ZERO
+	var ease_s = (
+		scroll_ease_in_s if wanted.length() >= _scroll_velocity.length() else scroll_ease_out_s
+	)
+	_scroll_velocity = _scroll_velocity.move_toward(wanted, delta / max(ease_s, 0.001))
+	if _scroll_velocity.is_zero_approx():
+		_scroll_velocity = Vector2.ZERO
 		return false
 
 	var scaled_screen_move_vector = (
-		screen_move_vector.normalized()
+		_scroll_velocity
 		* delta
 		* Vector2(movement_speed, movement_speed * 2.0)
 		* _scroll_speed_factor()
@@ -173,13 +199,21 @@ func _try_handling_movement(delta: float) -> bool:
 	return true
 
 
+func _is_typing() -> bool:
+	var focus_owner = get_viewport().gui_get_focus_owner()
+	return focus_owner is LineEdit or focus_owner is TextEdit
+
+
 func _calculate_screen_move_vector() -> Vector2:
 	var viewport_size = get_viewport().size
 	var mouse_pos = VirtualPointer.get_position(get_viewport())
 
-	var x_axis = Input.get_axis("move_map_left", "move_map_right")
-	var y_axis = Input.get_axis("move_map_up", "move_map_down")
-	var move_vector = Vector2(x_axis, y_axis)
+	var move_vector = Vector2.ZERO
+	if not _is_typing():  # W, A, S and D typed into a text field must not pan the map
+		move_vector = Vector2(
+			Input.get_axis("move_map_left", "move_map_right"),
+			Input.get_axis("move_map_up", "move_map_down")
+		)
 
 	if not _edge_scrolling_enabled():
 		return move_vector
@@ -224,15 +258,39 @@ func _zoom_inverted() -> bool:
 
 
 func _zoom_in():
-	set_size_safely(size - 1)
+	_zoom_by(-1)
 
 
 func _zoom_out():
-	set_size_safely(size + 1)
+	_zoom_by(1)
+
+
+func _zoom_by(steps):
+	var from = _target_size if _target_size != null else size
+	_target_size = clamp(from + steps, size_min, size_max)
+	_zoom_anchor = VirtualPointer.get_position(get_viewport()) if zoom_to_cursor else null
+
+
+func _update_zoom(delta: float):
+	if _target_size == null:
+		return
+	var new_size = lerp(size, float(_target_size), 1.0 - exp(-zoom_smoothing * delta))
+	if abs(new_size - _target_size) < 0.01:
+		new_size = _target_size
+		_target_size = null
+	var anchor = _zoom_anchor
+	var before = get_ray_intersection(anchor) if anchor != null else null
+	_set_size(new_size)
+	if before != null:
+		# keep the ground under the cursor where it was: zoom towards the cursor
+		var after = get_ray_intersection(anchor)
+		if after != null:
+			global_translate((before - after) * Vector3(1, 0, 1))
+			_align_position_to_bounding_planes()
 
 
 func _try_handling_arrowkey_rotation(delta: float):
-	if _is_rotating():
+	if _is_rotating() or _is_typing():
 		return
 	var angle_radians = (
 		delta
