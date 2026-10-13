@@ -143,3 +143,13 @@ IsometricCamera3D and constants in hud/MinimapPings.gd. Why: zoom-to-centre made
 after every wheel notch, and an attack off screen gave no sign at all. Pings have no sound
 here; the audio thread can bind to MatchSignals.unit_damaged. Map keys (W, A, S, D, Q, E) are
 ignored while a text field has focus, so typing into a search box no longer pans the map.
+
+## 2026-10-13: the remade tank's cost is fine on a real GPU
+The GPU bench owed by the tank remake (#56) ran on an RTX 3060 (Vulkan, Forward+, Godot
+4.7.2) with UnitModelBench, 5 rounds of 300 frames. 30 copies cost 0.33 ms per frame with
+the new tank against 0.31 ms with the pre-#56 tank (classic control 0.26 to 0.28 ms between
+runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0.60 ms, about
+2.7 against 2.3 ms per frame in total, still several hundred fps. Why it matters: the 64 vs
+50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
+exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
+the plan for the other units and no decimation or texture cut is needed for the tank.
