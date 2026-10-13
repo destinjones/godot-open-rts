@@ -20,6 +20,9 @@ Total cost: 94.5 credits (9 x 1.5 for the concept images, 9 x 9 for the 3D model
 3. **Clean-up:** `tools/blender/clean_generated.py` turns the cobalt blue faces into the
    `TeamColor` material, keeps one 1024 px base-colour JPEG, turns and scales the model and
    (gunship) adds spinning rotor blades. Result: 7.4k to 9k triangles, 0.3 to 0.6 MB.
+   Since 2026-10-11 (the tank remake below) the script also keeps a 1024 px normal map, puts
+   team colour on upward-facing faces only, and can cut out a separate `Turret` (see
+   docs/art-direction.md). The models above were cleaned before that and have no normal map.
 4. **Size in game:** `model_scale` in `data/units/<id>.json` from
    `tools/art/fit_model_scale.gd` (same length as the model it replaced, which stays as
    `classic_model` for Options > Unit models > Classic). Three were then
@@ -75,3 +78,40 @@ set by eye to 0.7).
 | `airport.glb` | short runway, round-roofed hangar, control tower with radar, fuel truck | tower cab, hangar door frame |
 
 The raw downloads and concept images are not in the repository (they are 4 MB each).
+
+## The tank (2026-10-11)
+
+The Foundry tank, the hero unit every other unit is matched against, was remade as a modern
+light main battle tank (Leopard 1 / M60 style). 10.5 credits: 1.5 for two concept images, 9
+for the 3D model. Concept B was picked.
+
+- **Prompt core:** low, wide, angular hull with side skirts over six road wheels; a
+  wedge-shaped turret clearly separate from the hull on a visible turret ring; a long gun with
+  a bore evacuator and muzzle brake; commander's cupola and roof machine gun; turret stowage
+  baskets. Muted olive drab with desert dust. Only the turret roof and the engine deck are
+  cobalt blue.
+- **Tripo:** `face_limit` 5000 (art-direction budget for units is 1k to 6k). It returned 4,762
+  triangles; the clean-up decimates to 3,600, the old tank's count. In
+  `tests/perf/UnitModelBench.tscn` (llvmpipe) 30 copies at 4,762 cost about 75 ms against 64 ms
+  at 3,600, and the two look the same at the closest zoom.
+- **Clean-up:**
+
+```sh
+python3 tools/blender/clean_generated.py -- --in raw/tank.glb \
+    --out assets/models/ironbound/units/tank.glb --yaw 90 --length 1.75 --max-tris 3600 \
+    --turret 0.41 --turret-front 0.14 --barrel-width 0.06 --barrel-scale 1.6 \
+    --team-smooth 2 --saturation 1.35
+```
+
+`--turret 0.41` is the hull roof height in metres after scaling: every face above it, except
+those in front of the turret body (`--turret-front`) and off the gun's centre line
+(`--barrel-width`), goes to `Turret`, whose origin is on the turret ring. That is the node
+`TurretAim.gd` traverses. `--length 1.75` (gun included) makes the hull 1.37 m long, about 10% longer
+than the old tank model, so `model_scale` stays 2.575 and the unit's footprint barely changes. The last three flags came out of the review at play
+zoom: the generated gun was a thin line (`--barrel-scale`), the concept's dirt left olive holes
+in the team-colour panels (`--team-smooth`), and the dusty paint sank into the desert sand
+(`--saturation`).
+
+The raw Tripo download is kept outside the repository, in the project's shared files
+(`game/modern/tank/tank_raw_concept_b.glb`).
+
