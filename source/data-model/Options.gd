@@ -48,6 +48,7 @@ const RESETTABLE = [
 	"camera_scroll_speed",
 	"edge_scrolling",
 	"invert_zoom",
+	"screen_shake",
 	"mouse_restricted",
 ]
 
@@ -118,6 +119,7 @@ const RESETTABLE = [
 @export_range(0.25, 3.0) var camera_scroll_speed = 1.0
 @export var edge_scrolling = true
 @export var invert_zoom = false
+@export var screen_shake = true  # explosions nudge the camera (MatchSignals.camera_shake)
 @export var mouse_restricted = false:
 	set = _set_mouse_restricted
 

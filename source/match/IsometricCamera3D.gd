@@ -1,8 +1,29 @@
 extends Camera3D
 
+# The match (and map editor) camera: orthographic, looking down at 30 degrees.
+#
+# Screen shake: MatchSignals.camera_shake(strength, world_position) adds "trauma" (0..1)
+# that decays over time; the view's offset is trauma to the power 1.5 times smooth noise, so
+# a vehicle dying on screen is felt (a few pixels) and a building collapse kicks. A source
+# further from the centre of the view shakes less, off-screen ones not at all. The offset goes
+# through h_offset/v_offset only, so the camera transform the rest of the game reads
+# (picking, minimap) never moves.
+# A big hit close to the view also freezes the game for a few frames (hit-stop), only at
+# normal speed so the play harness and the debug speed controls are left alone.
+# Both are off with the "Screen shake" option.
+
 const EXPECTED_X_ROTATION_DEGREES = -30.0
 const EXPECTED_PROJECTION = PROJECTION_ORTHOGONAL
 const VirtualPointer = preload("res://source/utils/VirtualPointer.gd")
+const SHAKE_DECAY = 1.6  # trauma lost per second
+const SHAKE_MAX_PER_HIT = 0.6  # one hit never maxes the trauma out on its own
+const SHAKE_MAX_OFFSET = 0.045  # at full trauma, as a fraction of the visible height
+const SHAKE_FREQUENCY = 14.0  # roughly Hz: a rattle, not a sway
+const SHAKE_REACH = 1.0  # sources this many view heights from the centre do not shake
+const HIT_STOP_MIN_STRENGTH = 0.45  # after distance attenuation
+const HIT_STOP_TIME_SCALE = 0.05
+const HIT_STOP_S = 0.06  # real seconds
+const HIT_STOP_COOLDOWN_S = 0.6  # a big battle must not turn into a slideshow
 
 @export_group("Size")
 @export var size_min = 1
@@ -22,6 +43,10 @@ const VirtualPointer = preload("res://source/utils/VirtualPointer.gd")
 
 var _mouse_pos_when_rotation_started = null
 var _camera_global_pos_when_rotation_started = null
+var _trauma = 0.0
+var _shake_time = 0.0
+var _shake_noise = FastNoiseLite.new()
+var _last_hit_stop_ms = -100000
 
 
 func _ready():
@@ -30,6 +55,67 @@ func _ready():
 		is_equal_approx(rotation_degrees.x, EXPECTED_X_ROTATION_DEGREES), "unexptected X rotation"
 	)
 	_align_camera_properties_to_current_size()
+	_shake_noise.seed = randi()
+	_shake_time = randf() * 100.0
+	_shake_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	_shake_noise.fractal_type = FastNoiseLite.FRACTAL_NONE  # the full -1..1 range
+	_shake_noise.frequency = SHAKE_FREQUENCY
+	MatchSignals.camera_shake.connect(add_shake)
+
+
+func _process(delta: float):
+	# real time, capped so that one long frame (a hitch) does not swallow the whole shake
+	_update_shake(min(delta / max(Engine.time_scale, 0.001), 1.0 / 30.0))
+
+
+func add_shake(strength: float, world_position = null):
+	"""MatchSignals.camera_shake: strength 0..1, weaker the further from the view's centre"""
+	if not Globals.options.screen_shake or not current or not is_inside_tree():
+		return
+	var attenuation = 1.0
+	if world_position is Vector3:
+		var focus = get_ray_intersection(get_viewport().size / 2.0)
+		if focus != null:
+			var distance = ((world_position - focus) * Vector3(1, 0, 1)).length()
+			attenuation = 1.0 - clamp(distance / (size * SHAKE_REACH), 0.0, 1.0)
+	var felt = clamp(strength, 0.0, SHAKE_MAX_PER_HIT) * attenuation
+	if felt <= 0.0:
+		return
+	_trauma = min(1.0, _trauma + felt)
+	if felt >= HIT_STOP_MIN_STRENGTH:
+		_hit_stop()
+
+
+func _hit_stop():
+	var now_ms = Time.get_ticks_msec()
+	if (
+		Engine.time_scale != 1.0
+		or get_tree().paused
+		or now_ms - _last_hit_stop_ms < HIT_STOP_COOLDOWN_S * 1000.0
+	):
+		return
+	_last_hit_stop_ms = now_ms
+	Engine.time_scale = HIT_STOP_TIME_SCALE
+	# a real-time timer that also runs while paused, so the speed always comes back
+	get_tree().create_timer(HIT_STOP_S, true, false, true).timeout.connect(
+		func():
+			if Engine.time_scale == HIT_STOP_TIME_SCALE:
+				Engine.time_scale = 1.0
+	)
+
+
+func _update_shake(delta: float):
+	if _trauma <= 0.0:
+		if h_offset != 0.0 or v_offset != 0.0:
+			h_offset = 0.0
+			v_offset = 0.0
+		return
+	_trauma = max(0.0, _trauma - SHAKE_DECAY * delta)
+	_shake_time += delta
+	var amount = pow(_trauma, 1.5) * SHAKE_MAX_OFFSET * size
+	# two far-apart rows of the same noise, so the axes move independently
+	h_offset = amount * _shake_noise.get_noise_2d(_shake_time, 0.0)
+	v_offset = amount * _shake_noise.get_noise_2d(_shake_time, 50.0)
 
 
 func _physics_process(delta: float):
