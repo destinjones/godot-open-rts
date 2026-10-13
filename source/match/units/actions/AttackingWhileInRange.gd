@@ -22,6 +22,7 @@ func _ready():
 		# non-stationary units must hold shooting as long as passive movement is active
 		_unit_movement_trait.passive_movement_started.connect(_on_passive_movement_started)
 		_unit_movement_trait.passive_movement_finished.connect(_on_passive_movement_finished)
+		_turn_towards_target()
 	_setup_one_shot_timer()
 	_setup_range_check_timer()
 	_schedule_hit()
@@ -53,6 +54,14 @@ func _rotate_unit_towards_target():
 	if _unit.global_position.is_equal_approx(target_position):
 		return
 	_unit.global_transform = _unit.global_transform.looking_at(target_position, Vector3(0, 1, 0))
+
+
+func _turn_towards_target():
+	"""mobile units swing round at their turn rate instead of snapping (Movement.gd)"""
+	if _unit_movement_trait.has_method("face_towards"):
+		_unit_movement_trait.face_towards(_target_unit.global_position)
+	else:
+		_rotate_unit_towards_target()
 
 
 func _schedule_hit():
@@ -103,5 +112,5 @@ func _on_passive_movement_started():
 
 
 func _on_passive_movement_finished():
-	_rotate_unit_towards_target()
+	_turn_towards_target()
 	_schedule_hit()

@@ -4,7 +4,9 @@ extends Node
 # construction complete, research complete, low oil, storage full, trade, war, helper
 # alerts). Lines come from the "advisor" voice set in data/sounds/ and are picked by
 # VoiceBank, so repeated events vary their wording. An announcement that arrives while
-# another one plays waits in a short queue instead of cutting it off.
+# another one plays waits in a short queue instead of cutting it off. Economy alarms (low oil,
+# storage full) ring a chime first, so they stand out from routine news
+# (data/sounds/economy.json alert_events).
 
 const GameData = preload("res://source/data-model/GameData.gd")
 const Structure = preload("res://source/match/units/Structure.gd")
@@ -31,6 +33,7 @@ const COOLDOWN_MS = {
 const LOW_OIL = 5  # announce when the oil stock drops below this...
 const OIL_RECOVERED = 12  # ...and again only after it climbed back above this
 const POLL_S = 2.0
+const ALERT_CHIME = "res://assets/audio/economy/alert_economy.ogg"
 const HELPER_ALERTS = {
 	"on": "helper_on",
 	"off": "helper_off",
@@ -48,6 +51,9 @@ var _queue = []  # [[event, time ms]]
 var _last_ms = {}  # event -> time it was last announced
 var _last_base_damage_ms = -BASE_UNDER_ATTACK_QUIET_MS
 var _oil_low = false
+var _alert_events = []
+var _alert_lead_s = 0.45
+var _chime = null
 
 @onready var _audio_player = find_child("AudioStreamPlayer")
 @onready var _player = get_parent()
@@ -55,6 +61,10 @@ var _oil_low = false
 
 func _ready():
 	_set_id = GameData.voices().get("advisor", "advisor")
+	var economy = GameData.sounds("economy")
+	_alert_events = economy.get("alert_events", [])
+	_alert_lead_s = float(economy.get("alert_lead_s", 0.45))
+	_chime = load(ALERT_CHIME) if ResourceLoader.exists(ALERT_CHIME) else null
 	_audio_player.finished.connect(_play_next)
 	MatchSignals.match_started.connect(announce.bind("match_started"))
 	MatchSignals.match_aborted.connect(announce.bind("match_aborted"))
@@ -107,8 +117,22 @@ func _play(event):
 	if stream == null:
 		return
 	last_event = event
+	if event in _alert_events and _chime != null:
+		stream = _with_chime(stream)
 	_audio_player.stream = stream
 	_audio_player.play()
+
+
+func _with_chime(line):
+	"""the chime, then the line coming in over its tail, as one stream: the player stays
+	busy until the line ends, so the queue waits for both"""
+	var playlist = AudioStreamPlaylist.new()
+	playlist.loop = false
+	playlist.stream_count = 2
+	playlist.set_list_stream(0, _chime)
+	playlist.set_list_stream(1, line)
+	playlist.fade_time = max(_chime.get_length() - _alert_lead_s, 0.0)
+	return playlist
 
 
 func _play_next():

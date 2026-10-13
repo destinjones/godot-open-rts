@@ -1,0 +1,24 @@
+{
+  "_comment": "The ambient bed under a match (source/match/environment/AmbientBed.gd). One tier bed per city tier of the player on screen, crossfaded when the city grows, and two threat layers on top that follow the music's state (MusicPlayer: CALM, TENSION, BATTLE). gain is the layer's full loudness (linear, 0..1, on the Ambience bus; the tier beds are matched to about -29 LUFS, tension -26, battle -24); levels scale each layer per music state. Low oil brings a quiet tension layer from the industrial tier on. The loops come from tools/audio/make_ambient_beds.py.",
+  "tier_beds": {
+    "1": {"sound": "bed_frontier", "gain": 0.26},
+    "2": {"sound": "bed_industrial", "gain": 0.36},
+    "3": {"sound": "bed_electric", "gain": 0.32}
+  },
+  "threat_layers": {
+    "tension": {"sound": "bed_tension", "gain": 0.55},
+    "battle": {"sound": "bed_battle", "gain": 1.0}
+  },
+  "levels": {
+    "CALM": {"tier": 1.0, "tension": 0.0, "battle": 0.0},
+    "TENSION": {"tier": 0.75, "tension": 1.0, "battle": 0.0},
+    "BATTLE": {"tier": 0.4, "tension": 0.45, "battle": 1.0},
+    "ENDED": {"tier": 0.5, "tension": 0.0, "battle": 0.0}
+  },
+  "_comment_fades": "seconds to fade a layer fully in or out: threat comes quickly, calm returns slowly",
+  "fade_in_s": {"tier": 6.0, "tension": 3.0, "battle": 1.5},
+  "fade_out_s": {"tier": 4.0, "tension": 8.0, "battle": 6.0},
+  "low_oil": {"below": 8, "from_tier": 2, "tension": 0.35},
+  "_comment_zoom": "zoomed all the way out the bed is this much louder, as the local sounds fade",
+  "zoomed_out_gain": 1.25
+}
