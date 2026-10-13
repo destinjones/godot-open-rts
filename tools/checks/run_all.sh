@@ -39,6 +39,7 @@ CHECKS=(
   "CommandChecks|res://tests/commands/CommandChecks.tscn|"
   "SelectionChecks|res://tests/controls/SelectionChecks.tscn|"
   "CameraChecks|res://tests/controls/CameraChecks.tscn|"
+  "FeedbackChecks|res://tests/controls/FeedbackChecks.tscn|"
   "OrdersChecks|res://tests/controls/OrdersChecks.tscn|"
   "CrashPromptCheck|res://tests/crash/CrashPromptCheck.tscn|"
   "DiplomacyChecks|res://tests/diplomacy/DiplomacyChecks.tscn|"

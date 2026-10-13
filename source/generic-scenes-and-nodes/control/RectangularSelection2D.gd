@@ -2,6 +2,8 @@ extends Panel
 
 signal finished(rect)
 
+const VirtualPointer = preload("res://source/utils/VirtualPointer.gd")
+
 @export var interrupt_on_hitting_screen_margin = true
 @export var screen_margin = 1
 
@@ -35,7 +37,7 @@ func _selecting():
 
 func _screen_margin_hit():
 	var viewport_size = get_viewport().size
-	var mouse_pos = get_global_mouse_position()
+	var mouse_pos = VirtualPointer.get_position(get_viewport())
 	return (
 		mouse_pos.x <= screen_margin
 		or mouse_pos.x >= viewport_size.x - screen_margin
@@ -45,7 +47,7 @@ func _screen_margin_hit():
 
 
 func _start():
-	var mouse_pos = get_global_mouse_position()
+	var mouse_pos = VirtualPointer.get_position(get_viewport())
 	_rect = Rect2(0, 0, 0, 0)
 	_rect.position = mouse_pos
 
@@ -58,7 +60,7 @@ func _interrupt():
 func _finish():
 	if not _selecting():
 		return
-	_rect.end = get_global_mouse_position()
+	_rect.end = VirtualPointer.get_position(get_viewport())
 	finished.emit(_rect.abs())
 	_rect = null
 	hide()
@@ -67,7 +69,7 @@ func _finish():
 func _update():
 	if not _selecting():
 		return
-	_rect.end = get_global_mouse_position()
+	_rect.end = VirtualPointer.get_position(get_viewport())
 	var absolute_rect = _rect.abs()
 	if absolute_rect.has_area():
 		show()

@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" uid="uid://dpccgqxuja2b1" path="res://source/generic-scenes-and-nodes/3d/MouseClickAnimation3D.tscn" id="1_click"]
+[ext_resource type="Texture2D" uid="uid://cn862lbf025ie" path="res://assets/ui/kenney-crosshairs/crosshair005.png" id="2_cross"]
+
+[node name="CannotMark" instance=ExtResource("1_click")]
+
+[node name="Sprite3D" parent="." index="0"]
+modulate = Color(1, 0.3, 0.25, 1)
+pixel_size = 0.008
+texture = ExtResource("2_cross")
