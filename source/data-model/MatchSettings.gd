@@ -12,3 +12,6 @@ enum Visibility { PER_PLAYER, ALL_PLAYERS, FULL }
 @export var tutorial = true  # tutorial panel and hints
 @export var ai_assist = true  # the player's helper AI may be switched on
 @export var auto_build = true  # constructors may auto-expand
+## the tutorial the Guide walks through, from data/tutorial/ ("" plays "standard"), see
+## TutorialScript.gd; "first_match" is the guided first match on the main menu
+@export var tutorial_script = ""

@@ -197,6 +197,7 @@ func _build_summary(rows):
 	for entry in [[_details_button, "HUD_CITY_DETAILS"], [_trade_button, "TRADE"]]:
 		var button = entry[0]
 		button.text = tr(entry[1])
+		button.tooltip_text = tr(entry[1] + "_BUTTON_TOOLTIP")
 		button.toggle_mode = true
 		button.focus_mode = Control.FOCUS_NONE
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL

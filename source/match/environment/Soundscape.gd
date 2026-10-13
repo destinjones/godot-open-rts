@@ -8,9 +8,11 @@ extends Node
 # - the noise of the nearest city, fading out with distance and as the camera zooms out,
 # - a trade horn when a trade deal goes through or goods reach a depot near the camera.
 # The sounds are synthesized by tools/audio/make_soundscape.py and make_war_sounds.py.
-# Weapon fire and explosions are WarSounds, a child of this node.
+# Weapon fire and explosions are WarSounds, a child of this node. Under it all runs the
+# AmbientBed, another child: a bed per city tier with threat layers that follow the music.
 
 const WarSounds = preload("res://source/match/environment/WarSounds.gd")
+const AmbientBed = preload("res://source/match/environment/AmbientBed.gd")
 
 const AUDIO_DIR = "res://assets/audio/ambience/"
 const WAR_AUDIO_DIR = "res://assets/audio/war/"
@@ -51,6 +53,9 @@ func _ready():
 	var war_sounds = WarSounds.new()
 	war_sounds.name = "WarSounds"
 	add_child(war_sounds)
+	var bed = AmbientBed.new()
+	bed.name = "AmbientBed"
+	add_child(bed)
 	_add_player("trade_horn", load(AUDIO_DIR + "trade_horn.ogg"), false)
 	MatchSignals.trade_completed.connect(_on_trade_completed)
 	MatchSignals.goods_delivered.connect(_on_goods_delivered)

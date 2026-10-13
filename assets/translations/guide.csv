@@ -72,6 +72,9 @@ HINT_AIRCRAFT_CRASHED,A drone ran out of fuel and crashed. Fixed-wing aircraft m
 HINT_CARGO_DESTROYED,"A hauler was destroyed and its cargo lost. Escort haulers (select tanks, right-click a hauler) or guard the route."
 HELP_TITLE,Manual
 HELP_CLOSE,Close (Esc)
+HELP_SEARCH,Search the manual (Ctrl+F)
+HELP_SEARCH_TOOLTIP,Type a word such as power or trucks: only the topics that mention it stay in the list
+HELP_SEARCH_NONE,"Nothing in the manual mentions ""{0}"". Try a shorter word, such as truck instead of trucks."
 HELP_BASICS_TITLE,Basics and controls
 HELP_BASICS_BODY,"You run a frontier city. You do not place houses: the city builds itself when goods reach it. Your job is the economy around it (extractors, supply lines, power), trade, and the army that protects it.\n\n[b]Mouse:[/b] left-click selects, drag selects many, right-click orders (move, attack, build, escort). Double-click or Ctrl+click selects all units of a kind on screen. A box over units and buildings takes only the units. Right-drag draws a line for the selected units; Shift queues orders. Army orders (fight, patrol, guard...) are under [b]Unit orders[/b].\n[b]Camera:[/b] W A S D move, the mouse wheel zooms, Q and E rotate.\n[b]Groups:[/b] Ctrl+number saves a selection, Shift+number adds to it, the number recalls it (press it twice to go to the group). The bar under Diplomacy shows your groups.\n[b]Building:[/b] R rotates a blueprint, right-click cancels it.\n[b]Help:[/b] F1 opens this manual. Hover anything on the map to see its name; select one unit or building to open its card next to the minimap: what it is, what it does, what it costs and makes, and how it is doing.\n[b]Saving:[/b] F5 quicksaves, F9 loads the quicksave; Esc opens Save game and Load game. The match also saves itself every 5 minutes (autosave)."
 HELP_CONSTRUCTORS_TITLE,Constructors and building
@@ -171,7 +174,7 @@ HELP_LIMITS_TITLE,Limits and match end
 HELP_LIMITS_BODY,"Matches have caps so nobody can build up forever.\n\n[b]Unit cap.[/b] Every unit takes unit slots: constructors, haulers, scouts, raiders, hover skimmers and drones 1, tanks, missile trucks, freight trains, patrol boats and amphibious APCs 2, artillery and helicopters 3, heavy tanks and gunships 4, battle tanks 5. Militia and trade caravans are free. The top bar shows [b]Units used/cap[/b]. Units in a factory queue count as soon as they are ordered. At the cap, factories refuse new orders (yours, the helper's and the AI's alike) until you lose units. Your cap is 150 slots, but all players share a match cap of 400, so in a 4-player match everyone gets 100.\n\n[b]City population cap.[/b] Each tier has a largest city size: Frontier 60, Industrial 100, Electric 130 citizens. The city panel shows [b][max N][/b]; when it is full it stops growing and building houses until the next tier.\n\n[b]Match end.[/b] The clock in the top bar counts down 45 minutes. When the last resource deposit on the map runs dry, a 5-minute countdown starts instead if that is sooner. When time runs out the best score wins (equal scores are a draw). Score = citizens + unit slots in use + 5 per finished building + science / 10; hover the clock to see yours. Destroying every enemy still wins at once, and a player who loses every city centre for 3 minutes is out (see City centres).\n\nModders and map makers change these numbers in data/caps.json (a map can override them) and data/tiers.json."
 ALERT_SURPLUS_TRUCKS,You have {0} more trucks than there is work for. Recycle them in the city panel for 75% of their cost.
 ALERT_ROUTE_RAIDED,A truck was destroyed: trucks avoid that route for {0} s. Send an escort or clear the raiders.
-HINT_EXTRACTORS_FULL,"Some extractors are full and have stopped. Build more trucks, a storage next to them, or a train (F1: Delivery jobs)."
+HINT_EXTRACTORS_FULL,"Some extractors are full and have stopped. Build more trucks, a storage next to them, or a train."
 AUTO_REASON_STORAGE,Building a storage next to {0} extractors
 HELP_DELIVERY_JOBS_TITLE,Delivery jobs and recycling
 HELP_DELIVERY_JOBS_BODY,"Your trucks share one [b]job board[/b]. Twice a second every free truck is matched to the job worth the most per second of driving: materials for a remote site come first, then goods waiting at extractors and storages. A job is worth more when the goods are valuable, when the extractor is full and standing still, when your city is short of that commodity, and when you set the building's [b]Priority[/b] to high (select it, Priority button). Routes where a truck was destroyed are avoided for a while.
@@ -212,3 +215,24 @@ BLUEPRINT_TOO_CLOSE_TO_CITY_CENTRE,Too close to your other city centre
 BLUEPRINT_CITY_CENTRE_KEEPS,"Keeps {0} of your {1} buildings, the rest are abandoned"
 HELP_CITY_CENTRES_TITLE,City centres
 HELP_CITY_CENTRES_BODY,"Your city centre (the command center) is the heart of your city.\n\n[b]City circle.[/b] Every finished city centre rules a circle 24 m in radius, drawn on the ground in your colour. The buildings and houses inside it belong to that city.\n\n[b]Two city centres.[/b] Constructors can build a second city centre, at least 20 m from the first. Two is the most you can build. The city grows houses around both, and each one guards its own circle.\n\n[b]Losing your last city centre.[/b] A countdown of 3 minutes starts (top of the screen) and the old city's circle is marked in orange. Build a new city centre before it runs out: what still stands inside its circle is kept, everything else is abandoned. Rebuild where your city stood to keep it, or somewhere else to start over there. The blueprint tells you how many buildings it would keep. If the countdown runs out you are defeated.\n\n[b]White flag.[/b] A city centre under attack with no turret or fighting unit of yours (or of your ally) inside its circle surrenders: a white flag goes up and it takes no more damage. Send defenders into the circle within 15 seconds to lower it. Otherwise the city centre, the buildings and the houses in its circle go to the attacker with the most firepower there. Enemy cities surrender to you the same way, and the AIs play by the same rules.\n\nModders change these numbers in data/city_centres.json."
+GUIDE_SKIP_ALL,Skip tutorial
+GUIDE_SKIP_ALL_TOOLTIP,End the tutorial now and keep playing this match as a normal one
+GUIDE_STEP_TUTORIAL_PLACE_CITY_TITLE,Place your city
+GUIDE_STEP_TUTORIAL_PLACE_CITY,Your city stands where you placed it. From here on it builds itself; your job is to feed it.
+GUIDE_STEP_TUTORIAL_HAULER_TITLE,Watch a hauler bring it home
+GUIDE_STEP_TUTORIAL_HAULER,"A hauler (truck) drives to the new extractor, loads up and drives the goods home along the supply line drawn on the ground. Click it to see its route. Goods count only once they arrive."
+GUIDE_STEP_TUTORIAL_FACTORY_TITLE,Build a vehicle factory
+GUIDE_STEP_TUTORIAL_FACTORY,"Your city sent you some extra stock for this. Select a constructor, pick the Vehicle factory in its build menu (bottom right) and click near your city to place it."
+GUIDE_STEP_TUTORIAL_UNIT_TITLE,Make a unit
+GUIDE_STEP_TUTORIAL_UNIT,"Select the finished factory and click a unit in its menu, for example a Tank. It rolls out when the bar fills."
+GUIDE_STEP_TUTORIAL_FIGHT_TITLE,Drive off the scout
+GUIDE_STEP_TUTORIAL_FIGHT,A rival scout is snooping near your city. Select your unit and right-click the scout to attack it.
+TUTORIAL_DONE_TITLE,You ran the whole loop
+TUTORIAL_DONE,"Dig, haul, build, fight: that is Ironbound. Keep playing this match, or start a real one from Play. F1 opens the manual any time."
+HINT_TRUCK_IDLE,"A truck has had nothing to carry for a minute. Trucks find work by themselves: build another extractor to keep it busy, or recycle spare trucks at a depot."
+HINT_DEPOSIT_DRY,A deposit ran dry and its extractor has stopped. Build a new extractor on another deposit; the minimap and the start screen show where they are.
+GUIDE_MORE_TOOLTIP,Open the manual at the page about this step
+HINT_OK,OK
+HINT_OK_TOOLTIP,Close this tip. Each tip shows only once; Options > Interface can bring them back.
+HINT_MORE,Read more
+HINT_MORE_TOOLTIP,Open the manual page about this (F1)

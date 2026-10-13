@@ -10,6 +10,8 @@ extends GridContainer
 
 const GameData = preload("res://source/data-model/GameData.gd")
 const HudStyle = preload("res://source/match/hud/HudStyle.gd")
+const RichTooltipButton = preload("res://source/match/hud/RichTooltipButton.gd")
+const Tooltips = preload("res://source/match/hud/Tooltips.gd")
 const SLOTS = 16
 const SLOT_SIZE = Vector2(80, 80)
 const ICON_MARGIN = 12
@@ -103,7 +105,8 @@ func _player():
 
 
 func _make_button(entry, hotkey = KEY_NONE):
-	var button = Button.new()
+	var button = RichTooltipButton.new()  # the hover card: Tooltips.build_item
+	button.tip_maker = func(): return Tooltips.build_item(entry, _player(), hotkey)
 	button.theme_type_variation = "SlotButton"
 	button.custom_minimum_size = SLOT_SIZE
 	button.focus_mode = Control.FOCUS_NONE
