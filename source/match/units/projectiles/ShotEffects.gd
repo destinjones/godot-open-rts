@@ -8,6 +8,11 @@ extends RefCounted
 # per-instance `transparency` so the materials stay shared. Effects outside the camera view or
 # in the fog of war are skipped, and when many are alive at once the smoke and dust are dropped
 # first and then everything, so a huge battle costs a bounded amount.
+#
+# Rocket hits and the shells of heavy guns get a particle explosion and a scorch mark from
+# CombatEffects instead, while it has budget for them; rifles always stay on the cheap path.
+
+const CombatEffects = preload("res://source/match/effects/CombatEffects.gd")
 
 const MAX_LIVE_EFFECTS = 160
 const MAX_LIVE_EFFECTS_FOR_SMOKE = 90
@@ -19,6 +24,7 @@ const RECOIL_S = 0.16
 const FIRE_COLOR = Color(1.0, 0.45, 0.08)
 const CORE_COLOR = Color(1.0, 0.97, 0.8)
 const TRACER_COLOR = Color(1.0, 0.6, 0.12)
+const HEAVY_SHELL_SIZE = 1.1  # damage 3 and up: heavy and battle tanks, bunkers
 
 static var _live_effects = 0
 static var _resources = null
@@ -53,8 +59,12 @@ static func rocket_launch(shooter, origin_position):
 	_smoke(shooter, origin_position, 0.5, Color(0.45, 0.43, 0.4), 0.8)
 
 
-static func rocket_impact(target, position):
+static func rocket_impact(target, position, damage = 1):
 	if not _is_seen(target, position):
+		return
+	var size = 0.65 + 0.13 * float(damage)
+	if CombatEffects.explosion(target, position, size, 0.6 * size):
+		hit_flash(target)
 		return
 	_flash(target, position, 1.4, FIRE_COLOR, 0.16)
 	_flash(target, position, 0.7, CORE_COLOR, 0.09)
@@ -116,6 +126,11 @@ static func _cannon_impact(target, fallback_position, size):
 	var anchor = target if is_instance_valid(target) and target.is_inside_tree() else null
 	if anchor == null:
 		return
+	if size >= HEAVY_SHELL_SIZE:
+		var scorch = 0.35 * size if randf() < 0.35 else 0.0
+		if CombatEffects.explosion(target, position, 0.5 * size, scorch):
+			hit_flash(target)
+			return
 	_flash(anchor, position, 0.45 * size, FIRE_COLOR, 0.08)
 	_flash(anchor, position, 0.2 * size, CORE_COLOR, 0.05)
 	_smoke(anchor, position, 0.35 * size, Color(0.5, 0.42, 0.32), 0.45)
