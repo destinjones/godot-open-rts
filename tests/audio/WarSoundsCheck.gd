@@ -63,7 +63,7 @@ func _ready():
 	print("battle took %.0f s of game time, %d ms real" % [game_s, Time.get_ticks_msec() - started_ms])
 	print("played: ", war_sounds.played_counts, " tank engine peak: ", loudest_tank_engine)
 	var failures = 0
-	for kind in ["cannon", "rifle", "rocket", "impact"]:
+	for kind in ["cannon", "rifle", "artillery", "impact"]:
 		if war_sounds.played_counts.get(kind, 0) == 0:
 			print("FAIL: never heard ", kind)
 			failures += 1
@@ -86,7 +86,7 @@ func _frames(count):
 
 
 func _heard_everything(counts):
-	for kind in ["cannon", "rifle", "rocket", "impact"]:
+	for kind in ["cannon", "rifle", "artillery", "impact"]:
 		if counts.get(kind, 0) == 0:
 			return false
 	return counts.has("explosion_small") or counts.has("explosion_large")

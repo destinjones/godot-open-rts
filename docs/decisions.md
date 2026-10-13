@@ -2,6 +2,27 @@
 
 Notable choices and the reason for each, newest last, so the next session knows why.
 
+## 2026-10-11: art direction, feel spec and working agreement
+docs/art-direction.md, docs/feel.md and CLAUDE.md are the source of truth for art and feel
+work. Features are frozen until the feel layer of existing units is done. The feel work runs
+as six tickets, one vertical slice per PR, in this order: turn-to-face with accel/brake,
+death animations with persistent wrecks, weapon VFX, recoil and turret lead, screen shake
+and hit feedback, then the textured pipeline starting with the tank. Why: "make it modern"
+gave no target to measure against; the docs are the ruler and screenshots the measurement.
+
+## 2026-10-11: HUD redesign and onboarding parked
+A HUD declutter and first-five-minutes pass (intro camera, quick battle, delayed AI offers)
+were started and then stopped. Why: they are new features, and features are frozen until
+the feel layer is done.
+
+## 2026-10-11: ticket 1 may change unit movement
+Destin approved turn-to-face and acceleration/braking in the movement trait, which is core
+simulation. Pathing, the navmesh and avoidance settings stay untouched, and
+"turn_to_face": false in data/movement.json restores the old movement. Why: the instant facing
+snap and constant speed were the main cause of the sliding feel, and a visual-only fix can't
+remove them. Known cost: a tank ordered behind itself turns in place first and arrives about
+1.3 s later (tracked turn rate 150°/s).
+
 ## 2026-10-11: onboarding cleared despite the feature freeze
 Destin asked for the onboarding and first-run thread (guided first match, first-time
 hints, tooltips, first-run defaults, searchable manual) explicitly, so it goes ahead while
@@ -68,6 +89,20 @@ army; a box with only buildings still takes them. Ctrl + click selects all of a 
 screen, like a double-click. Shift + number adds to a group, and pressing a group's number
 twice within 0.4 s centres the camera on it. The group bar sits top centre under the
 diplomacy bar, because the bottom centre is taken by the unit card next to the minimap.
+
+## 2026-10-11: audio and reactive soundscape cleared despite the feature freeze
+Destin asked for the audio thread explicitly, so it ran alongside the feel work. It owns
+data/sounds/, assets/audio/ and the playback code; Thread A owns voices.json entries for new
+units. Five PRs (#57, #58, #60, #61, #64): an ambient bed, unit presence, combat density,
+economy feedback, then spatialization and the mix. The full reasoning is in
+docs/audio-soundscape.md ("Decisions"); the ones that shape later work:
+- The ambient bed reads MusicPlayer's heat state instead of detecting threat itself, so the
+  music and the world escalate together and there is one place to tune.
+- Unit presence is one mixed loop per layer (engines, footsteps, rotors), not one per unit.
+- Combat, economy and mix levels are data (data/sounds/*.json) keyed by unit id.
+- Ducking is sidechain compressors on the buses, so the Options sliders stay in charge, and
+  a crowd of sounds drops the quiet low-priority ones rather than whichever came last.
+- Sounds are synthesized with numpy (tools/audio/), so they are original and regenerable.
 
 ## 2026-10-11: rally points show where they send units
 A selected factory now shows a dashed teal line from its edge to its rally point, and the
