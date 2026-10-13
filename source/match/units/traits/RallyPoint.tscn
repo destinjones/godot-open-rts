@@ -3,16 +3,16 @@
 [ext_resource type="Script" path="res://source/match/units/traits/RallyPoint.gd" id="1_jne3g"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k3k1b"]
-albedo_color = Color(0.054902, 1, 0.223529, 0.12549)
+albedo_color = Color(0.1, 0.8, 0.62, 1)
 emission_enabled = true
-emission = Color(0, 1, 0, 1)
-emission_energy_multiplier = 1.65
+emission = Color(0.1, 0.8, 0.62, 1)
+emission_energy_multiplier = 0.5
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_phq1d"]
 material = SubResource("StandardMaterial3D_k3k1b")
-top_radius = 0.2
-bottom_radius = 0.2
-height = 0.1
+top_radius = 0.35
+bottom_radius = 0.35
+height = 0.12
 
 [sub_resource type="Animation" id="Animation_ymm6i"]
 resource_name = "idle"

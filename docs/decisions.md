@@ -114,3 +114,10 @@ visible gain at play zoom. Why: the art direction makes the tank the reference e
 unit is matched against, so it goes first. Known cost: still slower than the old
 vertex-coloured tank on a software renderer (64 vs 50 ms for 30 copies); a real-GPU bench
 is owed.
+
+## 2026-10-11: rally points show where they send units
+A selected factory now shows a dashed teal line from its edge to its rally point, and the
+marker stays visible when the rally point follows a unit (it used to vanish). Dashed so it
+does not read as an order the building carries out; teal so it is not confused with the
+green move lines. Attack-move stays on F: A scrolls the camera (WASD), and controls.cfg
+can rebind it for anyone who wants StarCraft II's A.
