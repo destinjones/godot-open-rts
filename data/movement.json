@@ -14,6 +14,56 @@
     "repath_when_stuck_s": 2.0,
     "give_up_when_stuck_s": 30.0,
     "keep_on_navmesh_every_ticks": 6,
-    "parked_units_make_way": true
+    "parked_units_make_way": true,
+    "turn_to_face": true,
+    "handling": {
+      "infantry": {
+        "turn_rate_deg_s": 720.0,
+        "acceleration_mps2": 16.0,
+        "braking_mps2": 24.0,
+        "turn_in_place_deg": 150.0
+      },
+      "light": {
+        "turn_rate_deg_s": 300.0,
+        "acceleration_mps2": 10.0,
+        "braking_mps2": 16.0,
+        "turn_in_place_deg": 70.0
+      },
+      "vehicle": {
+        "turn_rate_deg_s": 220.0,
+        "acceleration_mps2": 7.0,
+        "braking_mps2": 12.0,
+        "turn_in_place_deg": 60.0
+      },
+      "tracked": {
+        "turn_rate_deg_s": 150.0,
+        "acceleration_mps2": 5.0,
+        "braking_mps2": 10.0,
+        "turn_in_place_deg": 45.0
+      },
+      "air": {
+        "turn_rate_deg_s": 360.0,
+        "acceleration_mps2": 10.0,
+        "braking_mps2": 12.0,
+        "turn_in_place_deg": 120.0
+      },
+      "boat": {
+        "turn_rate_deg_s": 110.0,
+        "acceleration_mps2": 3.5,
+        "braking_mps2": 5.0,
+        "turn_in_place_deg": 80.0
+      }
+    },
+    "handling_by_unit": {
+      "militia": "infantry",
+      "scout_buggy": "light",
+      "raider": "light",
+      "rocket_technical": "light",
+      "hover_skimmer": "light",
+      "tank": "tracked",
+      "battle_tank": "tracked",
+      "heavy_tank": "tracked",
+      "artillery": "tracked"
+    }
   }
 }
