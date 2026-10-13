@@ -61,7 +61,7 @@ const KINDS = {
 	"sparks":
 	{
 		"amount": 18,
-		"lifetime": 0.8,
+		"lifetime": 0.55,
 		"explosiveness": 1.0,
 		"velocity": [3.5, 8.0],
 		"spread": 75.0,
@@ -72,11 +72,12 @@ const KINDS = {
 		"grow": [1.0, 0.4],
 		"radius": 0.15,
 		"material": "spark",
+		# glowing metal: orange from the start, white sparks look like paper on sand
 		"colors":
 		[
-			Color(1.0, 0.95, 0.7, 1.0),
-			Color(1.0, 0.6, 0.15, 1.0),
-			Color(0.8, 0.25, 0.05, 0.0),
+			Color(1.0, 0.78, 0.3, 1.0),
+			Color(1.0, 0.45, 0.08, 1.0),
+			Color(0.7, 0.18, 0.04, 0.0),
 		],
 	},
 	"dust":
@@ -275,7 +276,7 @@ static func _parts(kind, step):
 	match spec["material"]:
 		"spark":
 			mesh = QuadMesh.new()
-			mesh.size = Vector2(0.06, 0.4) * sqrt(step)
+			mesh.size = Vector2(0.045, 0.28) * sqrt(step)
 			mesh.material = shared["spark"]
 		"debris":
 			mesh = BoxMesh.new()
