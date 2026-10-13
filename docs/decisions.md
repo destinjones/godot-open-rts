@@ -104,6 +104,24 @@ docs/audio-soundscape.md ("Decisions"); the ones that shape later work:
   a crowd of sounds drops the quiet low-priority ones rather than whichever came last.
 - Sounds are synthesized with numpy (tools/audio/), so they are original and regenerable.
 
+## 2026-10-11: the tank is the first unit on the textured pipeline
+The Foundry tank was remade from a GPT Image 2.5 concept through Tripo H3.1 and
+tools/blender/clean_generated.py (Destin picked "modern light MBT", concept B). It keeps
+one 1024 px base colour plus one normal map, team colour on upward faces only, and a
+separate Turret node for TurretAim. It is decimated to 3,600 triangles, the old tank's
+count, because 4,762 cost about 15% more frame time in UnitModelBench (llvmpipe) for no
+visible gain at play zoom. Why: the art direction makes the tank the reference every other
+unit is matched against, so it goes first. Known cost: still slower than the old
+vertex-coloured tank on a software renderer (64 vs 50 ms for 30 copies); a real-GPU bench
+is owed.
+
+## 2026-10-11: rally points show where they send units
+A selected factory now shows a dashed teal line from its edge to its rally point, and the
+marker stays visible when the rally point follows a unit (it used to vanish). Dashed so it
+does not read as an order the building carries out; teal so it is not confused with the
+green move lines. Attack-move stays on F: A scrolls the camera (WASD), and controls.cfg
+can rebind it for anyone who wants StarCraft II's A.
+
 ## 2026-10-11: the camera follows the cursor, like StarCraft II
 The mouse wheel zooms towards the cursor: the ground under it stays under it, and the zoom
 glides over a fraction of a second instead of jumping a step. Edge scrolling eases in over
