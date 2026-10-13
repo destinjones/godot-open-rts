@@ -12,6 +12,7 @@ extends Node
 # Clips:
 #   ambient-bed: the tier beds (frontier, industrial, electric), then a fight brewing and
 #                breaking out over the electric city, and the calm coming back.
+#   unit-presence: a few tanks, a squad and a helicopter idling, driving off, and stopping.
 
 const CLIPS = {
 	# [game second, what happens]
@@ -27,13 +28,34 @@ const CLIPS = {
 		[42.0, {"caption": "quiet again", "state": "CALM", "intensity": 0.0}],
 		[52.0, {"end": true}],
 	],
+	"unit-presence":
+	[
+		[
+			0.0,
+			{
+				"caption": "parked: diesels idle, rotor turns",
+				"spawn": ["tank", "tank", "heavy_tank", "militia", "militia", "helicopter"]
+			}
+		],
+		[8.0, {"caption": "moving off: engines, tracks, footsteps", "move": [26.0, 6.0]}],
+		[17.0, {"caption": "stopped again", "stop": true}],
+		[24.0, {"caption": "radio chatter", "chatter": true}],
+		[30.0, {"end": true}],
+	],
 }
+
+const GameData = preload("res://source/data-model/GameData.gd")
+const Moving = preload("res://source/match/units/actions/Moving.gd")
 
 var _timeline = []
 var _clock = 0.0
 var _bed = null
 var _bed_state = {"tier": 1, "state": "CALM", "intensity": 0.0}
 var _caption = null
+var _units = []
+var _spot = Vector3(60.0, 0.0, 60.0)
+var _camera = null
+var _soundscape = null
 
 
 func _ready():
@@ -53,12 +75,14 @@ func _ready():
 		var node = match_node.find_child(without, true, false)
 		if node != null:
 			node.queue_free()
+	_soundscape = match_node.find_child("Soundscape", true, false)
 	_bed = match_node.find_child("AmbientBed", true, false)
 	if _bed != null and without != "AmbientBed":
 		_bed.set_process(false)  # the timeline drives it
 	else:
 		_bed = null
 	var camera = get_viewport().get_camera_3d()
+	_camera = camera
 	var players = get_tree().get_nodes_in_group("players")
 	var units = get_tree().get_nodes_in_group("units").filter(
 		func(unit): return unit.player == players[0]
@@ -91,6 +115,35 @@ func _process(delta):
 		for key in ["tier", "state", "intensity"]:
 			if key in step:
 				_bed_state[key] = step[key]
+		if "spawn" in step:
+			_spawn(step["spawn"])
+		if "move" in step:
+			for unit in _units:
+				if is_instance_valid(unit):
+					var to = Vector3(step["move"][0], 0.0, step["move"][1])
+					unit.action = Moving.new(unit.global_position + to)
+		if step.get("stop", false):
+			for unit in _units:
+				if is_instance_valid(unit):
+					unit.action = null
+		if step.get("chatter", false) and _soundscape != null:
+			_soundscape._chatter_in = 0.0
+	var alive = _units.filter(func(unit): return is_instance_valid(unit) and unit.is_inside_tree())
+	if not alive.is_empty():  # the camera follows them
+		var centre = Vector3.ZERO
+		for unit in alive:
+			centre += unit.global_position
+		_camera.set_position_safely(centre / alive.size())
 	if _bed != null:
 		_bed.update_targets(_bed_state["state"], _bed_state["intensity"], _bed_state["tier"], 100)
 		_bed._fade(delta)
+
+
+func _spawn(ids):
+	var human = get_tree().get_nodes_in_group("players")[0]
+	for i in range(ids.size()):
+		var unit = load(GameData.unit_by_id(ids[i])["scene"]).instantiate()
+		var offset = Vector3((i % 3) * 3.0 - 3.0, 0.0, int(i / 3.0) * 3.5)
+		MatchSignals.setup_and_spawn_unit.emit(unit, Transform3D(Basis(), _spot + offset), human)
+		_units.append(unit)
+	_camera.set_size_safely(16.0)

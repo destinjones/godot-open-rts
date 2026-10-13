@@ -29,6 +29,7 @@ CHECKS=(
   "MusicCheck|res://tests/audio/MusicCheck.tscn|"
   "WarSoundsCheck|res://tests/audio/WarSoundsCheck.tscn|"
   "AmbientBedCheck|res://tests/audio/AmbientBedCheck.tscn|"
+  "UnitPresenceCheck|res://tests/audio/UnitPresenceCheck.tscn|"
   "BuildUpCheck|res://tests/buildup/BuildUpCheck.tscn|"
   "CapsChecks|res://tests/caps/CapsChecks.tscn|"
   "CityCentreChecks|res://tests/citycentres/CityCentreChecks.tscn|"

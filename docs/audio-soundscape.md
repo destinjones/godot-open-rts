@@ -29,9 +29,27 @@ A bed under the whole match so the world is never silent between voice lines.
 Threat comes in fast (battle 1.5 s, tension 3 s) and leaves slowly (6 to 8 s), so a fight
 does not cut off. Layers stop decoding when silent.
 
+## Unit presence (`source/match/environment/Soundscape.gd`, `data/sounds/units.json`)
+
+No unit is silent. Each unit id lists its presence layers: `tank_engine`, `truck_engine`,
+`footsteps`, `rotor`, `rotor_wash`, `drone`, and `chatter`. Every layer is one loop mixed
+from all units near the middle of the screen that use it, nearer ones counting more, so 40
+tanks cost the same as one.
+
+- Units on the move play the running loop (tank diesel with track clatter, wheeled engine,
+  footsteps). Units at rest play an idle loop instead (a diesel ticking over, no tracks) at
+  a share of the loudness; a squad standing still is quiet.
+- Layers without an idle loop (rotor, drone) keep playing at rest, pitched down a little,
+  and glide back up as the units move off.
+- Units hidden in the fog of war make no presence sound, so they don't give themselves away.
+- Now and then one of the player's units near the middle of the screen keys its radio:
+  wordless chatter with squelch clicks, on the Voices bus, from where the unit stands.
+  Every 9 to 18 s when calm, 5 to 10 s under tension, 3 to 6 s in battle.
+
 ## Checks and clips
 
 - `tests/audio/AmbientBedCheck.tscn` checks the bed against MusicPlayer's state machine.
+- `tests/audio/UnitPresenceCheck.tscn` checks idle and moving units on a test map.
 - `tests/audio/SoundClip.tscn -- --clip=<name>` records a clip of a scripted timeline with
   Godot's movie maker, for pull requests (see its header).
 
@@ -44,5 +62,10 @@ does not cut off. Layers stop decoding when silent.
   with numpy so they are original work under the project's license and can be regenerated.
 - **Low oil changes the ambience, not the music.** Economy stress is real but not a
   fight; switching to the tension track for it would make the music lie about combat.
+- **Presence is one loop per layer, not one per unit.** Forty units each running a 3D loop
+  would be mush and cost forty decoders; a mixed loop per layer stays clear and cheap. The
+  per-unit detail lives in the one-shots (weapons, chatter).
+- **Chatter is wordless.** The voice sets only have reply lines (select, move, attack);
+  playing those unprompted would sound like orders nobody gave.
 - **Audio work was cleared during the feature freeze.** Destin asked for the audio thread
   explicitly (2026-10-11), so it runs alongside the feel tickets.
