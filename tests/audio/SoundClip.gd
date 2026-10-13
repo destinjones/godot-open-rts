@@ -13,6 +13,8 @@ extends Node
 #   ambient-bed: the tier beds (frontier, industrial, electric), then a fight brewing and
 #                breaking out over the electric city, and the calm coming back.
 #   unit-presence: a few tanks, a squad and a helicopter idling, driving off, and stopping.
+#   combat: two mixed armies meet: rifles, machine guns, cannon, artillery, rockets, impacts
+#           on armour and infantry, and deaths of every size.
 
 const CLIPS = {
 	# [game second, what happens]
@@ -42,7 +44,16 @@ const CLIPS = {
 		[24.0, {"caption": "radio chatter", "chatter": true}],
 		[30.0, {"end": true}],
 	],
+	"combat":
+	[
+		[0.0, {"caption": "two armies close in", "battle": true}],
+		[45.0, {"end": true}],
+	],
 }
+const ARMIES = [
+	["tank", "heavy_tank", "militia", "militia", "raider", "artillery", "missile_truck"],
+	["tank", "battle_tank", "militia", "militia", "raider", "helicopter", "scout_buggy"],
+]
 
 const GameData = preload("res://source/data-model/GameData.gd")
 const Moving = preload("res://source/match/units/actions/Moving.gd")
@@ -115,6 +126,8 @@ func _process(delta):
 		for key in ["tier", "state", "intensity"]:
 			if key in step:
 				_bed_state[key] = step[key]
+		if step.get("battle", false):
+			_battle()
 		if "spawn" in step:
 			_spawn(step["spawn"])
 		if "move" in step:
@@ -147,3 +160,24 @@ func _spawn(ids):
 		MatchSignals.setup_and_spawn_unit.emit(unit, Transform3D(Basis(), _spot + offset), human)
 		_units.append(unit)
 	_camera.set_size_safely(16.0)
+
+
+func _battle():
+	var players = get_tree().get_nodes_in_group("players")
+	for side in range(2):
+		var ids = ARMIES[side]
+		for i in range(ids.size()):
+			var unit = load(GameData.unit_by_id(ids[i])["scene"]).instantiate()
+			var offset = Vector3(
+				(i % 4) * 2.5 - 4.0, 0.0, (side * 2 - 1) * (10.0 + int(i / 4.0) * 2.5)
+			)
+			MatchSignals.setup_and_spawn_unit.emit(
+				unit, Transform3D(Basis(), _spot + offset), players[side]
+			)
+			_units.append(unit)
+	var diplomacy = get_tree().current_scene.find_child("Diplomacy", true, false)
+	if diplomacy != null:
+		diplomacy.declare_war(players[0], players[1])
+	for unit in _units:
+		unit.action = Moving.new(_spot)
+	_camera.set_size_safely(20.0)
