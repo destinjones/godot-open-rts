@@ -255,9 +255,9 @@ adds load (sound, UI, weather, new features) should run it before and after and 
 
 | Where | Average | p95 | p99 | Frames over 50 ms |
 | --- | --- | --- | --- | --- |
-| Cloud, headless (CPU only), before #77 | 105 to 109 fps | 25 to 27 ms | 65 to 66 ms | 339 to 373 |
-| Cloud, headless (CPU only), after #77 | 133 fps | 16 ms | 28 to 29 ms | 14 to 18 |
-| RTX 3060, 1080p, High, before #77 (`--speed=2 --minutes=10`) | 130 fps | 10.9 ms | 30 ms | 220 |
+| Cloud, headless (CPU only), before #87 | 105 to 109 fps | 25 to 27 ms | 65 to 66 ms | 339 to 373 |
+| Cloud, headless (CPU only), after #87 | 133 fps | 16 ms | 28 to 29 ms | 14 to 18 |
+| RTX 3060, 1080p, High, before #87 (`--speed=2 --minutes=10`) | 130 fps | 10.9 ms | 30 ms | 220 |
 
 For real GPU numbers run it in a window: `play bench-late-game --view=window
 --window=1920x1080 --speed=2 --minutes=10`. Runs differ a little even on one seed (the AIs
