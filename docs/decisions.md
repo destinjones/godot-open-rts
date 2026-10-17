@@ -153,3 +153,18 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: matches have a clock: dawn, day, dusk and night
+data/time_of_day.json drives one light through 24 hours (TimeOfDay.gd, owned by
+Atmosphere). The look still sets the noon sun; the clock scales its height, swings its
+azimuth, and multiplies energy, colour, ambient, exposure and haze tint on top of weather and
+look. The moon is the same DirectionalLight: it swaps in during twilight while the light is
+dim, so there is no second shadow-casting light and no extra frame cost. A day is 16 minutes
+and night hours pass 2.5 times faster, so a match starts at 10:00, gets dusk at about minute 8
+and has about 3 minutes of night per day. Why: one fixed noon light made every minute of
+every match look the same. Night lowers sight to 0.85 through the same WeatherEffects
+multiplier weather already uses (sandstorms go to 0.55), so it is felt but mild. Night must
+stay readable: exposure drops to about half and the light turns blue rather than going dark.
+The sun turns in 0.25 degree steps so shadow edges do not crawl. The hour is not saved
+(the save format is untouched), so a loaded game restarts at 10:00, as weather already
+restarts. tests/screenshots/WeatherShots renders any weather at any hour.

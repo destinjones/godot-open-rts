@@ -15,6 +15,7 @@ extends Node3D
 #   atmosphere.get_cloud_density_at(pos) -> float    # 0..1 cloud above a world position
 #   atmosphere.get_wind() -> Vector2                 # m/s on the XZ plane
 #   atmosphere.set_weather(weather, transition_s)    # force a weather (scripts, missions)
+#   atmosphere.get_time_of_day()                     # the match clock, see TimeOfDay.gd
 # Multipliers blend smoothly during weather transitions.
 
 signal weather_changed(weather)
@@ -22,6 +23,7 @@ signal weather_changed(weather)
 const CloudShader = preload("res://source/shaders/3d/clouds.gdshader")
 const CloudTexture = preload("res://assets/textures/clouds_tile.png")
 const CloudShadowShader = preload("res://source/shaders/3d/cloud_shadows.gdshader")
+const TimeOfDay = preload("res://source/match/environment/TimeOfDay.gd")
 
 const CLOUD_HEIGHT = 32.0
 const CLOUD_ZONE_SPACING = 12.0
@@ -29,6 +31,9 @@ const CLOUD_ZONE_REFRESH_S = 2.0
 const THICK_CLOUD_DENSITY = 0.6
 const CLOUD_PERIOD = 360.0
 const CLOUDS_FADE_IN_CAMERA_SIZES = Vector2(42.0, 85.0)
+# the sun turns in steps this big, so shadow edges don't crawl every frame
+const SUN_ANGLE_STEP_DEG = 0.25
+const MIN_SUN_ELEVATION_DEG = 6.0
 const WEATHERS = {
 	&"clear":
 	{
@@ -152,6 +157,8 @@ var _flash = 0.0
 var _cloud_shadows = MeshInstance3D.new()
 var _cloud_zone_timer = 0.0
 var _particle_areas = {}  # particles -> emission half-size last applied
+var _time_of_day = TimeOfDay.new()
+var _ambient_base = {"environment": null, "color": Color.WHITE, "exposure": 1.0}
 
 @onready var _match = find_parent("Match")
 @onready var _clouds = $Clouds
@@ -163,6 +170,8 @@ var _particle_areas = {}  # particles -> emission half-size last applied
 func _ready():
 	add_to_group("atmosphere")
 	_rng.randomize()
+	_time_of_day.name = "TimeOfDay"
+	add_child(_time_of_day)
 	_cloud_image = CloudTexture.get_image()
 	if _cloud_image.is_compressed():
 		_cloud_image.decompress()
@@ -188,7 +197,11 @@ func get_weather():
 
 
 func get_vision_multiplier():
-	return _current.vision
+	return _current.vision * _time_of_day.get_light().vision
+
+
+func get_time_of_day():
+	return _time_of_day
 
 
 func get_ground_speed_multiplier():
@@ -335,16 +348,31 @@ func _apply():
 	shadow_material.set_shader_parameter("opacity", _current.shadow_opacity)
 	shadow_material.set_shader_parameter("coverage", _current.coverage)
 	shadow_material.set_shader_parameter("offset", _cloud_offset)
+	var hour_light = _time_of_day.get_light()
 	var sun = _get_sun()
 	if sun != null:
+		if _time_of_day.enabled:
+			_turn_sun(sun, look, hour_light)
 		shadow_material.set_shader_parameter("sun_direction", -sun.global_transform.basis.z)
-		sun.light_energy = _current.sun_energy * look_sun_energy + _flash * 3.0
-		sun.light_color = _current.sun_color * look_sun_tint
+		sun.light_energy = (
+			_current.sun_energy * look_sun_energy * hour_light.energy + _flash * 3.0
+		)
+		sun.light_color = _current.sun_color * look_sun_tint * hour_light.color
 	var environment = _get_environment()
 	if environment != null:
-		environment.ambient_light_energy = _current.ambient_energy * look_ambient
+		if _ambient_base.environment != environment:
+			_ambient_base = {
+				"environment": environment,
+				"color": environment.ambient_light_color,
+				"exposure": environment.tonemap_exposure,
+			}
+		environment.ambient_light_energy = (
+			_current.ambient_energy * look_ambient * hour_light.ambient
+		)
+		environment.ambient_light_color = _ambient_base.color * hour_light.ambient_tint
+		environment.tonemap_exposure = _ambient_base.exposure * hour_light.exposure
 		environment.fog_enabled = haze > 0.01
-		environment.fog_light_color = _current.haze_color
+		environment.fog_light_color = _current.haze_color * hour_light.haze_tint
 		# the camera looks down at 30 degrees, so the ground is about twice its height away
 		var camera_distance = 80.0 if camera == null else max(camera.global_position.y, 1.0) * 2.0
 		environment.fog_density = haze * 0.55 / camera_distance
@@ -362,6 +390,20 @@ func _apply():
 		process_material.direction = Vector3(wind.x, 0.0, wind.y).normalized()
 		process_material.initial_velocity_min = _current.wind_speed * 1.2
 		process_material.initial_velocity_max = _current.wind_speed * 2.0
+
+
+func _turn_sun(sun, look, hour_light):
+	"""the look sets the noon sun; the hour lowers it and swings it round, the moon included"""
+	var look_angles = look.get_sun_angles() if look != null else Vector2(40.0, 0.0)
+	var elevation = clamp(look_angles.x * hour_light.height, MIN_SUN_ELEVATION_DEG, 85.0)
+	var azimuth = look_angles.y + hour_light.azimuth
+	var rotation_target = Vector3(
+		-deg_to_rad(snappedf(elevation, SUN_ANGLE_STEP_DEG)),
+		deg_to_rad(snappedf(azimuth, SUN_ANGLE_STEP_DEG)),
+		0.0
+	)
+	if not sun.rotation.is_equal_approx(rotation_target):
+		sun.rotation = rotation_target
 
 
 func _set_particles(particles, intensity, share):
@@ -413,7 +455,7 @@ func _update_weather_effects(delta):
 	if weather_effects == null:
 		return
 	weather_effects.speed_multiplier = _current.ground_speed
-	weather_effects.vision_multiplier = _current.vision
+	weather_effects.vision_multiplier = get_vision_multiplier()
 	weather_effects.air_vision_multiplier = lerp(1.0, 0.6, _current.dust)
 	_cloud_zone_timer -= delta
 	if _cloud_zone_timer > 0.0 or _match.map == null:
