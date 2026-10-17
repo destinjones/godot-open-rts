@@ -153,3 +153,12 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: no trade or treaty offers during the guided first match
+Rival trade offers and treaty offers to the player are dropped while a scripted tutorial
+(the guided first match) runs, until it reaches a trade step if it has one. The AI keeps
+offering, so the first offer after the tutorial still arrives, and skipping the tutorial
+lifts the hold. The standard tutorial of a normal match still lets offers through: it
+teaches trading itself, and PlaytestChecks expects an offer box there. Why: in the first
+match a deal box opened inside the city card within two minutes, before the player had
+built a mine.

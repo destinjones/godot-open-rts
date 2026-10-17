@@ -556,7 +556,7 @@ func _on_diplomacy_changed(a, b, state):
 
 
 func _on_diplomacy_offered(proposer, partner, kind, offered, requested):
-	if partner != _player or _incoming != null:
+	if partner != _player or _incoming != null or _tutorial_holds_offers():
 		return
 	_incoming = {
 		"proposer": proposer,
@@ -615,3 +615,8 @@ func _on_unit_targeted(unit):
 		),
 		STATE_COLORS[_diplomacy().get_state(_player, unit.player)]
 	)
+
+
+func _tutorial_holds_offers():
+	var guide = get_tree().root.find_child("Guide", true, false)
+	return guide != null and guide.has_method("holds_offers") and guide.holds_offers()

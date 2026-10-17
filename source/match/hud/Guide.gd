@@ -577,6 +577,17 @@ static func _is_factory(unit):
 	return entry != null and entry.get("role") == "factory"
 
 
+func holds_offers():
+	"""true while a scripted tutorial (the guided first match) is running: trade and treaty
+	offers from rivals are dropped until it reaches its trade step, or ends if it has none,
+	so a new player is not handed a deal box before building a mine (CityHud,
+	DiplomacyHud). The standard tutorial of a normal match lets them through."""
+	if not tutorial_on or script_name == "" or _step >= steps.size():
+		return false
+	var trade_step = steps.map(func(step): return step.get("done_when", "")).find("traded")
+	return trade_step == -1 or _step < trade_step
+
+
 func _skip_step():
 	_step = min(_step + 1, steps.size())
 	_refresh_tutorial()
