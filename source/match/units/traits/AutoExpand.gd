@@ -235,33 +235,42 @@ func _pylon_plan():
 
 func _extractor_plan():
 	var best = null
+	var taken = _taken_deposits()
+	var scenes = {}  # kind -> extractor scene, looked up once per kind
+	var counts = {}  # kind -> own extractors of that kind
 	for deposit in get_tree().get_nodes_in_group("deposits"):
-		if not deposit.is_inside_tree() or _deposit_taken(deposit):
+		if not deposit.is_inside_tree() or deposit in taken:
 			continue
-		var scene_path = _extractor_scene_for(deposit.kind)
+		if not deposit.kind in scenes:
+			scenes[deposit.kind] = _extractor_scene_for(deposit.kind)
+		var scene_path = scenes[deposit.kind]
 		if scene_path == null:
 			continue
 		var depot = _closest_depot(deposit.global_position)
 		if depot == null:
 			continue
 		var from_depot = depot.global_position_yless.distance_to(deposit.global_position_yless)
-		var limit = (
-			GUARDED_DISTANCE_FROM_DEPOT_M
-			if _is_guarded(deposit.global_position)
-			else SAFE_DISTANCE_FROM_DEPOT_M
-		)
-		if from_depot > limit or not _spot_is_safe(deposit.global_position):
+		if from_depot > GUARDED_DISTANCE_FROM_DEPOT_M:
 			continue
-		if not WaterRules.can_reach(_unit, deposit.global_position, deposit.radius + 6.0):
-			continue  # across deep water
+		if not deposit.kind in counts:
+			counts[deposit.kind] = _extractors_of_kind(deposit.kind)
 		var score = (
 			from_depot
 			+ 0.3 * _unit.global_position_yless.distance_to(deposit.global_position_yless)
-			+ 18.0 * _extractors_of_kind(deposit.kind)
+			+ 18.0 * counts[deposit.kind]
 			+ 10.0 * _stock_share(deposit.kind)
 		)
-		if best == null or score < best[0]:
-			best = [score, deposit, scene_path]
+		# the score is cheap and the checks below scan units or ask for a path, so they only
+		# run for a deposit that would beat the best one so far
+		if best != null and score >= best[0]:
+			continue
+		if from_depot > SAFE_DISTANCE_FROM_DEPOT_M and not _is_guarded(deposit.global_position):
+			continue
+		if not _spot_is_safe(deposit.global_position):
+			continue
+		if not WaterRules.can_reach(_unit, deposit.global_position, deposit.radius + 6.0):
+			continue  # across deep water
+		best = [score, deposit, scene_path]
 	if best == null:
 		return null
 	var position = _extractor_spot(best[1], best[2])
@@ -520,23 +529,15 @@ func _is_guarded(position):
 	return not guards.is_empty()
 
 
-func _deposit_taken(deposit):
+func _taken_deposits():
+	"""every deposit an extractor works or is being built on, by any player"""
+	var taken = {}
 	for extractor in get_tree().get_nodes_in_group("units"):
-		if not extractor is Extractor:
-			continue
-		if extractor.deposit == deposit:
-			return true
-		if (
-			extractor.is_under_construction()
-			and (
-				Extractor.find_deposit_near(
-					extractor._scene_path(), extractor.global_position, extractor.radius, get_tree()
-				)
-				== deposit
-			)
-		):
-			return true
-	return false
+		if extractor is Extractor:
+			var deposit = extractor.claimed_deposit()
+			if deposit != null:
+				taken[deposit] = true
+	return taken
 
 
 func _extractors_of_kind(kind):
@@ -598,6 +599,7 @@ func _extractor_spot(deposit, scene_path):
 		else Vector3(0, 0, 1)
 	)
 	var start_angle = atan2(towards.z, towards.x)
+	var obstacles = _placement_obstacles()
 	for step in range(12):
 		var angle = start_angle + (step + 1) / 2 * (PI / 6.0) * (1 if step % 2 == 0 else -1)
 		var position = (
@@ -605,7 +607,7 @@ func _extractor_spot(deposit, scene_path):
 			+ Vector3(cos(angle), 0, sin(angle)) * (deposit.radius + radius + 0.5)
 		)
 		if (
-			_placement_valid(position, radius)
+			_placement_valid(position, radius, obstacles)
 			and Extractor.find_deposit_near(scene_path, position, radius, get_tree()) == deposit
 		):
 			return position
@@ -617,7 +619,8 @@ func _find_position_near(origin, scene_path, min_distance = 0.0, rings = PLACEME
 		_radius_of(scene_path) + Constants.Match.Units.EMPTY_SPACE_RADIUS_SURROUNDING_STRUCTURE_M
 	)
 	origin = origin * Vector3(1, 0, 1)
-	if min_distance <= 0.0 and _placement_valid(origin, radius):
+	var obstacles = _placement_obstacles()
+	if min_distance <= 0.0 and _placement_valid(origin, radius, obstacles):
 		return origin
 	for ring in range(rings):
 		var distance = max(min_distance, radius) + ring * radius
@@ -625,12 +628,13 @@ func _find_position_near(origin, scene_path, min_distance = 0.0, rings = PLACEME
 		for slot in range(slots):
 			var angle = TAU * slot / slots
 			var position = origin + Vector3(cos(angle), 0, sin(angle)) * distance
-			if _placement_valid(position, radius):
+			if _placement_valid(position, radius, obstacles):
 				return position
 	return null
 
 
-func _placement_valid(position, radius):
+func _placement_valid(position, radius, obstacles = null):
+	"""obstacles: _placement_obstacles(), passed in by loops that try many spots"""
 	var a_match = find_parent("Match")
 	if not Geometry2D.is_point_in_polygon(
 		Vector2(position.x, position.z), a_match.map.get_topdown_polygon_2d()
@@ -640,16 +644,20 @@ func _placement_valid(position, radius):
 		Utils.Match.Unit.Placement.validate_agent_placement_position(
 			position,
 			radius,
-			(
-				get_tree().get_nodes_in_group("units")
-				+ get_tree().get_nodes_in_group("resource_units")
-				+ get_tree().get_nodes_in_group("city_buildings")
-			),
+			obstacles if obstacles != null else _placement_obstacles(),
 			a_match.navigation.get_navigation_map_rid_by_domain(
 				Constants.Match.Navigation.Domain.TERRAIN
 			)
 		)
 		== Utils.Match.Unit.Placement.VALID
+	)
+
+
+func _placement_obstacles():
+	return (
+		get_tree().get_nodes_in_group("units")
+		+ get_tree().get_nodes_in_group("resource_units")
+		+ get_tree().get_nodes_in_group("city_buildings")
 	)
 
 

@@ -153,3 +153,18 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: late-game hitches came from extractor planning, not the GPU
+On an RTX 3060 at 1080p High the GPU needs 4.5 to 5.7 ms a frame in a 4-player match, so
+rendering is not what lags. What players feel is a 60 to 90 ms frame every few seconds from
+minute 2 on. The helper's auto-build (AutoExpand._think) and the AI's economy
+(EconomyController._refresh) re-plan extractors every 1.5 s and spent up to 70 and 30 ms
+doing it: every deposit re-scanned every unit (and every deposit again, through a deep
+find_child per radius read), the AI instantiated a building just to read its radius on each
+try and searched every spot twice, and placement checks rebuilt the obstacle list per try.
+They now scan once per plan, cache radii, and rank a deposit by its cheap score before the
+unit scans and path queries. The plans they make are the same. The fix is in the planning
+code rather than a longer think interval, because a slower helper would build later.
+tools/harness/scenarios/bench-late-game.json is the benchmark for this; see
+docs/testing/play-harness.md.
+
