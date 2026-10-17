@@ -744,7 +744,7 @@ func _selected_partner():
 
 
 func _on_trade_offered(proposer, partner, offered, requested):
-	if partner != _player or _incoming_offer != null:
+	if partner != _player or _incoming_offer != null or _tutorial_holds_offers():
 		return
 	_incoming_offer = {"proposer": proposer, "offered": offered, "requested": requested}
 	_incoming_offer_time_left_s = Constants.Match.Trade.OFFER_EXPIRY_S
@@ -807,3 +807,8 @@ func _describe_resources(resources):
 	for resource in resources:
 		parts.append("{0} {1}".format([resources[resource], tr(resource.to_upper())]))
 	return ", ".join(parts)
+
+
+func _tutorial_holds_offers():
+	var guide = get_tree().root.find_child("Guide", true, false)
+	return guide != null and guide.has_method("holds_offers") and guide.holds_offers()
