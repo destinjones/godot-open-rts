@@ -155,7 +155,8 @@ func state(with_units = true):
 		data["tutorial"] = {
 			"step": guide._step,
 			"steps": guide.steps.size(),
-			"id": guide.steps[guide._step].get("id", "") if guide._step < guide.steps.size() else "",
+			"id":
+			guide.steps[guide._step].get("id", "") if guide._step < guide.steps.size() else "",
 		}
 	if recorder != null:
 		data["recent_events"] = recorder.timeline.slice(-10)
@@ -765,7 +766,14 @@ func _do_camera(order):
 	if camera == null or not camera.has_method("set_position_safely"):
 		return {"ok": false, "error": "no match camera"}
 	var target = order.get("spot")
-	if order.has("follow"):
+	if str(order.get("follow", "")).begins_with("wildlife"):  # "wildlife:birds", "...:vultures"
+		var wildlife = match_node.find_child("Wildlife", true, false)
+		var spots = wildlife.sightings(order["follow"].get_slice(":", 1)) if wildlife else []
+		if spots.is_empty():
+			return {"ok": false, "error": "no wildlife of that kind on the map"}
+		# the ground spot the camera's 30 degree view puts behind something that high up
+		target = Vector3(spots[0].x, 0, spots[0].z - spots[0].y * sqrt(3.0))
+	elif order.has("follow"):
 		var units = find_units(order["follow"])
 		if not units.is_empty():
 			target = units[0].global_position

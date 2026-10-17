@@ -1,0 +1,110 @@
+{
+  "name": "wildlife",
+  "description": "Birds and vultures up close: the camera finds flocks, then a short tank fight in open ground leaves wrecks for vultures to circle. Screenshots of each.",
+  "map": "oil_and_iron",
+  "seed": 2,
+  "minutes": 1.2,
+  "speed": 1,
+  "view": "window",
+  "players": [
+    {
+      "type": "human"
+    },
+    {
+      "type": "ai",
+      "personality": "balanced"
+    }
+  ],
+  "setup": [
+    {
+      "do": "reveal"
+    },
+    {
+      "do": "weather",
+      "set": "clear"
+    }
+  ],
+  "events": [
+    {
+      "at": 5,
+      "do": "camera",
+      "follow": "wildlife:birds"
+    },
+    {
+      "at": 6,
+      "do": "screenshot",
+      "name": "birds"
+    },
+    {
+      "at": 12,
+      "do": "declare_war",
+      "player": "own",
+      "on": "p1"
+    },
+    {
+      "at": 12,
+      "do": "spawn",
+      "unit": "tank",
+      "count": 4,
+      "spot": [
+        40,
+        60
+      ]
+    },
+    {
+      "at": 12,
+      "do": "spawn",
+      "player": "p1",
+      "unit": "tank",
+      "count": 4,
+      "spot": [
+        40,
+        66
+      ]
+    },
+    {
+      "at": 12,
+      "do": "camera",
+      "spot": [
+        40,
+        63
+      ]
+    },
+    {
+      "at": 15,
+      "do": "screenshot",
+      "name": "fight"
+    },
+    {
+      "at": 32,
+      "do": "camera",
+      "follow": "wildlife:vultures"
+    },
+    {
+      "at": 33,
+      "do": "screenshot",
+      "name": "vultures"
+    },
+    {
+      "at": 50,
+      "do": "screenshot",
+      "name": "vultures-later"
+    },
+    {
+      "at": 60,
+      "do": "camera",
+      "follow": "wildlife:feeding"
+    },
+    {
+      "at": 61,
+      "do": "screenshot",
+      "name": "birds-feeding"
+    }
+  ],
+  "checks": [
+    {
+      "end": true,
+      "expect": "no_errors"
+    }
+  ]
+}
