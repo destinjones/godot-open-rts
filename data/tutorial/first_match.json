@@ -1,6 +1,6 @@
 {
-  "description": "The guided first match on the main menu: one loop of the game in a few minutes on a small map against a rival that keeps to itself. Place the city, dig, haul, build a factory, make a unit, win a fight. The orders in setup and on_start use the play harness's format (docs/testing/play-harness.md).",
-  "map": "plain_and_simple",
+  "description": "The guided first match on the main menu: one loop of the game in a few minutes on a desert map against a rival that keeps to itself. Place the city, dig, haul, build a factory, make a unit, win a fight. The orders in setup and on_start use the play harness's format (docs/testing/play-harness.md).",
+  "map": "desert_expanse",
   "players": [
     {
       "type": "human"
