@@ -153,3 +153,15 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: the interface has sounds
+Every button in the menus and the HUD now clicks, toggles latch, cancel and close tick lower,
+and hover ticks in the menus (not in a match, where the HUD is always under the pointer).
+An order nobody can carry out knocks, and minimap pings blip (two urgent blips for a hit,
+one soft blip for a mark), taking up the two hooks the control threads left for audio
+(units_ordered "cannot" and the minimap pings). One autoload (audio/InterfaceSounds.gd)
+wires buttons as they enter the tree, so no scene was edited and new UI is covered for free.
+Why: the game had no interface sound at all, which is a large part of why it felt dead
+under the hand. Levels in data/sounds/interface.json; sounds synthesized by
+tools/audio/make_interface_sounds.py like the rest.
+
