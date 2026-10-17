@@ -153,3 +153,15 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: supply drops give the middle of the map something to fight over
+From about two minutes in, a crate parachutes down every 80 to 120 s somewhere between the
+cities (at most two waiting at once), with a beacon and a yellow minimap ping. The first
+ground unit to reach it takes it: goods (iron, copper, oil, timber), a repair of that
+player's units around it, or experience for them when veterancy is on (goods otherwise).
+Unclaimed crates vanish after 150 s. The AI sends its nearest free combat unit for a crate
+within 40 m of it and keeps that unit out of its army meanwhile. Why: matches had long quiet
+stretches with nothing to do outside the base; a crate is a small, visible reason to move out
+and skirmish, and it rewards fast scouts. All numbers live in data/supply_drops.json; crates
+are not saved (a loaded match just drops new ones), so the save format is untouched.
+

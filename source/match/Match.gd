@@ -26,6 +26,7 @@ const SaveGame = preload("res://source/match/SaveGame.gd")
 const CityCentres = preload("res://source/match/city/CityCentres.gd")
 const CombatEffects = preload("res://source/match/effects/CombatEffects.gd")
 const MotionManager = preload("res://source/match/motion/MotionManager.gd")
+const SupplyDrops = preload("res://source/match/supply-drops/SupplyDrops.gd")
 
 const CommandCenter = preload("res://source/match/units/CommandCenter.tscn")
 const Factions = preload("res://source/data-model/Factions.gd")
@@ -120,6 +121,10 @@ func _ready():
 		var city_centres = CityCentres.new()
 		city_centres.name = "CityCentres"
 		add_child(city_centres)
+	if get_node_or_null("SupplyDrops") == null:  # crates that parachute in now and then
+		var supply_drops = SupplyDrops.new()
+		supply_drops.name = "SupplyDrops"
+		add_child(supply_drops)
 	if get_node_or_null("Market") == null:
 		var market = Market.new()
 		market.name = "Market"

@@ -156,7 +156,7 @@ func _think(delta):
 func _available_units():
 	"""combat units of this AI that are not out attacking or raiding"""
 	var committed = {}
-	for controller_name in ["OffenseController", "RaidingController"]:
+	for controller_name in ["OffenseController", "RaidingController", "SupplyDropController"]:
 		var controller = _ai.get_node_or_null(controller_name)
 		if controller != null and controller.has_method("committed_units"):
 			for unit in controller.committed_units():
