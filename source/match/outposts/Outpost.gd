@@ -105,6 +105,8 @@ func _build():
 	pole_mesh.top_radius = 0.05
 	pole_mesh.bottom_radius = 0.07
 	pole_mesh.height = POLE_HEIGHT
+	pole_mesh.radial_segments = 8
+	pole_mesh.rings = 1
 	pole.mesh = pole_mesh
 	pole.material_override = metal
 	pole.position.y = POLE_HEIGHT / 2.0
@@ -113,6 +115,8 @@ func _build():
 	var cap_mesh = SphereMesh.new()
 	cap_mesh.radius = 0.11
 	cap_mesh.height = 0.22
+	cap_mesh.radial_segments = 8
+	cap_mesh.rings = 4
 	cap.mesh = cap_mesh
 	cap.material_override = metal
 	cap.position.y = POLE_HEIGHT
