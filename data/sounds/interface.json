@@ -1,0 +1,17 @@
+{
+  "_comment": "Interface sounds (source/audio/InterfaceSounds.gd): every button in the menus and the HUD clicks, check boxes and switches latch, buttons that close or cancel tick lower, an order nobody can carry out knocks, and minimap pings blip. Played flat (not in the world) on the Effects bus. The files come from tools/audio/make_interface_sounds.py.",
+  "sounds": {
+    "click": {"variants": 3, "gain": 0.45, "gap_s": 0.03},
+    "hover": {"variants": 1, "gain": 0.12, "gap_s": 0.06},
+    "toggle_on": {"variants": 1, "gain": 0.4, "gap_s": 0.03},
+    "toggle_off": {"variants": 1, "gain": 0.4, "gap_s": 0.03},
+    "back": {"variants": 1, "gain": 0.4, "gap_s": 0.03},
+    "cannot": {"variants": 1, "gain": 0.65, "gap_s": 0.4},
+    "ping_attack": {"variants": 1, "gain": 0.4, "gap_s": 2.5},
+    "ping_mark": {"variants": 1, "gain": 0.45, "gap_s": 0.2}
+  },
+  "_comment_back": "buttons whose name or text contains one of these (any case) close or cancel, and tick lower",
+  "back_words": ["back", "cancel", "close", "quit", "exit", "resume"],
+  "_comment_hover": "hover ticks are for the menus; in a match the HUD is under the pointer all the time, so they stay off there",
+  "hover_in_match": false
+}

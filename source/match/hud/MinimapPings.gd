@@ -4,7 +4,8 @@ extends Node2D
 # - red where one of the player's units or buildings is hit by an enemy, at most one per
 #   spot every few seconds, so a fight reads as one ping, not a storm,
 # - yellow where the player Alt + clicks the minimap, to mark a spot.
-# Lives in the minimap's viewport (hud/Minimap.gd), in minimap pixels.
+# Lives in the minimap's viewport (hud/Minimap.gd), in minimap pixels. Each ping blips
+# (audio/InterfaceSounds.gd).
 
 const ATTACK_COLOR = Color(1.0, 0.3, 0.2)
 const MARK_COLOR = Color(1.0, 0.85, 0.3)
@@ -69,3 +70,4 @@ func _on_unit_damaged(unit):
 		return
 	_last_attack_ping_ms[cell] = now_ms
 	ping(position, ATTACK_COLOR)
+	InterfaceSounds.play("ping_attack")

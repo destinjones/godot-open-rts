@@ -200,6 +200,7 @@ func _mark_spot(position_2d_within_texture_rect):
 	)
 	if world_position_2d != null:
 		ping(Vector3(world_position_2d.x, 0, world_position_2d.y), MinimapPings.MARK_COLOR)
+		InterfaceSounds.play("ping_mark")
 
 
 func ping(world_position, color = MinimapPings.ATTACK_COLOR):

@@ -79,6 +79,24 @@ tanks cost the same as one.
 - **Callouts**: the advisor already says "low oil" and "storage full"; those calls now ring a
   two-note alarm chime first, so they stand out from routine news.
 
+## Interface (`source/audio/InterfaceSounds.gd`, `data/sounds/interface.json`)
+
+The menus and the HUD answer the hand. An autoload wires every button as it enters the
+tree, so no scene needs changing; a button with the meta `silent` stays quiet.
+
+- **Buttons click** (three variants); check boxes, switches and other toggles latch up or
+  down; buttons whose name or text says back, cancel, close, quit, exit or resume tick lower.
+- **Hover** ticks softly in the menus only: in a match the HUD is under the pointer all the
+  time, so a tick there would be noise.
+- **An order nobody can carry out** knocks with a short buzz, ahead of the unit's
+  "cannot" voice line, at most every 0.4 s.
+- **Minimap pings blip**: two urgent blips when one of the player's units is hit (at most
+  every 2.5 s, on top of the pings' own one-per-spot limit), one soft bright blip for an
+  Alt + click mark.
+
+Flat, not in the world, on the Effects bus, so the Effects slider sets them. The autoload
+keeps playing while the game is paused, so the pause menu clicks too.
+
 ## Spatialization and the mix (`default_bus_layout.tres`, `data/sounds/mix.json`)
 
 - **Panning.** Sounds are heard through a listener hovering over the middle of the screen,
@@ -107,6 +125,7 @@ tanks cost the same as one.
 - `tests/audio/WarSoundsCheck.tscn` stages a battle and checks it is heard.
 - `tests/audio/EconomySoundsCheck.tscn` builds a power plant and checks each feedback.
 - `tests/audio/MixCheck.tscn` checks the bus effects, the far bus and masking in a crowd.
+- `tests/audio/InterfaceSoundsCheck.tscn` checks buttons, toggles, hover, cannot and pings.
 - `tests/audio/SoundClip.tscn -- --clip=<name>` records a clip of a scripted timeline with
   Godot's movie maker, for pull requests (see its header).
 
@@ -138,3 +157,8 @@ tanks cost the same as one.
   came last.
 - **Audio work was cleared during the feature freeze.** Destin asked for the audio thread
   explicitly (2026-10-11), so it runs alongside the feel tickets.
+- **Interface sounds are wired by an autoload, not per scene.** Catching every BaseButton
+  as it enters the tree covers the menus, the HUD, the editor and dialogs added later, with
+  one place to tune and one opt-out (the `silent` meta).
+- **No click when selecting units.** The unit voices already answer a selection; a click
+  on top would double it, as StarCraft II does not.
