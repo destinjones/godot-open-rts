@@ -9,6 +9,7 @@ extends Node3D
 const HaulerLinks = preload("res://source/match/economy/HaulerLinks.gd")
 const Text = preload("res://source/match/hud/BuildingInfoText.gd")
 const HudStyle = preload("res://source/match/hud/HudStyle.gd")
+const WorldLabel = preload("res://source/match/units/traits/WorldLabel.gd")
 
 const REFRESH_INTERVAL_S = 0.1
 const LINE_WIDTH_M = 0.4
@@ -163,13 +164,7 @@ func _ring(center, color):
 func _update_tags(drawn):
 	while _tags.size() < drawn.size():
 		var tag = Label3D.new()
-		tag.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		tag.no_depth_test = true
-		tag.fixed_size = true
-		tag.pixel_size = 0.001
-		tag.font_size = 30
-		tag.outline_size = 10
-		tag.outline_modulate = Color(HudStyle.BG, 0.9)
+		WorldLabel.style(tag, 19, 0.0)
 		tag.render_priority = 11
 		tag.outline_render_priority = 10
 		add_child(tag)
