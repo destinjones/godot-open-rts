@@ -221,7 +221,9 @@ func _on_power_changed(changed_player):
 
 func _on_player_resource_changed():
 	for resource in _labels:
-		_labels[resource].text = str(player.get(resource))
+		# stock is fractional (upkeep drains it bit by bit); show whole units, rounded
+		# down so the bar never shows more than you can spend
+		_labels[resource].text = str(int(floor(player.get(resource))))
 	var oil_label = _labels.get("oil")
 	if oil_label != null:
 		oil_label.add_theme_color_override(
