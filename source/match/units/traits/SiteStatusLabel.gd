@@ -3,6 +3,10 @@ extends Label3D
 # Floating text over the player's own construction sites, saying what the site is waiting
 # for: a constructor (sites never build themselves), the constructor on its way, or the
 # materials that haulers still have to bring. Removes itself once the site is finished.
+# "Needs a constructor" shows all the time, since nothing happens until the player acts;
+# the rest shows while the site is hovered or selected, or while a constructor is selected.
+
+const WorldLabel = preload("res://source/match/units/traits/WorldLabel.gd")
 
 const Worker = preload("res://source/match/units/Worker.gd")
 # Constructing is matched by path: preloading it here would make a cycle with Structure.gd
@@ -18,15 +22,8 @@ var _since_refresh_s = REFRESH_INTERVAL_S
 
 
 func _ready():
-	billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	no_depth_test = true
-	fixed_size = true
-	pixel_size = 0.0012
-	font_size = 22
-	outline_size = 8
-	outline_modulate = Color(0, 0, 0, 0.85)
-	render_priority = 10
-	position = Vector3(0, 2.2 + _site.radius, 0)
+	WorldLabel.style(self, 21, 2.2 + _site.radius)
+	WorldLabel.track_focus(self, _site, _refresh)
 	_site.constructed.connect(queue_free)
 	_refresh()
 
@@ -45,9 +42,11 @@ func _refresh():
 	var percent = int(_site.get_construction_progress() * 100.0)
 	var building = false
 	var on_the_way = false
+	var constructor_selected = false
 	for unit in get_tree().get_nodes_in_group("units"):
 		if not unit is Worker or unit.player != _site.player:
 			continue
+		constructor_selected = constructor_selected or unit.is_in_group("selected_units")
 		if (
 			unit.action == null
 			or unit.action.get_script().resource_path != CONSTRUCTING_PATH
@@ -69,4 +68,7 @@ func _refresh():
 	else:
 		lines.append(tr("SITE_NEEDS_CONSTRUCTOR").format([percent]))
 	text = "\n".join(lines)
+	visible = (
+		not (building or on_the_way) or constructor_selected or WorldLabel.focused(self, _site)
+	)
 	modulate = COLOR_WORKING if building else COLOR_WAITING

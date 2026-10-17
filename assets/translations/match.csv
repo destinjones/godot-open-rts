@@ -144,8 +144,8 @@ SANDBOX_TOP_UP,+{0} of everything for all,+{0} wszystkiego dla wszystkich
 AIRPORT,Airport,Lotnisko
 AIRPORT_DESCRIPTION,"drones and planes land here to refuel; right-click it with aircraft selected to send them home","tu lądują drony i samoloty, by zatankować; kliknij prawym przyciskiem z zaznaczonymi samolotami, by je odesłać"
 NEEDS_AIRPORT,"Flies for {0} s, then must land at an airport (build one first)","Lata przez {0} s, potem musi wylądować na lotnisku (najpierw zbuduj lotnisko)"
-AIRCRAFT_LOW_FUEL,LOW FUEL,MAŁO PALIWA
-AIRCRAFT_NO_AIRPORT,NO AIRPORT - WILL CRASH,BRAK LOTNISKA - ROZBIJE SIĘ
+AIRCRAFT_LOW_FUEL,Low fuel,MAŁO PALIWA
+AIRCRAFT_NO_AIRPORT,No airport: it will crash,BRAK LOTNISKA - ROZBIJE SIĘ
 TRADE_VERDICT_GOOD_TITLE,Good deal for you,Dobry interes dla ciebie
 TRADE_VERDICT_FAIR_TITLE,Fair deal,Uczciwa wymiana
 TRADE_VERDICT_BAD_TITLE,Bad deal for you,Zła wymiana dla ciebie
@@ -244,8 +244,8 @@ ROUTE_ON_TRAIN_LINE,A train serves this stop: trucks only come when it overflows
 ROUTE_FEEDS_STORAGE,A conveyor feeds a storage next to it.,Przenośnik zasila pobliski magazyn.
 ROUTE_IN_DANGER,A truck was destroyed on this route: trucks avoid it for now.,Na tej trasie zniszczono ciężarówkę: ciężarówki na razie jej unikają.
 GAUGE_TO_STORAGE,conveyor to storage,przenośnik do magazynu
-GAUGE_FULL,"FULL: stopped, waiting for a truck","PEŁNA: stoi, czeka na ciężarówkę"
-GAUGE_FULL_STORAGE,FULL: waiting for a truck or train,PEŁNY: czeka na ciężarówkę lub pociąg
+GAUGE_FULL,"Full: stopped, waiting for a truck","PEŁNA: stoi, czeka na ciężarówkę"
+GAUGE_FULL_STORAGE,Full: waiting for a truck or train,PEŁNY: czeka na ciężarówkę lub pociąg
 TRAIN_STATUS_NO_LINE,No line yet: right-click your extractors or storages to add stops,"Brak linii: kliknij PPM swoje kopalnie lub magazyny, by dodać przystanki"
 TRAIN_STATUS_WAITING_FOR_TRACK,Waiting for materials to lay track ({0} per 10 m),Czeka na materiały na tory ({0} za 10 m)
 TRAIN_STATUS_LAYING,"Laying track, {0} m to go","Kładzie tory, zostało {0} m"

@@ -153,3 +153,14 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: text over units shows only when it needs you
+Labels floating over buildings and units ("Iron 6/16", "Constructor on the way", "Hauler 2")
+now show only while that thing is hovered or selected, or while a constructor is selected
+for site labels. Three states stay visible all the time because nothing happens until the
+player acts: a site nobody is building, a full extractor that has stopped, and an aircraft
+with no airport to return to. All of them use the HUD's Barlow font as a signed distance
+field (WorldLabel.gd), so they stay sharp at any zoom instead of the tiny pixel font, and
+the shouting capitals ("NO AIRPORT - WILL CRASH") became sentence case. Why: the playtest
+of 17 Oct found debug-looking text all over the base; the tests that check a waiting site
+and a full mine still see their labels.

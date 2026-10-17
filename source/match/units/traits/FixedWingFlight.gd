@@ -7,6 +7,7 @@ extends Node
 # do not get this trait. Added by Unit.gd to units with "flight_endurance_s" in data/units.
 
 const Landing = preload("res://source/match/units/actions/Landing.gd")
+const WorldLabel = preload("res://source/match/units/traits/WorldLabel.gd")
 
 const LOITER_TURN_DEG_PER_S = 40.0
 
@@ -24,12 +25,9 @@ var _warning_label = Label3D.new()
 func _ready():
 	fuel_s = endurance_s
 	_unit.action_changed.connect(_on_action_changed)
-	_warning_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_warning_label.no_depth_test = true
-	_warning_label.font_size = 40
-	_warning_label.outline_size = 10
+	WorldLabel.style(_warning_label, 20, 1.0)
+	WorldLabel.track_focus(_warning_label, _unit)
 	_warning_label.modulate = Color(1.0, 0.75, 0.2)
-	_warning_label.position = Vector3(0, 1.0, 0)
 	_warning_label.hide()
 	_unit.add_child.call_deferred(_warning_label)
 
@@ -116,7 +114,12 @@ func _time_to_reach(an_airport):
 
 func _update_warning(home):
 	var low = not landed and get_fuel_ratio() < Constants.Match.Air.LOW_FUEL_WARNING_RATIO
-	_warning_label.visible = low and _unit.is_in_group("controlled_units")
+	# heading home on its own needs nothing from the player, so that shows only on focus
+	_warning_label.visible = (
+		low
+		and _unit.is_in_group("controlled_units")
+		and (home == null or WorldLabel.focused(_warning_label, _unit))
+	)
 	if _warning_label.visible:
 		_warning_label.text = tr("AIRCRAFT_LOW_FUEL" if home != null else "AIRCRAFT_NO_AIRPORT")
 
