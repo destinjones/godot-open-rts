@@ -302,6 +302,9 @@ func _score(hauler, job):
 	var seconds = float(Constants.Match.Logistics.JOBS.get("load_overhead_s", 3.0))
 	var value = load * job["value"]
 	if job["kind"] == "supply":
+		# the last units a site waits for hold it up as much as the first ones: valued by
+		# the load, an 11-unit site's 1-unit tail lost to every pickup and stood for minutes
+		value = hauler.get_free_capacity() * job["value"]
 		seconds += (
 			(
 				_distance(hauler.global_position, depot.global_position)
