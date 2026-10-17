@@ -153,3 +153,16 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: fights last long enough to watch and steer
+Every unit and structure has 3x the HP it had, and direct-fire weapons reach about 40%
+further (tank 5 -> 7 m, heavy tank 5.5 -> 7.5 m, militia 4.5 -> 6 m, artillery 11 -> 15 m;
+defences keep their ranges; sight grows with range so units still spot an enemy
+3 m before it is in range). Damage, fire rates and costs are unchanged. Measured in open
+ground on Big Arena with the play harness: a 1 v 1 tank fight went from about 4 s to about
+13 s, and in 5 v 5 tanks the time from the first loss to the last went from 5 s to 16 s.
+Why: the values were the Open RTS template's, so armies met hull to hull and were gone
+before the turret aim, recoil, wrecks or control groups could matter. Scaling HP for
+buildings too keeps a raid on a factory or a supply line at the same pace relative to a
+fight. Known effect: a save made before this loads its units at a third of their health,
+since saved hp is kept and hp_max triples.

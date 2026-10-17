@@ -18,8 +18,8 @@
   },
   "properties": {
     "sight_range": 8.0,
-    "hp": 18,
-    "hp_max": 18,
+    "hp": 54,
+    "hp_max": 54,
     "attack_damage": 3,
     "attack_interval": 1.2,
     "attack_range": 7.0

@@ -21,8 +21,8 @@
   ],
   "properties": {
     "sight_range": 10.0,
-    "hp": 6,
-    "hp_max": 6
+    "hp": 18,
+    "hp_max": 18
   },
   "fuel_per_s": 0.005,
   "flight_endurance_s": 150.0

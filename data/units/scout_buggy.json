@@ -20,8 +20,8 @@
   "speed": 5.2,
   "properties": {
     "sight_range": 12.0,
-    "hp": 4,
-    "hp_max": 4,
+    "hp": 12,
+    "hp_max": 12,
     "attack_damage": 1,
     "attack_interval": 0.8
   },

@@ -20,12 +20,12 @@
   "speed": 3.2,
   "produced_by": [],
   "properties": {
-    "sight_range": 8.0,
-    "hp": 8,
-    "hp_max": 8,
+    "sight_range": 9.5,
+    "hp": 24,
+    "hp_max": 24,
     "attack_damage": 1,
     "attack_interval": 0.6,
-    "attack_range": 4.5,
+    "attack_range": 6.0,
     "attack_domains": [
       "terrain",
       "air"

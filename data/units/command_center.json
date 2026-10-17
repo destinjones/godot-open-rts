@@ -23,8 +23,8 @@
   ],
   "properties": {
     "sight_range": 10.0,
-    "hp": 30,
-    "hp_max": 30
+    "hp": 90,
+    "hp_max": 90
   },
   "power": {
     "output_mw": 6.0,

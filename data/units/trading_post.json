@@ -19,8 +19,8 @@
   },
   "properties": {
     "sight_range": 7.0,
-    "hp": 14,
-    "hp_max": 14
+    "hp": 42,
+    "hp_max": 42
   },
   "power": null,
   "trade_depot": true

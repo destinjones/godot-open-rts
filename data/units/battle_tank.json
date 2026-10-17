@@ -26,12 +26,12 @@
     "vehicle_factory"
   ],
   "properties": {
-    "sight_range": 9.0,
-    "hp": 30,
-    "hp_max": 30,
+    "sight_range": 11.0,
+    "hp": 90,
+    "hp_max": 90,
     "attack_damage": 4,
     "attack_interval": 0.7,
-    "attack_range": 6.5,
+    "attack_range": 8.5,
     "attack_domains": [
       "terrain"
     ]
