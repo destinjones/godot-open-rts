@@ -153,3 +153,11 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: new players start on Desert Expanse
+The main menu's first map and the guided first match moved from Plain & Simple to Desert
+Expanse. Plain & Simple is the template's 50 m test plane: flat beige ground with the base
+7 m from the edge, so about 40% of a new player's first screen was black void. Desert Expanse
+is generated (cracked ground, scrub, palms, a lake) with even resources on every side, unlike
+Oil and Iron, which gives one side no copper. Plain & Simple stays in the map list and stays
+the harness's default map, so no test fixture moved. The tutorial ran to its end on the new map.

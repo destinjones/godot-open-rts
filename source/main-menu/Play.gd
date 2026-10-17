@@ -9,9 +9,9 @@ const PlayerSlotOptions = preload("res://source/main-menu/PlayerSlotOptions.gd")
 const MatchRulesOptions = preload("res://source/main-menu/MatchRulesOptions.gd")
 const Factions = preload("res://source/data-model/Factions.gd")
 
-# what a new player starts on: a small, open map against an easy rival; after a match the
+# what a new player starts on: a generated desert map against an easy rival; after a match the
 # menu opens on the last map and AI difficulty instead (Options.last_map / last_ai_difficulty)
-const STARTER_MAP = "plain_and_simple"
+const STARTER_MAP = "desert_expanse"
 const STARTER_AI_DIFFICULTY = "easy"
 
 var _map_paths = []
