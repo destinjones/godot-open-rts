@@ -117,6 +117,19 @@ func get_sun_tint():
 	return _color(definition.get("sun", {}).get("tint", [1, 1, 1]))
 
 
+func get_sun_angles():
+	"""the look's sun as Vector2(elevation, azimuth) in degrees; the clock moves it from there"""
+	var sun = get_parent().find_child("DirectionalLight3D", false) if get_parent() else null
+	var base_rotation = Vector3(-deg_to_rad(40.0), 0.0, 0.0)
+	if sun != null and sun.has_meta("look_base"):
+		base_rotation = sun.get_meta("look_base")["rotation"]
+	var settings = definition.get("sun", {})
+	return Vector2(
+		float(settings.get("elevation", rad_to_deg(-base_rotation.x))),
+		float(settings.get("azimuth", rad_to_deg(base_rotation.y)))
+	)
+
+
 func get_ambient_multiplier():
 	return float(definition.get("ambient", {}).get("energy", 1.0))
 
