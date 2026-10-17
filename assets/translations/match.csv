@@ -339,3 +339,5 @@ ULTIMATUM_DEMAND,"{0} demands tribute for a pact. Accept it in Diplomacy within 
 ULTIMATUM_WAR,"{0} declares war: you did not pay the tribute.","{0} wypowiada wojnę: nie zapłacono trybutu."
 HUD_CITY_DETAILS_BUTTON_TOOLTIP,"What the city needs, makes and earns, item by item","Czego miasto potrzebuje, co wytwarza i zarabia, pozycja po pozycji"
 TRADE_BUTTON_TOOLTIP,Swap goods with another faction; deals are judged at your own prices,Wymiana towarów z inną frakcją; oferty są oceniane według twoich cen
+SUPPLY_REPAIRED,Supply drop: {0} units repaired,Zrzut zaopatrzenia: naprawiono jednostki ({0})
+SUPPLY_TRAINED,Supply drop: {0} units trained,Zrzut zaopatrzenia: przeszkolono jednostki ({0})

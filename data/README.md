@@ -12,6 +12,7 @@ mods add to it or patch it (see [mods](#mods)).
 | `caps.json` | Unit cap, match-wide unit cap, match length and end-of-match score |
 | `city_centres.json` | City centre circle, how many a player may have, rebuild countdown and surrender |
 | `logistics.json` | Trucks' job board, extractor buffers, storage, trains, fleet upkeep and recycling |
+| `supply_drops.json` | Supply crates that parachute in mid-match: how often, what they hold, how long they wait |
 | `movement.json` | How ground and air units steer around each other and through crowds |
 | `units/*.json` | One file per unit or structure |
 | `maps/*.json` | One file per playable map |

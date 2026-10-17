@@ -26,6 +26,8 @@ signal structure_placement_refused(player)  # clicked to place a blueprint on a 
 signal unit_deselected(unit)
 signal unit_damaged(unit)
 signal unit_died(unit)
+signal supply_drop_landed(crate)  # see supply-drops/SupplyDrops.gd
+signal supply_drop_collected(crate, player, kind)  # kind: "goods", "repair" or "veterans"
 signal unit_production_started(unit_prototype, producer_unit)
 signal unit_production_finished(unit, producer_unit)
 signal unit_construction_finished(unit)
