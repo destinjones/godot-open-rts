@@ -9,6 +9,9 @@ const TradeController = preload(
 const RaidingController = preload(
 	"res://source/match/players/simple-clairvoyant-ai/RaidingController.gd"
 )
+const OutpostController = preload(
+	"res://source/match/players/simple-clairvoyant-ai/OutpostController.gd"
+)
 const DiplomacyController = preload(
 	"res://source/match/players/simple-clairvoyant-ai/DiplomacyController.gd"
 )
@@ -104,6 +107,13 @@ func _ready():
 		_on_resource_request.bind(raiding_controller, ResourceRequestPriority.LOW)
 	)
 	raiding_controller.setup(self)
+	var outpost_controller = OutpostController.new()
+	outpost_controller.name = "OutpostController"
+	add_child(outpost_controller)
+	outpost_controller.resources_required.connect(
+		_on_resource_request.bind(outpost_controller, ResourceRequestPriority.LOW)
+	)
+	outpost_controller.setup(self)
 	var diplomacy_controller = DiplomacyController.new()
 	diplomacy_controller.name = "DiplomacyController"
 	add_child(diplomacy_controller)
