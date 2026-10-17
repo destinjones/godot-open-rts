@@ -1,0 +1,38 @@
+{
+  "enabled": true,
+  "xp_per_cost": 1.0,
+  "structure_xp_share": 0.5,
+  "min_xp_per_kill": 2,
+  "kill_credit_window_s": 3.0,
+  "promotion_heal_share": 0.25,
+  "heal_after_s": 6.0,
+  "ranks": [
+    {
+      "name": "VETERAN",
+      "xp": 12,
+      "damage": 1.15,
+      "hp": 1.1,
+      "attack_interval": 1.0,
+      "heal_per_s": 0.0,
+      "color": "#e8a623"
+    },
+    {
+      "name": "ELITE",
+      "xp": 32,
+      "damage": 1.3,
+      "hp": 1.2,
+      "attack_interval": 0.9,
+      "heal_per_s": 0.01,
+      "color": "#ffbe1a"
+    },
+    {
+      "name": "HEROIC",
+      "xp": 64,
+      "damage": 1.5,
+      "hp": 1.35,
+      "attack_interval": 0.8,
+      "heal_per_s": 0.02,
+      "color": "#ffd23f"
+    }
+  ]
+}
