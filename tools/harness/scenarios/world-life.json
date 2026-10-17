@@ -1,0 +1,34 @@
+{
+  "name": "world-life",
+  "description": "Ambient life on a desert map: a base that grows for three minutes, then screenshots of the base and of open ground, plus frame times. For before/after shots of world life (birds, smoke, wind, civilians).",
+  "map": "oil_and_iron",
+  "seed": 2,
+  "minutes": 3,
+  "speed": 2,
+  "view": "window",
+  "players": [
+    {"type": "human"},
+    {"type": "ai", "personality": "balanced"}
+  ],
+  "setup": [
+    {"do": "reveal"},
+    {"do": "weather", "set": "clear"},
+    {"do": "give", "resources": {"iron": 400, "timber": 400, "oil": 200, "copper": 100}},
+    {"do": "extract", "resource": "iron"},
+    {"do": "extract", "resource": "timber"},
+    {"do": "build", "structure": "power_plant", "spot": "base", "offset": [9, 4], "search": true}
+  ],
+  "events": [
+    {"at": 5, "do": "produce", "unit": "worker"},
+    {"at": 40, "do": "build", "structure": "vehicle_factory", "spot": "base", "offset": [-10, 6], "search": true},
+    {"at": 100, "do": "camera", "follow": "own:command_center"},
+    {"at": 120, "do": "screenshot", "name": "base"},
+    {"at": 130, "do": "camera", "spot": {"of": "base", "offset": [22, -18]}},
+    {"at": 140, "do": "screenshot", "name": "open-ground"},
+    {"at": 150, "do": "camera", "follow": "own:command_center"},
+    {"at": 170, "do": "screenshot", "name": "base-late"}
+  ],
+  "checks": [
+    {"end": true, "expect": "no_errors"}
+  ]
+}

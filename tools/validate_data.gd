@@ -120,6 +120,7 @@ func _run():
 			_check_caps("maps/{0}.json caps".format([entry.get("id", "?")]), entry["caps"], false)
 	_check_logistics(data["logistics"], data["units"], resources)
 	_check_city_centres(data.get("city_centres", {}))
+	_check_wildlife(data.get("wildlife", {}))
 	_check_voices(data["units"])
 	print(
 		(
@@ -686,6 +687,74 @@ func _check_logistics(logistics, units, resources):
 			_error(where, "the logistics system needs a unit with id '{0}' in data/units".format([id]))
 	if not "oil" in resources and not upkeep.is_empty():
 		_warn(where, "fleet upkeep is paid in oil, but there is no 'oil' commodity")
+
+
+# section -> key -> [min, max] for every number in wildlife.json; a pair is [low, high]
+const WILDLIFE_RANGES = {
+	"birds":
+	{
+		"m2_per_flock": [100.0, 100000.0],
+		"min_flocks": [0, 50],
+		"max_flocks": [0, 50],
+		"flock_size": [1, 40],
+		"wingspan_m": [0.1, 3.0],
+		"speed_mps": [0.5, 30.0],
+		"cruise_height_m": [1.0, 30.0],
+		"fly_s": [1.0, 600.0],
+		"feed_s": [1.0, 600.0],
+		"startle_radius_m": [0.0, 50.0],
+		"blast_radius_m": [0.0, 100.0],
+		"wing_beats_per_s": [0.1, 20.0],
+	},
+	"vultures":
+	{
+		"chance_per_wreck": [0.0, 1.0],
+		"max": [0, 50],
+		"count": [1, 20],
+		"wingspan_m": [0.1, 4.0],
+		"speed_mps": [0.5, 30.0],
+		"circle_radius_m": [1.0, 30.0],
+		"height_m": [2.0, 40.0],
+		"arrive_after_s": [0.0, 60.0],
+		"stay_s": [1.0, 600.0],
+		"wing_beats_per_s": [0.1, 20.0],
+	},
+}
+
+
+func _check_wildlife(wildlife):
+	var where = "wildlife.json"
+	for section in WILDLIFE_RANGES:
+		var values = wildlife.get(section)
+		if not values is Dictionary:
+			_error(where, "section '{0}' is missing".format([section]))
+			continue
+		for key in WILDLIFE_RANGES[section]:
+			var bounds = WILDLIFE_RANGES[section][key]
+			var value = values.get(key)
+			var numbers = value if value is Array else [value]
+			if value == null or (value is Array and value.size() != 2):
+				_error(
+					where, "'{0}.{1}' is missing or not a [low, high] pair".format([section, key])
+				)
+				continue
+			for number in numbers:
+				if (
+					not (number is float or number is int)
+					or number < bounds[0]
+					or number > bounds[1]
+				):
+					_error(
+						where,
+						"'{0}.{1}' = {2} is outside {3}..{4}".format(
+							[section, key, value, bounds[0], bounds[1]]
+						)
+					)
+			if value is Array and value[0] > value[1]:
+				_error(where, "'{0}.{1}' must be [low, high]".format([section, key]))
+	var birds = wildlife.get("birds", {})
+	if birds is Dictionary and birds.get("min_flocks", 0) > birds.get("max_flocks", 0):
+		_error(where, "birds.min_flocks is above birds.max_flocks")
 
 
 func _check_voices(units):

@@ -153,3 +153,21 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: birds and vultures, the first piece of a living world
+Destin asked for a game that feels alive rather than dull, and lifted the feature freeze for
+it. The first piece is wildlife (source/match/environment/Wildlife.gd, data/wildlife.json):
+small flocks of birds wander over the map, settle on dry open ground to feed, and burst into
+the air when a unit walks up or something is hit nearby; vultures turn up over some fresh
+wrecks and circle for about 45 s. Choices that shape later world-life work:
+- Purely visual: its own random numbers, nothing saved, no effect on the simulation or on
+  replays. Wildlife reacts to the war (MatchSignals.unit_damaged, camera_shake, new wrecks)
+  and never the other way round.
+- One MultiMesh per kind, wings beaten in the vertex shader (bird.gdshader), so all birds
+  cost two draw calls plus shadows. The script moves only the flocks on screen; a flock off
+  screen moves as a point and its birds take their places when it comes back into view, and
+  nothing is drawn zoomed out past camera size 45, where a bird is a speck.
+- Cost, measured headless on the cloud CPU (slow GDScript): about 0.15 ms a frame in a
+  normal view on a 110 m map with 100 units, about 0.3 ms with every flock in view.
+- Birds and vultures are simple shapes, not textured models: at play zoom they are 20 to
+  50 px across and read by their motion and silhouette, so the unit pipeline does not apply.

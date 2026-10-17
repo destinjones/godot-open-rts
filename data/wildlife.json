@@ -1,0 +1,28 @@
+{
+  "birds": {
+    "m2_per_flock": 1400.0,
+    "min_flocks": 2,
+    "max_flocks": 8,
+    "flock_size": [5, 9],
+    "wingspan_m": 0.6,
+    "speed_mps": 5.5,
+    "cruise_height_m": [4.0, 7.0],
+    "fly_s": [10.0, 22.0],
+    "feed_s": [8.0, 20.0],
+    "startle_radius_m": 5.0,
+    "blast_radius_m": 14.0,
+    "wing_beats_per_s": 4.5
+  },
+  "vultures": {
+    "chance_per_wreck": 0.5,
+    "max": 6,
+    "count": [2, 3],
+    "wingspan_m": 1.4,
+    "speed_mps": 4.0,
+    "circle_radius_m": [3.0, 5.5],
+    "height_m": [6.5, 9.0],
+    "arrive_after_s": 3.0,
+    "stay_s": 45.0,
+    "wing_beats_per_s": 1.6
+  }
+}
