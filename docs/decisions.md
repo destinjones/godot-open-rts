@@ -153,3 +153,17 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: neutral outposts to capture between the cities
+Part of Destin's ask for more to do and more ways to expand. Each match places one outpost
+in the centre and one between each pair of neighbouring spawn points (5 on a 4-player map),
+moved off water, forests, deposits and start zones. Standing combat ground units in the
+ring with no enemy inside captures it in 14 s, faster with more units up to 2x. A rival's
+outpost is pulled down to neutral first, so taking one from someone takes twice as long.
+Each outpost pays 2 iron, 1 copper and 2 oil every 10 s with no trucks, which is about half
+an extractor, and reveals the fog around it. Why: the maps had nothing worth fighting over
+between the bases, so armies only met at someone's city. The AI sends a squad of its raider
+unit to the nearest outpost it doesn't hold (OutpostController.gd), and only goes after an
+enemy's outpost when it would attack that player anyway. A map entry can list its own spots
+("outposts": [[x, z], ...]) or turn them off ("outposts": 0). Known gap: outposts are not in
+save files yet (save format needs Destin's OK), so a loaded match starts them neutral.

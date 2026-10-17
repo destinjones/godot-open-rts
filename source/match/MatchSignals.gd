@@ -26,6 +26,7 @@ signal structure_placement_refused(player)  # clicked to place a blueprint on a 
 signal unit_deselected(unit)
 signal unit_damaged(unit)
 signal unit_died(unit)
+signal outpost_captured(outpost, from_player, to_player)  # see outposts/Outposts.gd
 signal unit_production_started(unit_prototype, producer_unit)
 signal unit_production_finished(unit, producer_unit)
 signal unit_construction_finished(unit)

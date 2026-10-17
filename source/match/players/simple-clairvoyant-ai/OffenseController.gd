@@ -297,9 +297,13 @@ func _enforce_units_production(structure, unit_scene, type):
 func _is_battle_unit(unit):
 	if not unit._scene_path() in _battle_unit_scene_paths():
 		return false
-	# the faction's raider may also be its main battle unit: raiding parties keep theirs
-	var raiding = _ai.get_node_or_null("RaidingController")
-	return raiding == null or not raiding.claims(unit)
+	# the faction's raider may also be its main battle unit: raiding parties and the
+	# outpost squad keep theirs
+	for controller_name in ["RaidingController", "OutpostController"]:
+		var controller = _ai.get_node_or_null(controller_name)
+		if controller != null and controller.claims(unit):
+			return false
+	return true
 
 
 func _battle_unit_scene_paths():
