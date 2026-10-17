@@ -153,3 +153,7 @@ runs), so the gap is inside run-to-run noise. At 150 copies it is 0.78 against 0
 50 ms gap on llvmpipe was texture and normal-map sampling that a software renderer
 exaggerates, so the textured pipeline (one base colour plus one normal map per unit) stays
 the plan for the other units and no decimation or texture cut is needed for the tank.
+
+## 2026-10-17: the resource bar shows whole numbers
+Stock is fractional because upkeep drains it bit by bit, so the bar read "46.0". It now
+shows whole units, rounded down so it never shows more than you can spend.
