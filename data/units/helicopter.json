@@ -22,12 +22,12 @@
     "aircraft_factory"
   ],
   "properties": {
-    "sight_range": 8.0,
-    "hp": 10,
-    "hp_max": 10,
+    "sight_range": 9.5,
+    "hp": 30,
+    "hp_max": 30,
     "attack_damage": 1,
     "attack_interval": 1.0,
-    "attack_range": 5.0,
+    "attack_range": 6.5,
     "attack_domains": [
       "terrain",
       "air"

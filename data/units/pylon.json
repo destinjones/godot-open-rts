@@ -23,8 +23,8 @@
   ],
   "properties": {
     "sight_range": 5.0,
-    "hp": 5,
-    "hp_max": 5
+    "hp": 15,
+    "hp_max": 15
   },
   "power": {
     "grid_radius_m": 8.0

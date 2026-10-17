@@ -23,7 +23,7 @@
   ],
   "properties": {
     "sight_range": 6.0,
-    "hp": 16,
-    "hp_max": 16
+    "hp": 48,
+    "hp_max": 48
   }
 }

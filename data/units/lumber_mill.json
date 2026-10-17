@@ -23,8 +23,8 @@
   ],
   "properties": {
     "sight_range": 6.0,
-    "hp": 10,
-    "hp_max": 10
+    "hp": 30,
+    "hp_max": 30
   },
   "extracts": [
     "timber"

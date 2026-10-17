@@ -16,8 +16,8 @@
   "produced_by": [],
   "properties": {
     "sight_range": 5.0,
-    "hp": 10,
-    "hp_max": 10,
+    "hp": 30,
+    "hp_max": 30,
     "cargo_capacity": 999
   }
 }

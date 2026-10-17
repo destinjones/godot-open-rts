@@ -19,12 +19,12 @@
   "unit_slots": 2,
   "speed": 3.8,
   "properties": {
-    "sight_range": 9.0,
-    "hp": 10,
-    "hp_max": 10,
+    "sight_range": 10.5,
+    "hp": 30,
+    "hp_max": 30,
     "attack_damage": 3,
     "attack_interval": 1.2,
-    "attack_range": 7.0
+    "attack_range": 8.5
   },
   "projectile": "rocket",
   "fuel_per_s": 0.012

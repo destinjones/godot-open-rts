@@ -20,12 +20,12 @@
     "shipyard"
   ],
   "properties": {
-    "sight_range": 8.0,
-    "hp": 12,
-    "hp_max": 12,
+    "sight_range": 9.5,
+    "hp": 36,
+    "hp_max": 36,
     "attack_damage": 1,
     "attack_interval": 0.5,
-    "attack_range": 4.5
+    "attack_range": 6.0
   },
   "fuel_per_s": 0.015
 }

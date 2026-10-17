@@ -27,11 +27,11 @@
   ],
   "properties": {
     "sight_range": 7.0,
-    "hp": 9,
-    "hp_max": 9,
+    "hp": 27,
+    "hp_max": 27,
     "attack_damage": 5,
     "attack_interval": 2.5,
-    "attack_range": 11.0,
+    "attack_range": 15.0,
     "attack_domains": [
       "terrain"
     ]

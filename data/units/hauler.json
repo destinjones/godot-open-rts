@@ -22,8 +22,8 @@
   ],
   "properties": {
     "sight_range": 5.0,
-    "hp": 8,
-    "hp_max": 8,
+    "hp": 24,
+    "hp_max": 24,
     "cargo_capacity": 10
   },
   "fuel_per_s": 0.0
