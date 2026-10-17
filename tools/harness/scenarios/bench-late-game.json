@@ -1,0 +1,20 @@
+{
+  "name": "bench-late-game",
+  "description": "The frame-rate benchmark for a busy match: four players on Four Oases (the biggest map), the helper playing for you against three AIs with their own weather, for 12 minutes. Compare frame_ms and process_ms with an earlier run before and after a change that adds load.",
+  "map": "four_oases",
+  "seed": 1,
+  "minutes": 12,
+  "speed": 4,
+  "weather": "random",
+  "players": [
+    {"type": "human", "helper": true},
+    {"type": "ai", "personality": "balanced"},
+    {"type": "ai", "personality": "raider"},
+    {"type": "ai", "personality": "turtle"}
+  ],
+  "sample_every": 10,
+  "shots_every": 180,
+  "checks": [
+    {"end": true, "expect": "no_errors"}
+  ]
+}

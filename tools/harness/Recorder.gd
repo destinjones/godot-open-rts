@@ -246,6 +246,8 @@ func note_command(order, result):
 
 func screenshot(label):
 	"""saves the current view; switches 3D on for it when the run keeps 3D off"""
+	if DisplayServer.get_name() == "headless":
+		return ""  # nothing is drawn, so frame_post_draw never comes
 	_shooting = true
 	if three_d_off:
 		get_viewport().disable_3d = false

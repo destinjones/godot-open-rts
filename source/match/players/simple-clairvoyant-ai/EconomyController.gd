@@ -42,6 +42,8 @@ const ROAD_UPGRADE_MIN_LENGTH_M = 15.0  # short routes are not worth paving
 const RECYCLE_INTERVAL_S = 10.0
 const EXTRACTORS_PER_TRAIN = 6
 
+static var _radius_cache = {}  # scene path -> radius
+
 var _player = null
 var _ccs = []
 var _pending_unit_requests = {}  # scene path -> number of requests waiting for resources
@@ -171,19 +173,13 @@ func _next_structure():
 		var ratio = float(have) / float(target)
 		if not _obtainable(_extractor_scenes[kind]):
 			continue
-		if (
-			(best == null or ratio < best[0])
-			and _find_extractor_spot(kind, _extractor_scenes[kind]) != null
-		):
-			best = [ratio, kind]
+		if best == null or ratio < best[0]:
+			var spot = _find_extractor_spot(kind, _extractor_scenes[kind])
+			if spot != null:
+				best = [ratio, kind, spot]
 	if best == null:
 		return _next_faction_structure() if extractors >= MIN_EXTRACTORS_FIRST else null
-	var kind = best[1]
-	var scene_path = _extractor_scenes[kind]
-	var spot = _find_extractor_spot(kind, scene_path)
-	if spot == null:
-		return null
-	return [scene_path, spot]
+	return [_extractor_scenes[best[1]], best[2]]
 
 
 func _next_second_city_centre():
@@ -409,12 +405,13 @@ func _extractors_of_kind(kind):
 
 func _find_extractor_spot(kind, scene_path):
 	var base = _ccs[0].global_position
+	var taken = _taken_deposits()
 	var deposits = get_tree().get_nodes_in_group("deposits").filter(
 		func(deposit):
 			return (
 				deposit.kind == kind
 				and deposit.global_position.distance_to(base) <= MAX_DEPOSIT_DISTANCE_M
-				and not _deposit_taken(deposit)
+				and not deposit in taken
 				and WaterRules.land_reaches(
 					get_tree(), base, deposit.global_position, deposit.radius + 6.0
 				)
@@ -423,9 +420,8 @@ func _find_extractor_spot(kind, scene_path):
 	deposits.sort_custom(
 		func(a, b): return a.global_position.distance_to(base) < b.global_position.distance_to(base)
 	)
-	var prototype = load(scene_path).instantiate()
-	var radius = prototype.radius
-	prototype.free()
+	var radius = _radius_of(scene_path)
+	var obstacles = _placement_obstacles()
 	for deposit in deposits:
 		var towards_base = (base - deposit.global_position) * Vector3(1, 0, 1)
 		var start_angle = atan2(towards_base.z, towards_base.x)
@@ -436,32 +432,22 @@ func _find_extractor_spot(kind, scene_path):
 				+ Vector3(cos(angle), 0, sin(angle)) * (deposit.radius + radius + 0.5)
 			)
 			if (
-				_placement_valid(position, radius)
+				_placement_valid(position, radius, obstacles)
 				and Extractor.find_deposit_near(scene_path, position, radius, get_tree()) == deposit
 			):
 				return position
 	return null
 
 
-func _deposit_taken(deposit):
+func _taken_deposits():
+	"""every deposit an extractor works or is being built on, by any player"""
+	var taken = {}
 	for unit in get_tree().get_nodes_in_group("units"):
-		if (
-			unit is Extractor
-			and (
-				unit.deposit == deposit
-				or (
-					unit.is_under_construction()
-					and (
-						Extractor.find_deposit_near(
-							unit._scene_path(), unit.global_position, unit.radius, get_tree()
-						)
-						== deposit
-					)
-				)
-			)
-		):
-			return true
-	return false
+		if unit is Extractor:
+			var deposit = unit.claimed_deposit()
+			if deposit != null:
+				taken[deposit] = true
+	return taken
 
 
 func _find_position_near(origin, scene, min_distance = 0.0):
@@ -484,7 +470,8 @@ func _find_position_near(origin, scene, min_distance = 0.0):
 	return null
 
 
-func _placement_valid(position, radius):
+func _placement_valid(position, radius, obstacles = null):
+	"""obstacles: _placement_obstacles(), passed in by loops that try many spots"""
 	if not Geometry2D.is_point_in_polygon(
 		Vector2(position.x, position.z), find_parent("Match").map.get_topdown_polygon_2d()
 	):
@@ -493,15 +480,28 @@ func _placement_valid(position, radius):
 		Utils.Match.Unit.Placement.validate_agent_placement_position(
 			position,
 			radius,
-			(
-				get_tree().get_nodes_in_group("units")
-				+ get_tree().get_nodes_in_group("resource_units")
-				+ get_tree().get_nodes_in_group("city_buildings")
-			),
+			obstacles if obstacles != null else _placement_obstacles(),
 			_terrain_map()
 		)
 		== Utils.Match.Unit.Placement.VALID
 	)
+
+
+func _placement_obstacles():
+	return (
+		get_tree().get_nodes_in_group("units")
+		+ get_tree().get_nodes_in_group("resource_units")
+		+ get_tree().get_nodes_in_group("city_buildings")
+	)
+
+
+static func _radius_of(scene_path):
+	"""a structure scene's radius; instantiating a building to read it costs milliseconds"""
+	if not scene_path in _radius_cache:
+		var prototype = load(scene_path).instantiate()
+		_radius_cache[scene_path] = prototype.radius
+		prototype.free()
+	return _radius_cache[scene_path]
 
 
 func _place_structure(scene, position):

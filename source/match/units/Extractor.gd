@@ -53,6 +53,15 @@ func _ready():
 	timer.start(0.5)
 
 
+func claimed_deposit():
+	"""the deposit this extractor works, or the one its construction site will work. A site
+	binds its deposit when placed and nothing moves, so the search only runs again once that
+	deposit is gone"""
+	if deposit != null or not is_under_construction():
+		return deposit
+	return find_deposit_near(_scene_path(), global_position, radius, get_tree())
+
+
 func is_depleted():
 	return deposit == null or not is_instance_valid(deposit)
 

@@ -244,6 +244,31 @@ process time while they fight. The default budget is 50 ms frame time at the 95t
 set your own with `--budget-frame-ms` and `--budget-process-ms`.
 `scenarios/stress-40v40.json` is the same as a file, for batches and CI.
 
+### The late-game benchmark
+
+`play bench-late-game` is the frame-rate benchmark for a busy match: Four Oases, the
+helper playing for you against three AIs, the map's own weather, 12 game minutes at 4x.
+The stress fight measures many units at once; this one catches what grows with a match
+(economy planning, logistics, cities) and shows up as hitches rather than a low average.
+Read **p99 frame time** and **frames over 50 ms** as well as the average. Anything that
+adds load (sound, UI, weather, new features) should run it before and after and quote both.
+
+| Where | Average | p95 | p99 | Frames over 50 ms |
+| --- | --- | --- | --- | --- |
+| Cloud, headless (CPU only), before #87 | 105 to 109 fps | 25 to 27 ms | 65 to 66 ms | 339 to 373 |
+| Cloud, headless (CPU only), after #87 | 133 fps | 16 ms | 28 to 29 ms | 14 to 18 |
+| RTX 3060, 1080p, High, before #87 (`--speed=2 --minutes=10`) | 130 fps | 10.9 ms | 30 ms | 220 |
+| RTX 3060, 1080p, High, after #87 (`--speed=2 --minutes=10`) | 143 to 151 fps | 9.7 to 9.9 ms | 15 ms | 6 to 9 |
+
+For real GPU numbers run it in a window: `play bench-late-game --view=window
+--window=1920x1080 --speed=2 --minutes=10`. Runs differ a little even on one seed (the AIs
+react to frame timing), so compare two runs each side. Headless runs (`godot --headless
+... -- --scenario=bench-late-game`) need no screen and skip the screenshots.
+
+To see which scripts a hitch comes from, add `-d --profiling` to the Godot arguments (not
+after the `--`): Godot's local debugger then prints the slowest script functions of a frame
+about once a second.
+
 ## Driving a match from a script (the API)
 
 `play serve` starts an open match (the `sandbox` scenario) and listens on

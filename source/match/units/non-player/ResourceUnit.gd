@@ -4,10 +4,14 @@ const ResourceDecayAnimation = preload("res://source/match/utils/ResourceDecayAn
 
 var radius:
 	get:
-		return find_child("MovementObstacle").radius
+		if _obstacle == null:
+			_obstacle = find_child("MovementObstacle")  # a deep search: look it up once
+		return _obstacle.radius
 var global_position_yless:
 	get:
 		return global_position * Vector3(1, 0, 1)
+
+var _obstacle = null
 
 
 func _enter_tree():
